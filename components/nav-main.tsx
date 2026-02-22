@@ -40,9 +40,12 @@ export function NavMain({ items }: { items: SidebarItem[] }) {
   const isCollapsed = useSidebarCollapsed();
   const [openGroup, setOpenGroup] = useState<string | null>(null);
 
-  const handleToggleGroup = (title?: string) => {
-    if (!title) return;
-    setOpenGroup((prev) => (prev === title ? null : title));
+  const handleToggleGroup = (title: string, isOpen: boolean) => {
+    if (isOpen) {
+      setOpenGroup(title);
+    } else if (openGroup === title) {
+      setOpenGroup(null);
+    }
   };
 
   return (
@@ -62,15 +65,28 @@ export function NavMain({ items }: { items: SidebarItem[] }) {
                 key={item.title}
                 asChild
                 open={isOpen}
+                onOpenChange={(open) => {
+                  if (item.title) {
+                    if (open) {
+                      setOpenGroup(item.title);
+                    } else if (openGroup === item.title) {
+                      setOpenGroup(null);
+                    }
+                  }
+                }}
                 className="group/collapsible"
               >
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton
+                      onClick={() => {
+                        if (item.title) {
+                          handleToggleGroup(item.title, !isOpen);
+                        }
+                      }}
                       tooltip={item.title}
-                      onClick={() => handleToggleGroup(item.title)}
                       className={cn(
-                        "cursor-pointer py-5.5 px-3 text-base text-[#4b5563] dark:text-white data-[state=open]:bg-primary data-[state=open]:text-white hover:data-[state=open]:bg-primary dark:hover:data-[state=open]:bg-primary hover:data-[state=open]:text-white hover:bg-primary/10 active:bg-primary/10 dark:hover:bg-slate-700",
+                        "cursor-pointer w-full flex py-5.5 px-3 text-base text-[#4b5563] dark:text-white data-[state=open]:bg-primary data-[state=open]:text-white hover:data-[state=open]:bg-primary dark:hover:data-[state=open]:bg-primary hover:data-[state=open]:text-white hover:bg-primary/10 active:bg-primary/10 dark:hover:bg-slate-700",
                         isOpen
                           ? "bg-primary text-white hover:bg-primary hover:text-white dark:bg-primary dark:hover:bg-primary"
                           : ""

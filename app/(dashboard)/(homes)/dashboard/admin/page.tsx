@@ -10,6 +10,7 @@ import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import LoadingSkeleton from "@/components/loading-skeleton";
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { auth } from "@/auth";
 
 const metadata: Metadata = {
   title: "AI Dashboard | enfySync Admin Panel",
@@ -17,11 +18,20 @@ const metadata: Metadata = {
     "Explore AI analytics, monitor model performance, and track intelligent automation workflows in the AI Dashboard of enfySync Admin Template.",
 };
 
-
 export default async function DashboardPage() {
+  const session = await auth();
+  const userName = session?.user?.name || "User";
+
+  const hour = new Date().getHours();
+  let greeting = "Good Evening";
+  if (hour < 12) greeting = "Good Morning";
+  else if (hour < 18) greeting = "Good Afternoon";
+
+  const welcomeMessage = `${greeting}, ${userName}!`;
+
   return (
     <>
-      <DashboardBreadcrumb title="AI" text="AI" />
+      <DashboardBreadcrumb title={welcomeMessage} text="AI" />
 
       <Suspense fallback={<LoadingSkeleton />}>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 gap-6">

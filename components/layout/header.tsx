@@ -1,4 +1,3 @@
-import LanguageSelect from '../shared/language-select';
 import MessageDropdown from '../shared/message-dropdown';
 import { ModeToggle } from '../shared/mode-toggle';
 import ProfileDropdown from '../shared/profile-dropdown';
@@ -15,7 +14,6 @@ const Header = () => {
             </div>
             <div className="flex items-center gap-3">
                 <ModeToggle />
-                <LanguageSelect />
                 <MessageDropdown />
                 <NotificationDropdown />
                 <ProfileDropdown />

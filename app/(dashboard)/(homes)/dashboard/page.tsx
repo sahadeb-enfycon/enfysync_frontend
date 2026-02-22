@@ -23,6 +23,13 @@ export default async function DashboardRedirect() {
         redirect("/dashboard/pod-lead");
     } else {
         // Default fallback if no specific role matched
-        redirect("/dashboard/admin");
+        return (
+            <div className="flex h-screen w-full items-center justify-center">
+                <div className="text-center">
+                    <h1 className="text-3xl font-bold mb-2">Unauthorized Access</h1>
+                    <p className="text-neutral-500">You do not have the required roles to view this dashboard.</p>
+                </div>
+            </div>
+        );
     }
 }

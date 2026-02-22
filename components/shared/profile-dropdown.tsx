@@ -14,7 +14,14 @@ import Link from "next/link";
 
 const ProfileDropdown = () => {
   const { data: session } = useSession();
-  console.log("session", session);
+
+  const rawRoles = (session?.user as any)?.roles || [];
+  const validRoles = ["ADMIN", "POD_LEAD", "ACCOUNT_MANAGER", "RECRUITER", "POD-LEAD", "ACCOUNT-MANAGER"];
+  const displayRoleRaw = rawRoles.find((role: string) => validRoles.includes(role.toUpperCase())) || "Admin";
+  const formattedRole = displayRoleRaw
+    .replace(/[_:-]/g, " ")
+    .toLowerCase()
+    .replace(/\b\w/g, (char: string) => char.toUpperCase());
 
   return (
     <DropdownMenu>
@@ -59,7 +66,7 @@ const ProfileDropdown = () => {
                 : "Admin User"}
             </h6>
             <span className="text-sm text-neutral-500 dark:text-neutral-300 capitalize">
-              {(session?.user as any)?.roles?.[0] || "Admin"}
+              {formattedRole}
             </span>
           </div>
         </div>

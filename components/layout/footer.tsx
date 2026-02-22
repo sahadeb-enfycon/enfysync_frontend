@@ -13,11 +13,11 @@ const Footer = () => {
         <p className="mb-0 dark:text-white">
           Made by
           <Link
-            href="https://themeforest.net/user/wowtheme7/portfolio"
+            href="https://enfycon.com"
             className="font-medium text-primary dark:text-primary hover:underline"
           >
             {" "}
-            wowtheme7
+            enfycon
           </Link>
         </p>
       </div>
