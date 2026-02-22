@@ -11,10 +11,12 @@ import {
   ShieldCheck,
   StickyNote,
   UsersRound,
+  BriefcaseBusiness,
+  ClipboardList,
 } from "lucide-react";
 
-export const data = {
-  navMain: [
+export const getSidebarData = (role: string) => {
+  const adminNav = [
     {
       title: "Dashboard",
       url: "#",
@@ -363,5 +365,139 @@ export const data = {
         },
       ],
     },
-  ],
+  ];
+
+  const accountManagerNav = [
+    {
+      title: "Dashboard",
+      url: "#",
+      icon: House,
+      isActive: true,
+      items: [
+        {
+          title: "Dashboard Overview",
+          url: "/dashboard/account-manager",
+          circleColor: "bg-primary",
+        },
+      ],
+    },
+    {
+      label: "Job Management",
+    },
+    {
+      title: "Jobs",
+      url: "#",
+      icon: BriefcaseBusiness,
+      isActive: true,
+      items: [
+        {
+          title: "Post a New Job",
+          url: "/dashboard/account-manager/jobs/create",
+          circleColor: "bg-yellow-500",
+        },
+        {
+          title: "My Posted Jobs",
+          url: "/dashboard/account-manager/jobs",
+          circleColor: "bg-cyan-500",
+        },
+      ],
+    },
+    {
+      label: "System",
+    },
+    {
+      title: "Administration",
+      url: "#",
+      icon: Settings,
+      isActive: true,
+      items: [
+        {
+          title: "Settings",
+          url: "/settings-notification",
+          circleColor: "bg-primary",
+        },
+      ],
+    },
+  ];
+
+  const deliveryHeadNav = [
+    {
+      title: "Dashboard",
+      url: "#",
+      icon: House,
+      isActive: true,
+      items: [
+        {
+          title: "Dashboard Overview",
+          url: "/dashboard/delivery-head",
+          circleColor: "bg-primary",
+        },
+      ],
+    },
+    {
+      label: "Job Management",
+    },
+    {
+      title: "Jobs",
+      url: "#",
+      icon: BriefcaseBusiness,
+      isActive: true,
+      items: [
+        {
+          title: "All Jobs",
+          url: "/dashboard/delivery-head/jobs",
+          circleColor: "bg-cyan-500",
+        },
+      ],
+    },
+    {
+      label: "Pod Management",
+    },
+    {
+      title: "Pods",
+      url: "#",
+      icon: UsersRound,
+      isActive: true,
+      items: [
+        {
+          title: "All Pods",
+          url: "/dashboard/delivery-head/pods",
+          circleColor: "bg-purple-500",
+        },
+        {
+          title: "Create Pod",
+          url: "/dashboard/delivery-head/pods/create",
+          circleColor: "bg-green-500",
+        },
+      ],
+    },
+    {
+      label: "System",
+    },
+    {
+      title: "Administration",
+      url: "#",
+      icon: Settings,
+      isActive: true,
+      items: [
+        {
+          title: "Settings",
+          url: "/settings-notification",
+          circleColor: "bg-primary",
+        },
+      ],
+    },
+  ];
+
+  // Map roles to their specific navigation
+  const roleUpper = role ? role.toUpperCase() : "ADMIN";
+
+  if (roleUpper === "ACCOUNT_MANAGER" || roleUpper === "ACCOUNT-MANAGER") {
+    return { navMain: accountManagerNav };
+  } else if (roleUpper === "DELIVERY_HEAD" || roleUpper === "DELIVERY-HEAD") {
+    return { navMain: deliveryHeadNav };
+  }
+
+  // Default to Admin
+  return { navMain: adminNav };
 };

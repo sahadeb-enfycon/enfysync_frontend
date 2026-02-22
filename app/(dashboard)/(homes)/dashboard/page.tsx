@@ -21,6 +21,8 @@ export default async function DashboardRedirect() {
         redirect("/dashboard/recruiter");
     } else if (normalizedRoles.includes("POD_LEAD") || normalizedRoles.includes("POD-LEAD")) {
         redirect("/dashboard/pod-lead");
+    } else if (normalizedRoles.includes("DELIVERY_HEAD") || normalizedRoles.includes("DELIVERY-HEAD")) {
+        redirect("/dashboard/delivery-head");
     } else {
         // Default fallback if no specific role matched
         return (

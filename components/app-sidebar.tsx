@@ -10,9 +10,16 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import LogoSidebar from "./shared/logo-sidebar";
-import { data } from "./sidebar-data";
+import { getSidebarData } from "./sidebar-data";
+import { useSession } from "next-auth/react";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { data: session } = useSession();
+  const rawRoles = (session?.user as any)?.roles || [];
+  const validRoles = ["ADMIN", "POD_LEAD", "ACCOUNT_MANAGER", "RECRUITER", "DELIVERY_HEAD"];
+  const primaryRole = rawRoles.find((role: string) => validRoles.includes(role.toUpperCase())) || "ADMIN";
+
+  const data = getSidebarData(primaryRole);
   return (
     <Sidebar collapsible="icon" {...props} className="hidden xl:block">
       <SidebarHeader>
