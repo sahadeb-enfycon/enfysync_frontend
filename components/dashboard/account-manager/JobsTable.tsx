@@ -21,7 +21,8 @@ import {
     Search,
     X,
     Calendar as CalendarIcon,
-    Filter
+    Filter,
+    Trash2
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -40,6 +41,18 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { format, isSameDay } from "date-fns";
 import { cn } from "@/lib/utils";
+import JobEditDialog from "../delivery-head/JobEditDialog";
+import { useSession } from "next-auth/react";
+import { toast } from "react-hot-toast";
+import { useRouter } from "next/navigation";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 
 interface Job {
     id: string;
@@ -65,6 +78,7 @@ interface JobsTableProps {
     showAccountManager?: boolean;
     showPod?: boolean;
     showFilters?: boolean;
+    onRefresh?: () => void;
 }
 
 const statusMap: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" | "warning" | "info" }> = {
@@ -81,8 +95,11 @@ export default function JobsTable({
     showActions = true,
     showAccountManager = false,
     showPod = false,
-    showFilters = false
+    showFilters = false,
+    onRefresh
 }: JobsTableProps) {
+    const { data: session } = useSession();
+    const router = useRouter();
     const [currentPage, setCurrentPage] = useState(1);
     const [podFilter, setPodFilter] = useState<string>("all");
     const [amFilter, setAmFilter] = useState<string>("all");
@@ -90,6 +107,15 @@ export default function JobsTable({
     const [dateFilter, setDateFilter] = useState<Date | undefined>(undefined);
     const [searchQuery, setSearchQuery] = useState("");
     const [sortBy, setSortBy] = useState<string>("date-desc");
+
+    // Modal states
+    const [editJob, setEditJob] = useState<Job | null>(null);
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const [jobToDelete, setJobToDelete] = useState<Job | null>(null);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    const token = (session as any)?.user?.accessToken;
 
     const itemsPerPage = 10;
 
@@ -173,6 +199,49 @@ export default function JobsTable({
         setSearchQuery("");
         setSortBy("date-desc");
         setCurrentPage(1);
+    };
+
+    const handleEdit = (job: any) => {
+        setEditJob(job);
+        setIsEditDialogOpen(true);
+    };
+
+    const handleDeleteClick = (job: any) => {
+        setJobToDelete(job);
+        setIsDeleteDialogOpen(true);
+    };
+
+    const handleDeleteConfirm = async () => {
+        if (!jobToDelete || !token) return;
+
+        setIsDeleting(true);
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs/${jobToDelete.id}`, {
+                method: "DELETE",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            if (response.ok) {
+                toast.success("Job deleted successfully");
+                if (onRefresh) {
+                    onRefresh();
+                } else {
+                    router.refresh();
+                }
+            } else {
+                const error = await response.json();
+                toast.error(error.message || "Failed to delete job");
+            }
+        } catch (error) {
+            console.error("Error deleting job:", error);
+            toast.error("An error occurred while deleting the job");
+        } finally {
+            setIsDeleting(false);
+            setIsDeleteDialogOpen(false);
+            setJobToDelete(null);
+        }
     };
 
     return (
@@ -394,10 +463,11 @@ export default function JobsTable({
                                                             <Eye className="h-4 w-4" />
                                                         </Link>
                                                     </Button>
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-amber-600 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-900/20" asChild>
-                                                        <Link href={`${baseUrl}/${job.id}/edit`}>
-                                                            <Edit2 className="h-4 w-4" />
-                                                        </Link>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-amber-600 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-900/20" onClick={() => handleEdit(job)}>
+                                                        <Edit2 className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20" onClick={() => handleDeleteClick(job)}>
+                                                        <Trash2 className="h-4 w-4" />
                                                     </Button>
                                                 </div>
                                             </TableCell>
@@ -409,6 +479,43 @@ export default function JobsTable({
                     </TableBody>
                 </Table>
             </div>
+
+            <JobEditDialog
+                job={editJob as any}
+                isOpen={isEditDialogOpen}
+                onClose={() => setIsEditDialogOpen(false)}
+                onSuccess={() => {
+                    if (onRefresh) {
+                        onRefresh();
+                    } else {
+                        router.refresh();
+                    }
+                }}
+            />
+
+            <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Are you sure?</DialogTitle>
+                        <DialogDescription>
+                            This will permanently delete the job <strong>{jobToDelete?.jobCode}</strong>. This action cannot be undone.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)} disabled={isDeleting}>Cancel</Button>
+                        <Button
+                            onClick={(e: React.MouseEvent) => {
+                                e.preventDefault();
+                                handleDeleteConfirm();
+                            }}
+                            variant="destructive"
+                            disabled={isDeleting}
+                        >
+                            {isDeleting ? "Deleting..." : "Delete"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
             {/* Pagination Controls */}
             {totalPages > 1 && (

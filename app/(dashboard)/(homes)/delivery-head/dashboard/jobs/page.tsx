@@ -2,6 +2,8 @@ import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import { auth } from "@/auth";
 import JobsTable from "@/components/dashboard/account-manager/JobsTable";
 
+export const dynamic = 'force-dynamic';
+
 async function getJobs() {
     const session = await auth();
     const token = (session as any)?.user?.accessToken;
@@ -12,20 +14,36 @@ async function getJobs() {
     }
 
     try {
-        // Fetch all jobs for Delivery Head
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs`, {
+        // Fetch pods for Delivery Head, which already include associated jobs
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/pods/my-pods`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
-            next: { revalidate: 60 },
+            cache: 'no-store',
         });
 
         if (!response.ok) {
-            console.error("Failed to fetch jobs. Status:", response.status);
+            console.error("Failed to fetch jobs via pods. Status:", response.status);
             return [];
         }
 
-        return response.json();
+        const pods = await response.json();
+
+        // Extract and flatten jobs from all pods
+        const allJobs = pods.flatMap((pod: any) =>
+            (pod.jobs || []).map((job: any) => ({
+                ...job,
+                pod: {
+                    id: pod.id,
+                    name: pod.name
+                }
+            }))
+        );
+
+        // Remove duplicates if a job is assigned to multiple pods (though unlikely in this schema)
+        const uniqueJobs = Array.from(new Map(allJobs.map((item: any) => [item.id, item])).values()) as any[];
+
+        return uniqueJobs;
     } catch (error) {
         console.error("Error fetching jobs:", error);
         return [];
@@ -50,7 +68,7 @@ export default async function DeliveryHeadJobsPage() {
                     jobs={jobs}
                     showAccountManager={true}
                     showPod={true}
-                    showActions={false}
+                    showActions={true}
                     showFilters={true}
                 />
             </div>

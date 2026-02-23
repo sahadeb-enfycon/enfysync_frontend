@@ -28,6 +28,7 @@ interface Pod {
     name: string;
     podHead: PodMember;
     recruiters: PodMember[];
+    jobs: any[];
     _count: {
         recruiters: number;
     };
@@ -59,6 +60,9 @@ export default function PodsTable({ pods: initialPods }: PodsTableProps) {
                         <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-center">
                             Recruiters
                         </TableHead>
+                        <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-center">
+                            Jobs Assigned
+                        </TableHead>
                         <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-start">
                             Last Updated
                         </TableHead>
@@ -70,7 +74,7 @@ export default function PodsTable({ pods: initialPods }: PodsTableProps) {
                 <TableBody>
                     {pods.length === 0 ? (
                         <TableRow>
-                            <TableCell colSpan={5} className="h-24 text-center text-muted-foreground italic">
+                            <TableCell colSpan={6} className="h-24 text-center text-muted-foreground italic">
                                 No pods found.
                             </TableCell>
                         </TableRow>
@@ -115,6 +119,11 @@ export default function PodsTable({ pods: initialPods }: PodsTableProps) {
                                             )}
                                         </div>
                                     </div>
+                                </TableCell>
+                                <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-center">
+                                    <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 font-semibold px-3 py-1">
+                                        {pod.jobs?.length || 0} Jobs
+                                    </Badge>
                                 </TableCell>
                                 <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
                                     <div className="flex flex-col">
