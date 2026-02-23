@@ -1,7 +1,10 @@
+import { auth } from "@/auth";
+import { SessionProvider } from "next-auth/react";
 import { LoadingProvider } from "@/contexts/LoadingContext";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+
 const inter = Inter({
   subsets: ["latin"],
   display: "swap",
@@ -41,12 +44,16 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await auth();
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} antialiased`}>
-        <LoadingProvider>
-          {children}
-        </LoadingProvider>
+        <SessionProvider session={session}>
+          <LoadingProvider>
+            {children}
+          </LoadingProvider>
+        </SessionProvider>
       </body>
     </html>
   );

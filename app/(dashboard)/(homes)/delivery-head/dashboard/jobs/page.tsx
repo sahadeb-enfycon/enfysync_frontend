@@ -14,8 +14,7 @@ async function getJobs() {
     }
 
     try {
-        // Fetch pods for Delivery Head, which already include associated jobs
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/pods/my-pods`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
@@ -23,27 +22,11 @@ async function getJobs() {
         });
 
         if (!response.ok) {
-            console.error("Failed to fetch jobs via pods. Status:", response.status);
+            console.error("Failed to fetch jobs. Status:", response.status);
             return [];
         }
 
-        const pods = await response.json();
-
-        // Extract and flatten jobs from all pods
-        const allJobs = pods.flatMap((pod: any) =>
-            (pod.jobs || []).map((job: any) => ({
-                ...job,
-                pod: {
-                    id: pod.id,
-                    name: pod.name
-                }
-            }))
-        );
-
-        // Remove duplicates if a job is assigned to multiple pods (though unlikely in this schema)
-        const uniqueJobs = Array.from(new Map(allJobs.map((item: any) => [item.id, item])).values()) as any[];
-
-        return uniqueJobs;
+        return await response.json();
     } catch (error) {
         console.error("Error fetching jobs:", error);
         return [];

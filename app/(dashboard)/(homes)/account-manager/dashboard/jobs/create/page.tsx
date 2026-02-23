@@ -106,10 +106,6 @@ export default function AccountManagerCreateJobPage() {
                             </div>
                         </div>
 
-                        <div>
-                            <Label htmlFor="description" className="text-[#4b5563] dark:text-white mb-2">Job Description *</Label>
-                            <Textarea id="description" name="description" className="border border-neutral-300 px-5 py-4 dark:border-slate-500 focus:border-primary dark:focus:border-primary focus-visible:border-primary min-h-[160px] rounded-lg !shadow-none !ring-0" placeholder="Detailed job description and requirements..." required />
-                        </div>
 
                         <div className="flex justify-end gap-3 mt-4">
                             <Button type="button" variant="outline" className="h-12 px-8">Cancel</Button>

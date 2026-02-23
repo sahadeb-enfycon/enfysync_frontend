@@ -134,14 +134,22 @@ export default function JobEditDialog({ job, isOpen, onClose, onSuccess }: JobEd
 
         setIsSubmitting(true);
         try {
-            const { accountManagerId, jobCode, ...sanitizedData } = formData;
+            const { accountManagerId, jobCode, podId, description, ...sanitizedData } = formData;
 
-            const patchData = {
+            const patchData: any = {
                 ...sanitizedData,
-                podId: formData.podId === "unassigned" ? null : formData.podId,
                 noOfPositions: Number(formData.noOfPositions) || 0,
                 submissionRequired: Number(formData.submissionRequired) || 0,
             };
+
+            // Handle pod relation in a Prisma-compatible way if podId is present
+            if (formData.podId) {
+                if (formData.podId === "unassigned") {
+                    patchData.pod = { disconnect: true };
+                } else {
+                    patchData.pod = { connect: { id: formData.podId } };
+                }
+            }
 
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs/${job.id}`, {
                 method: "PATCH",
@@ -268,16 +276,6 @@ export default function JobEditDialog({ job, isOpen, onClose, onSuccess }: JobEd
                         </div>
                     </div>
 
-                    <div className="space-y-2">
-                        <Label htmlFor="description">Job Description</Label>
-                        <Textarea
-                            id="description"
-                            value={formData.description || ""}
-                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                            className="min-h-[120px]"
-                            required
-                        />
-                    </div>
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
@@ -359,6 +357,7 @@ export default function JobEditDialog({ job, isOpen, onClose, onSuccess }: JobEd
                             </Select>
                         </div>
                     </div>
+
 
                     <DialogFooter>
                         <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>

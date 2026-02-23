@@ -14,9 +14,10 @@ import { useLoading } from '@/contexts/LoadingContext'
 import { loginSchema } from '@/lib/zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Eye, EyeOff, Loader2, Lock, Mail } from 'lucide-react'
-import { signIn } from 'next-auth/react'
+import { signIn, useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { useRef, useState, useTransition } from 'react'
+import { useEffect, useRef, useState, useTransition } from 'react'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import { z } from 'zod'
@@ -24,11 +25,19 @@ import { handleLoginAction } from './actions/login'
 import SocialLogin from './social-login'
 
 const LoginForm = () => {
+  const { data: session, status } = useSession()
+  const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [isPending, startTransition] = useTransition()
   const { loading, setLoading } = useLoading()
   const [isSubmitting, setIsSubmitting] = useState(false);
   const formRef = useRef<HTMLFormElement>(null)
+
+  useEffect(() => {
+    if (status === 'authenticated') {
+      router.push('/dashboard')
+    }
+  }, [status, router])
 
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -52,13 +61,18 @@ const LoginForm = () => {
         if (res?.error) {
           toast.error(res.error)
         } else {
-          await signIn('credentials', {
-            redirect: true,
+          const signInRes = await signIn('credentials', {
+            redirect: false,
             email: values.email,
             password: values.password,
-            callbackUrl: '/dashboard',
           })
-          toast.success('Login successful!')
+
+          if (signInRes?.error) {
+            toast.error('Invalid credentials. Please try again.')
+          } else {
+            toast.success('Login successful!')
+            router.push('/dashboard')
+          }
         }
       } catch (error) {
         toast.error('Something went wrong. Please try again.')
@@ -187,7 +201,7 @@ const LoginForm = () => {
       {/* <SocialLogin /> */}
 
       {/* Signup Prompt */}
-     
+
     </>
   )
 }
