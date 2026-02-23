@@ -6,16 +6,17 @@ import TopCountriesCard from "@/app/(dashboard)/(homes)/dashboard/components/top
 import TopPerformerCard from "@/app/(dashboard)/(homes)/dashboard/components/top-performer-card";
 import TotalSubscriberCard from "@/app/(dashboard)/(homes)/dashboard/components/total-subscriber-card";
 import UserOverviewCard from "@/app/(dashboard)/(homes)/dashboard/components/user-overview-card";
+import PodPerformanceCard from "@/app/(dashboard)/(homes)/dashboard/components/pod-performance-card";
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import LoadingSkeleton from "@/components/loading-skeleton";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { auth } from "@/auth";
+import { ArrowUp, BriefcaseBusiness, FileText, UsersRound, Timer } from "lucide-react";
 
-const metadata: Metadata = {
-  title: "AI Dashboard | enfySync Admin Panel",
-  description:
-    "Explore AI analytics, monitor model performance, and track intelligent automation workflows in the AI Dashboard of enfySync Admin Template.",
+export const metadata: Metadata = {
+  title: "Admin Dashboard | enfySync",
+  description: "Recruitment Management Dashboard",
 };
 
 export default async function DashboardPage() {
@@ -29,30 +30,99 @@ export default async function DashboardPage() {
 
   const welcomeMessage = `${greeting}, ${userName}!`;
 
+  const adminStats = [
+    {
+      title: "Total Open Jobs",
+      value: "42",
+      icon: "BriefcaseBusiness",
+      iconBg: "bg-blue-600",
+      gradientFrom: "from-blue-600/10",
+      growth: "+5",
+      growthIcon: "ArrowUp",
+      growthColor: "text-green-600 dark:text-green-400",
+      description: "Increase from last month",
+    },
+    {
+      title: "Total Submissions",
+      value: "1,248",
+      icon: "FileText",
+      iconBg: "bg-purple-600",
+      gradientFrom: "from-purple-600/10",
+      growth: "+12%",
+      growthIcon: "ArrowUp",
+      growthColor: "text-green-600 dark:text-green-400",
+      description: "Better than last week",
+    },
+    {
+      title: "Candidates in L1",
+      value: "86",
+      icon: "UsersRound",
+      iconBg: "bg-cyan-600",
+      gradientFrom: "from-cyan-600/10",
+      growth: "+15",
+      growthIcon: "ArrowUp",
+      growthColor: "text-green-600 dark:text-green-400",
+      description: "Currently in screening",
+    },
+    {
+      title: "Candidates in L2",
+      value: "34",
+      icon: "Timer",
+      iconBg: "bg-orange-600",
+      gradientFrom: "from-orange-600/10",
+      growth: "+4",
+      growthIcon: "ArrowUp",
+      growthColor: "text-green-600 dark:text-green-400",
+      description: "Technical rounds scheduled",
+    },
+    {
+      title: "Final Rounds",
+      value: "12",
+      icon: "UsersRound",
+      iconBg: "bg-green-600",
+      gradientFrom: "from-green-600/10",
+      growth: "+2",
+      growthIcon: "ArrowUp",
+      growthColor: "text-green-600 dark:text-green-400",
+      description: "Waiting for feedback",
+    },
+  ];
+
   return (
     <>
-      <DashboardBreadcrumb title={welcomeMessage} text="AI" />
+      <DashboardBreadcrumb title={welcomeMessage} text="Admin Dashboard" />
 
       <Suspense fallback={<LoadingSkeleton />}>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 gap-6">
-          <StatCard />
+          <StatCard data={adminStats} />
         </div>
       </Suspense>
 
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 mt-6">
         <div className="xl:col-span-12 2xl:col-span-6">
           <Suspense fallback={<LoadingSkeleton />}>
-            <SalesStaticCard />
+            <SalesStaticCard
+              title="Recruitment Throughput"
+              value="156 Placements"
+              subtitle="+ 12 from last month"
+              percentage="15%"
+            />
           </Suspense>
         </div>
 
-        <div className="xl:col-span-6 2xl:col-span-3">
+        <div className="xl:col-span-12 2xl:col-span-6">
+          <Suspense fallback={<LoadingSkeleton />}>
+            <PodPerformanceCard />
+          </Suspense>
+        </div>
+
+        <div className="xl:col-span-6 2xl:col-span-8">
           <Suspense fallback={<LoadingSkeleton />}>
             <TotalSubscriberCard />
           </Suspense>
         </div>
 
-        <div className="xl:col-span-6 2xl:col-span-3">
+        <div className="xl:col-span-6 2xl:col-span-4">
           <Suspense fallback={<LoadingSkeleton />}>
             <UserOverviewCard />
           </Suspense>

@@ -29,6 +29,12 @@ const TotalSubscriberChart = () => {
         }, {
             x: 'Sat',
             y: 6,
+        }, {
+            x: 'Sun2',
+            y: 14,
+        }, {
+            x: 'Mon2',
+            y: 19,
         }]
     }]
 
@@ -42,9 +48,9 @@ const TotalSubscriberChart = () => {
         },
         plotOptions: {
             bar: {
-                borderRadius: 6,
+                borderRadius: 12,
                 horizontal: false,
-                columnWidth: '52%',
+                columnWidth: '70%',
             }
         },
         dataLabels: {
@@ -78,7 +84,7 @@ const TotalSubscriberChart = () => {
         },
         xaxis: {
             type: 'category',
-            categories: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+            categories: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun2', 'Mon2']
         },
         yaxis: {
             show: false,

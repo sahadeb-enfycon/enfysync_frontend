@@ -24,95 +24,21 @@ export const getSidebarData = (role: string) => {
       isActive: true,
       items: [
         {
-          title: "AI",
+          title: "Home",
           url: "/dashboard",
           circleColor: "bg-primary",
         },
         {
-          title: "CRM",
-          url: "/crm",
-          circleColor: "bg-yellow-500",
-        },
-        {
-          title: "eCommerce",
-          url: "/ecommerce",
+          title: "Recruiter",
+          url: "/recruiter",
           circleColor: "bg-cyan-500",
         },
         {
-          title: "Cryptocurrency",
-          url: "/cryptocurrency",
-          circleColor: "bg-red-500",
-        },
-        {
-          title: "Investment",
-          url: "/investment",
-          circleColor: "bg-green-600",
-        },
-        {
-          title: "LMS / Learning System",
-          url: "/lms",
-          circleColor: "bg-violet-600",
-        },
-        {
-          title: "NFT & Gaming",
-          url: "/nft",
-          circleColor: "bg-primary",
-        },
-        {
-          title: "Medical",
-          url: "/medical",
-          circleColor: "bg-red-600",
-        },
-        {
-          title: "Analytics",
-          url: "/analytics",
-          circleColor: "bg-violet-600",
-        },
-        {
-          title: "POS & Inventory",
-          url: "/inventory",
+          title: "Account Manager",
+          url: "/am",
           circleColor: "bg-yellow-500",
         },
-        {
-          title: "Finance & Banking",
-          url: "/finance",
-          circleColor: "bg-green-500",
-        },
-        {
-          title: "Booking System",
-          url: "/booking",
-          circleColor: "bg-red-500",
-        },
-        {
-          title: "Help Desk",
-          url: "/help",
-          circleColor: "bg-blue-500",
-        },
-        {
-          title: "Podcast",
-          url: "/podcast",
-          circleColor: "bg-yellow-500",
-        },
-        {
-          title: "Project Management",
-          url: "/project-management",
-          circleColor: "bg-blue-500",
-        },
-        {
-          title: "Call Center",
-          url: "/call-center",
-          circleColor: "bg-red-500",
-        },
-        {
-          title: "Sass",
-          url: "/sass",
-          circleColor: "bg-cyan-500",
-        },
-        {
-          title: "Sales",
-          url: "/sales",
-          circleColor: "bg-yellow-500",
-        },
+        
       ],
     },
     {
