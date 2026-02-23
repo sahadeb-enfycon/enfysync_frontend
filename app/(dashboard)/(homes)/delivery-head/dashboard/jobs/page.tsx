@@ -1,13 +1,9 @@
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import { auth } from "@/auth";
 import JobsTable from "@/components/dashboard/account-manager/JobsTable";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import Link from "next/link";
 
 async function getJobs() {
     const session = await auth();
-    // In auth.ts, accessToken is added to session.user
     const token = (session as any)?.user?.accessToken;
 
     if (!token) {
@@ -16,11 +12,12 @@ async function getJobs() {
     }
 
     try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs?my=true`, {
+        // Fetch all jobs for Delivery Head
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
-            next: { revalidate: 60 }, // Revalidate every minute
+            next: { revalidate: 60 },
         });
 
         if (!response.ok) {
@@ -35,27 +32,27 @@ async function getJobs() {
     }
 }
 
-export default async function AccountManagerJobsPage() {
+export default async function DeliveryHeadJobsPage() {
     const jobs = await getJobs();
 
     return (
         <>
-            <DashboardBreadcrumb title="My Posted Jobs" text="Job Management" />
+            <DashboardBreadcrumb title="All Jobs" text="Job Management" />
             <div className="p-6">
                 <div className="flex justify-between items-center mb-6">
                     <div>
-                        <h1 className="text-2xl font-bold">My Posted Jobs</h1>
-                        <p className="mt-1 text-muted-foreground italic text-sm">List of past posted jobs, allowing updates to status and properties.</p>
+                        <h1 className="text-2xl font-bold">All Jobs</h1>
+                        <p className="mt-1 text-muted-foreground italic text-sm">Overview of all jobs posted in the system across all account managers.</p>
                     </div>
-                    <Button asChild className="h-10 px-4">
-                        <Link href="/account-manager/dashboard/jobs/create">
-                            <Plus className="h-4 w-4 mr-2" />
-                            Post a New Job
-                        </Link>
-                    </Button>
                 </div>
 
-                <JobsTable jobs={jobs} showPod={true} />
+                <JobsTable
+                    jobs={jobs}
+                    showAccountManager={true}
+                    showPod={true}
+                    showActions={false}
+                    showFilters={true}
+                />
             </div>
         </>
     );

@@ -355,7 +355,7 @@ export const getSidebarData = (role: string) => {
       items: [
         {
           title: "Home",
-          url: "/delivery-head/dashboard/home",
+          url: "/delivery-head/dashboard",
           circleColor: "bg-primary",
         },
         {
