@@ -145,6 +145,7 @@ export default function DeliveryHeadCreatePodPage() {
 
             if (response.ok) {
                 toast.success("Pod created successfully!");
+                router.refresh();
                 router.push('/dashboard/delivery-head/pods');
             } else {
                 const errData = await response.json();

@@ -22,8 +22,9 @@ import { useRouter } from "next/navigation";
 // Initial empty options, will be populated from API
 const INITIAL_RECRUITER_OPTIONS: Option[] = [];
 
-export default function DeliveryHeadEditPodPage({ params }: { params: { id: string } }) {
-    const { id: podId } = params;
+export default function DeliveryHeadEditPodPage({ params }: { params: Promise<{ id: string }> }) {
+    const resolvedParams = React.use(params);
+    const podId = resolvedParams.id;
     const { data: session } = useSession();
     const router = useRouter();
     const [selectedRecruiters, setSelectedRecruiters] = React.useState<string[]>([]);
@@ -45,16 +46,13 @@ export default function DeliveryHeadEditPodPage({ params }: { params: { id: stri
                     headers: { Authorization: `Bearer ${token}` }
                 });
 
+                let fetchedOptions: Option[] = [];
                 if (recruitersRes.ok) {
                     const recruiters = await recruitersRes.json();
-                    console.log("Raw recruiters from API:", recruiters);
-                    const mapped = recruiters.map((r: any) => ({
+                    fetchedOptions = recruiters.map((r: any) => ({
                         label: r.fullName,
                         value: r.id || r.keycloakId
                     }));
-                    // Deduplicate by value
-                    const unique = Array.from(new Map(mapped.map((m: any) => [m.value, m])).values()) as Option[];
-                    setRecruiterOptions(unique);
                 }
 
                 // Also fetch existing pod details to populate the form
@@ -65,6 +63,22 @@ export default function DeliveryHeadEditPodPage({ params }: { params: { id: stri
                 if (podRes.ok) {
                     const podData = await podRes.json();
                     setPodName(podData.name || "");
+
+                    const currentMembers: Option[] = [];
+                    if (podData.podHead) {
+                        currentMembers.push({ label: podData.podHead.fullName, value: podData.podHead.id });
+                    }
+                    if (podData.recruiters && Array.isArray(podData.recruiters)) {
+                        podData.recruiters.forEach((r: any) => {
+                            currentMembers.push({ label: r.fullName, value: r.id });
+                        });
+                    }
+
+                    // Deduplicate by value
+                    const combinedOptions = [...fetchedOptions, ...currentMembers];
+                    const uniqueOptions = Array.from(new Map(combinedOptions.map(m => [m.value, m])).values()) as Option[];
+                    setRecruiterOptions(uniqueOptions);
+
                     if (podData.podHeadId) {
                         setSelectedPodLead(podData.podHeadId);
                     }
@@ -159,6 +173,7 @@ export default function DeliveryHeadEditPodPage({ params }: { params: { id: stri
 
             if (response.ok) {
                 toast.success("Pod updated successfully!");
+                router.refresh();
                 router.push('/dashboard/delivery-head/pods');
             } else {
                 const errData = await response.json();

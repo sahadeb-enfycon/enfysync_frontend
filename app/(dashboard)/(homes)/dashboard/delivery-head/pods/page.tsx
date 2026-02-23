@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 
+export const dynamic = 'force-dynamic';
+
 async function getPods() {
     const session = await auth();
     const token = (session as any)?.user?.accessToken;
@@ -19,7 +21,7 @@ async function getPods() {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
-            next: { revalidate: 60 },
+            cache: 'no-store',
         });
 
         if (!response.ok) {
