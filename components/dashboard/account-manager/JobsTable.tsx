@@ -89,6 +89,7 @@ export default function JobsTable({
     const [clientFilter, setClientFilter] = useState<string>("all");
     const [dateFilter, setDateFilter] = useState<Date | undefined>(undefined);
     const [searchQuery, setSearchQuery] = useState("");
+    const [sortBy, setSortBy] = useState<string>("date-desc");
 
     const itemsPerPage = 10;
 
@@ -131,8 +132,25 @@ export default function JobsTable({
     }, [jobs, podFilter, amFilter, clientFilter, dateFilter, searchQuery]);
 
     const sortedJobs = useMemo(() => {
-        return [...filteredJobs].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    }, [filteredJobs]);
+        return [...filteredJobs].sort((a, b) => {
+            switch (sortBy) {
+                case "date-desc":
+                    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+                case "date-asc":
+                    return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+                case "title-asc":
+                    return a.jobTitle.localeCompare(b.jobTitle);
+                case "title-desc":
+                    return b.jobTitle.localeCompare(a.jobTitle);
+                case "client-asc":
+                    return a.clientName.localeCompare(b.clientName);
+                case "client-desc":
+                    return b.clientName.localeCompare(a.clientName);
+                default:
+                    return 0;
+            }
+        });
+    }, [filteredJobs, sortBy]);
 
     const totalPages = Math.ceil(sortedJobs.length / itemsPerPage);
 
@@ -153,6 +171,7 @@ export default function JobsTable({
         setClientFilter("all");
         setDateFilter(undefined);
         setSearchQuery("");
+        setSortBy("date-desc");
         setCurrentPage(1);
     };
 
@@ -160,7 +179,7 @@ export default function JobsTable({
         <div className="space-y-4">
             {showFilters && (
                 <div className="bg-neutral-50 dark:bg-slate-800/40 p-4 rounded-xl border border-neutral-200 dark:border-slate-700 flex flex-wrap gap-4 items-end">
-                    <div className="flex-1 min-w-[200px] space-y-1.5">
+                    <div className="flex-1 min-w-[200px] flex flex-col gap-1.5">
                         <label className="text-xs font-semibold text-neutral-500 uppercase tracking-wider ml-1">Search</label>
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
@@ -176,10 +195,10 @@ export default function JobsTable({
                         </div>
                     </div>
 
-                    <div className="space-y-1.5">
+                    <div className="flex flex-col gap-1.5">
                         <label className="text-xs font-semibold text-neutral-500 uppercase tracking-wider ml-1">Pod</label>
                         <Select value={podFilter} onValueChange={(v) => { setPodFilter(v); setCurrentPage(1); }}>
-                            <SelectTrigger className="w-[160px] h-10 bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-600 rounded-lg">
+                            <SelectTrigger className="w-[150px] h-10 bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-600 rounded-lg">
                                 <SelectValue placeholder="All Pods" />
                             </SelectTrigger>
                             <SelectContent>
@@ -191,7 +210,7 @@ export default function JobsTable({
                         </Select>
                     </div>
 
-                    <div className="space-y-1.5">
+                    <div className="flex flex-col gap-1.5">
                         <label className="text-xs font-semibold text-neutral-500 uppercase tracking-wider ml-1">Account Manager</label>
                         <Select value={amFilter} onValueChange={(v) => { setAmFilter(v); setCurrentPage(1); }}>
                             <SelectTrigger className="w-[180px] h-10 bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-600 rounded-lg">
@@ -206,10 +225,10 @@ export default function JobsTable({
                         </Select>
                     </div>
 
-                    <div className="space-y-1.5">
+                    <div className="flex flex-col gap-1.5">
                         <label className="text-xs font-semibold text-neutral-500 uppercase tracking-wider ml-1">Client</label>
                         <Select value={clientFilter} onValueChange={(v) => { setClientFilter(v); setCurrentPage(1); }}>
-                            <SelectTrigger className="w-[160px] h-10 bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-600 rounded-lg">
+                            <SelectTrigger className="w-[150px] h-10 bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-600 rounded-lg">
                                 <SelectValue placeholder="All Clients" />
                             </SelectTrigger>
                             <SelectContent>
@@ -221,19 +240,19 @@ export default function JobsTable({
                         </Select>
                     </div>
 
-                    <div className="space-y-1.5">
+                    <div className="flex flex-col gap-1.5">
                         <label className="text-xs font-semibold text-neutral-500 uppercase tracking-wider ml-1">Date</label>
                         <Popover>
                             <PopoverTrigger asChild>
                                 <Button
                                     variant={"outline"}
                                     className={cn(
-                                        "w-[160px] h-10 justify-start text-left font-normal bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-600 rounded-lg",
+                                        "w-[150px] h-10 justify-start text-left font-normal bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-600 rounded-lg",
                                         !dateFilter && "text-muted-foreground"
                                     )}
                                 >
                                     <CalendarIcon className="mr-2 h-4 w-4" />
-                                    {dateFilter ? format(dateFilter, "PPP") : <span>Pick a date</span>}
+                                    {dateFilter ? format(dateFilter, "PPP") : <span>Pick date</span>}
                                 </Button>
                             </PopoverTrigger>
                             <PopoverContent className="w-auto p-0" align="start">
@@ -247,7 +266,24 @@ export default function JobsTable({
                         </Popover>
                     </div>
 
-                    {(podFilter !== "all" || amFilter !== "all" || clientFilter !== "all" || dateFilter || searchQuery) && (
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-xs font-semibold text-neutral-500 uppercase tracking-wider ml-1">Sort By</label>
+                        <Select value={sortBy} onValueChange={(v) => { setSortBy(v); setCurrentPage(1); }}>
+                            <SelectTrigger className="w-[150px] h-10 bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-600 rounded-lg">
+                                <SelectValue placeholder="Sort By" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="date-desc">Latest Posted</SelectItem>
+                                <SelectItem value="date-asc">Oldest Posted</SelectItem>
+                                <SelectItem value="title-asc">Title (A-Z)</SelectItem>
+                                <SelectItem value="title-desc">Title (Z-A)</SelectItem>
+                                <SelectItem value="client-asc">Client (A-Z)</SelectItem>
+                                <SelectItem value="client-desc">Client (Z-A)</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    {(podFilter !== "all" || amFilter !== "all" || clientFilter !== "all" || dateFilter || searchQuery || sortBy !== "date-desc") && (
                         <Button
                             variant="ghost"
                             size="icon"
