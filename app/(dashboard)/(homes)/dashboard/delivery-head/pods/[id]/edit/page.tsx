@@ -22,7 +22,8 @@ import { useRouter } from "next/navigation";
 // Initial empty options, will be populated from API
 const INITIAL_RECRUITER_OPTIONS: Option[] = [];
 
-export default function DeliveryHeadCreatePodPage() {
+export default function DeliveryHeadEditPodPage({ params }: { params: { id: string } }) {
+    const { id: podId } = params;
     const { data: session } = useSession();
     const router = useRouter();
     const [selectedRecruiters, setSelectedRecruiters] = React.useState<string[]>([]);
@@ -56,11 +57,24 @@ export default function DeliveryHeadCreatePodPage() {
                     setRecruiterOptions(unique);
                 }
 
-                // Also fetch potential pod leads if we have an endpoint, 
-                // but let's stick to the recruiters first as requested.
-                // Looking at auth.controller.ts, there isn't a specific "available pod leads" 
-                // but recruiters can be pod leads too.
-                // However, the request was specifically for available recruiters.
+                // Also fetch existing pod details to populate the form
+                const podRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/pods/${podId}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+
+                if (podRes.ok) {
+                    const podData = await podRes.json();
+                    setPodName(podData.name || "");
+                    if (podData.podHeadId) {
+                        setSelectedPodLead(podData.podHeadId);
+                    }
+                    if (podData.recruiters && Array.isArray(podData.recruiters)) {
+                        setSelectedRecruiters(podData.recruiters.map((r: any) => r.id));
+                    }
+                } else {
+                    toast.error("Failed to fetch pod details.");
+                    router.push('/dashboard/delivery-head/pods');
+                }
 
             } catch (error) {
                 console.error("Error fetching data:", error);
@@ -130,8 +144,8 @@ export default function DeliveryHeadCreatePodPage() {
         const token = (session as any)?.user?.accessToken;
 
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/pods`, {
-                method: "POST",
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/pods/${podId}`, {
+                method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`
@@ -144,15 +158,15 @@ export default function DeliveryHeadCreatePodPage() {
             });
 
             if (response.ok) {
-                toast.success("Pod created successfully!");
+                toast.success("Pod updated successfully!");
                 router.push('/dashboard/delivery-head/pods');
             } else {
                 const errData = await response.json();
-                toast.error(errData.message || "Failed to create pod.");
+                toast.error(errData.message || "Failed to update pod.");
             }
         } catch (error) {
-            console.error("Error creating pod:", error);
-            toast.error("An error occurred while creating the pod.");
+            console.error("Error updating pod:", error);
+            toast.error("An error occurred while updating the pod.");
         } finally {
             setIsSubmitting(false);
         }
@@ -160,9 +174,9 @@ export default function DeliveryHeadCreatePodPage() {
 
     return (
         <>
-            <DashboardBreadcrumb title="Create a New Pod" text="Pod Management" />
+            <DashboardBreadcrumb title="Edit Pod" text="Pod Management" />
             <div className="p-6">
-                <DefaultCardComponent title="Pod Details">
+                <DefaultCardComponent title="Edit Pod Details">
                     <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
                         <div className="flex flex-col gap-6">
                             <div>
@@ -207,7 +221,7 @@ export default function DeliveryHeadCreatePodPage() {
 
                         <div className="flex justify-end gap-3 mt-4">
                             <Button type="button" variant="outline" className="h-12 px-8" onClick={() => router.push('/dashboard/delivery-head/pods')} disabled={isSubmitting}>Cancel</Button>
-                            <Button type="submit" variant="default" className="h-12 px-8" disabled={isSubmitting}>{isSubmitting ? "Creating..." : "Create Pod"}</Button>
+                            <Button type="submit" variant="default" className="h-12 px-8" disabled={isSubmitting}>{isSubmitting ? "Saving..." : "Save Changes"}</Button>
                         </div>
                     </form>
                 </DefaultCardComponent>

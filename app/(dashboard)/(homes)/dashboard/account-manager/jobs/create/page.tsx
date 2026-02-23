@@ -18,7 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { LocationSelect } from "@/components/shared/location-select";
 
 export default function AccountManagerCreateJobPage() {
-    const [location, setLocation] = useState("");
+    const [location, setLocation] = useState("remote"); // Default to Remote as per user request example
 
     return (
         <>
@@ -26,62 +26,89 @@ export default function AccountManagerCreateJobPage() {
             <div className="p-6">
                 <DefaultCardComponent title="Job Details">
                     <form className="flex flex-col gap-4">
+                        {/* Background Hidden Fields */}
+                        <input type="hidden" name="accountManagerId" value="38def2f5-4780-4378-9116-54e30289cc05" />
+                        <input type="hidden" name="status" value="ACTIVE" />
+                        <input type="hidden" name="isDeleted" value="false" />
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <Label htmlFor="jobTitle" className="text-[#4b5563] dark:text-white mb-2">Job Title *</Label>
-                                <Input type="text" id="jobTitle" className="border border-neutral-300 px-5 dark:border-slate-500 focus:border-primary dark:focus:border-primary focus-visible:border-primary h-12 rounded-lg !shadow-none !ring-0" placeholder="e.g. Senior Software Engineer" required />
+                                <Input type="text" id="jobTitle" name="jobTitle" className="border border-neutral-300 px-5 dark:border-slate-500 focus:border-primary dark:focus:border-primary focus-visible:border-primary h-12 rounded-lg !shadow-none !ring-0" placeholder="e.g. Senior React Developer" required />
                             </div>
+
                             <div>
-                                <Label htmlFor="jobType" className="text-[#4b5563] dark:text-white mb-2">Job Type *</Label>
-                                <Select required>
-                                    <SelectTrigger className="border border-neutral-300 px-5 dark:border-slate-500 focus:border-primary dark:focus:border-primary focus-visible:border-primary h-12 rounded-lg !shadow-none !ring-0 w-full bg-transparent">
-                                        <SelectValue placeholder="Select Job Type" />
+                                <Label htmlFor="visaType" className="text-[#4b5563] dark:text-white mb-2">Visa Type *</Label>
+                                <Select name="visaType" required>
+                                    <SelectTrigger className="border border-neutral-300 px-5 dark:border-slate-500 focus:border-primary dark:focus:border-primary focus-visible:border-primary !h-12 rounded-lg !shadow-none !ring-0 w-full bg-transparent text-left">
+                                        <SelectValue placeholder="Select Visa Type" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="FULL_TIME">Full-Time</SelectItem>
-                                        <SelectItem value="CONTRACT">Contract</SelectItem>
-                                        <SelectItem value="PART_TIME">Part-Time</SelectItem>
-                                        <SelectItem value="INTERNSHIP">Internship</SelectItem>
+                                        <SelectItem value="H1B">H1B</SelectItem>
+                                        <SelectItem value="GC">Green Card (GC)</SelectItem>
+                                        <SelectItem value="US_CITIZEN">US Citizen</SelectItem>
+                                        <SelectItem value="OPT">OPT/CPT</SelectItem>
+                                        <SelectItem value="EAD">EAD</SelectItem>
+                                        <SelectItem value="TN">TN Visa</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
 
                             <div>
-                                <Label htmlFor="client" className="text-[#4b5563] dark:text-white mb-2">Client *</Label>
-                                <Input type="text" id="client" className="border border-neutral-300 px-5 dark:border-slate-500 focus:border-primary dark:focus:border-primary focus-visible:border-primary h-12 rounded-lg !shadow-none !ring-0" placeholder="Primary Client (VMS/MSP)" required />
+                                <Label htmlFor="clientName" className="text-[#4b5563] dark:text-white mb-2">Client Name *</Label>
+                                <Input type="text" id="clientName" name="clientName" className="border border-neutral-300 px-5 dark:border-slate-500 focus:border-primary dark:focus:border-primary focus-visible:border-primary h-12 rounded-lg !shadow-none !ring-0" placeholder="e.g. Tech Corp" required />
                             </div>
                             <div>
-                                <Label htmlFor="endClient" className="text-[#4b5563] dark:text-white mb-2">End Client</Label>
-                                <Input type="text" id="endClient" className="border border-neutral-300 px-5 dark:border-slate-500 focus:border-primary dark:focus:border-primary focus-visible:border-primary h-12 rounded-lg !shadow-none !ring-0" placeholder="End Client (Optional)" />
+                                <Label htmlFor="endClientName" className="text-[#4b5563] dark:text-white mb-2">End Client Name</Label>
+                                <Input type="text" id="endClientName" name="endClientName" className="border border-neutral-300 px-5 dark:border-slate-500 focus:border-primary dark:focus:border-primary focus-visible:border-primary h-12 rounded-lg !shadow-none !ring-0" placeholder="e.g. FinTrust Bank" />
                             </div>
 
                             <div>
-                                <Label htmlFor="location" className="text-[#4b5563] dark:text-white mb-2">Location *</Label>
+                                <Label htmlFor="location" className="text-[#4b5563] dark:text-white mb-2">Job Location *</Label>
                                 <LocationSelect
                                     value={location}
                                     onChange={setLocation}
                                     placeholder="Select City or 'Remote'"
                                 />
-                                <input type="hidden" name="location" value={location} required />
+                                <input type="hidden" name="jobLocation" value={location} required />
                             </div>
+
                             <div>
-                                <Label htmlFor="startDate" className="text-[#4b5563] dark:text-white mb-2">Start Date</Label>
-                                <DatePicker />
+                                <Label htmlFor="urgency" className="text-[#4b5563] dark:text-white mb-2">Urgency *</Label>
+                                <Select name="urgency" required>
+                                    <SelectTrigger className="border border-neutral-300 px-5 dark:border-slate-500 focus:border-primary dark:focus:border-primary focus-visible:border-primary !h-12 rounded-lg !shadow-none !ring-0 w-full bg-transparent text-left">
+                                        <SelectValue placeholder="Select Urgency" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="HIGH">High</SelectItem>
+                                        <SelectItem value="MEDIUM">Medium</SelectItem>
+                                        <SelectItem value="LOW">Low</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </div>
 
                             <div>
                                 <Label htmlFor="clientBillRate" className="text-[#4b5563] dark:text-white mb-2">Client Bill Rate ($/hr) *</Label>
-                                <Input type="number" id="clientBillRate" min="0" step="0.01" className="border border-neutral-300 px-5 dark:border-slate-500 focus:border-primary dark:focus:border-primary focus-visible:border-primary h-12 rounded-lg !shadow-none !ring-0" placeholder="0.00" required />
+                                <Input type="text" id="clientBillRate" name="clientBillRate" className="border border-neutral-300 px-5 dark:border-slate-500 focus:border-primary dark:focus:border-primary focus-visible:border-primary h-12 rounded-lg !shadow-none !ring-0" placeholder="e.g. 60/hr" required />
                             </div>
                             <div>
                                 <Label htmlFor="payRate" className="text-[#4b5563] dark:text-white mb-2">Pay Rate ($/hr) *</Label>
-                                <Input type="number" id="payRate" min="0" step="0.01" className="border border-neutral-300 px-5 dark:border-slate-500 focus:border-primary dark:focus:border-primary focus-visible:border-primary h-12 rounded-lg !shadow-none !ring-0" placeholder="0.00" required />
+                                <Input type="text" id="payRate" name="payRate" className="border border-neutral-300 px-5 dark:border-slate-500 focus:border-primary dark:focus:border-primary focus-visible:border-primary h-12 rounded-lg !shadow-none !ring-0" placeholder="e.g. 50/hr" required />
+                            </div>
+
+                            <div>
+                                <Label htmlFor="noOfPositions" className="text-[#4b5563] dark:text-white mb-2">Number of Positions *</Label>
+                                <Input type="number" id="noOfPositions" name="noOfPositions" min="1" className="border border-neutral-300 px-5 dark:border-slate-500 focus:border-primary dark:focus:border-primary focus-visible:border-primary h-12 rounded-lg !shadow-none !ring-0" placeholder="e.g. 2" required />
+                            </div>
+                            <div>
+                                <Label htmlFor="submissionRequired" className="text-[#4b5563] dark:text-white mb-2">Submission Required *</Label>
+                                <Input type="number" id="submissionRequired" name="submissionRequired" min="1" className="border border-neutral-300 px-5 dark:border-slate-500 focus:border-primary dark:focus:border-primary focus-visible:border-primary h-12 rounded-lg !shadow-none !ring-0" placeholder="e.g. 1" required />
                             </div>
                         </div>
 
                         <div>
                             <Label htmlFor="description" className="text-[#4b5563] dark:text-white mb-2">Job Description *</Label>
-                            <Textarea id="description" className="border border-neutral-300 px-5 py-4 dark:border-slate-500 focus:border-primary dark:focus:border-primary focus-visible:border-primary min-h-[160px] rounded-lg !shadow-none !ring-0" placeholder="Detailed job description and requirements..." required />
+                            <Textarea id="description" name="description" className="border border-neutral-300 px-5 py-4 dark:border-slate-500 focus:border-primary dark:focus:border-primary focus-visible:border-primary min-h-[160px] rounded-lg !shadow-none !ring-0" placeholder="Detailed job description and requirements..." required />
                         </div>
 
                         <div className="flex justify-end gap-3 mt-4">

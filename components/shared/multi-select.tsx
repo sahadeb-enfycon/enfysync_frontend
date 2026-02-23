@@ -46,7 +46,7 @@ export function MultiSelect({ options, selected, onChange, placeholder = "Select
                     variant="outline"
                     role="combobox"
                     aria-expanded={open}
-                    className="w-full justify-between border-neutral-300 dark:border-slate-500 hover:bg-transparent h-auto min-h-12 !shadow-none !ring-0 px-5 focus:border-primary dark:focus:border-primary focus-visible:border-primary rounded-lg text-left"
+                    className="w-full h-auto min-h-12 justify-between border-neutral-300 dark:border-slate-500 hover:bg-transparent px-5 rounded-lg text-left"
                 >
                     <div className="flex gap-1 flex-wrap items-center">
                         {selected.length === 0 && <span className="text-muted-foreground">{placeholder}</span>}
@@ -56,22 +56,16 @@ export function MultiSelect({ options, selected, onChange, placeholder = "Select
                             return (
                                 <Badge variant="secondary" key={item} className="mr-1 mb-1 font-normal">
                                     {option.label}
-                                    <button
-                                        type="button"
-                                        className="ml-1 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                                        onKeyDown={(e) => {
-                                            if (e.key === "Enter") {
-                                                handleUnselect(option.value);
-                                            }
-                                        }}
-                                        onMouseDown={(e) => {
+                                    <span
+                                        className="ml-1 hover:text-foreground cursor-pointer"
+                                        onClick={(e) => {
                                             e.preventDefault();
                                             e.stopPropagation();
+                                            handleUnselect(option.value);
                                         }}
-                                        onClick={() => handleUnselect(option.value)}
                                     >
-                                        <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
-                                    </button>
+                                        <X className="h-3 w-3" />
+                                    </span>
                                 </Badge>
                             )
                         })}
@@ -88,13 +82,13 @@ export function MultiSelect({ options, selected, onChange, placeholder = "Select
                             {options.map((option) => (
                                 <CommandItem
                                     key={option.value}
-                                    value={option.value}
-                                    onSelect={(currentValue) => {
-                                        onChange(
-                                            selected.includes(option.value)
-                                                ? selected.filter((item) => item !== option.value)
-                                                : [...selected, option.value]
-                                        )
+                                    value={`${option.label} ${option.value}`}
+                                    onSelect={() => {
+                                        const isSelected = selected.includes(option.value);
+                                        const newSelected = isSelected
+                                            ? selected.filter((item) => item !== option.value)
+                                            : [...selected, option.value];
+                                        onChange(newSelected);
                                     }}
                                 >
                                     <Check
