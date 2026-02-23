@@ -113,7 +113,12 @@ export default function PodsTable({ pods: initialPods }: PodsTableProps) {
                         pods.map((pod) => (
                             <TableRow key={pod.id} className="hover:bg-neutral-50 dark:hover:bg-slate-800/50 transition-colors">
                                 <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start font-medium capitalize">
-                                    {pod.name.toLowerCase()}
+                                    <Link
+                                        href={`/delivery-head/dashboard/pods/${pod.id}`}
+                                        className="hover:text-primary hover:underline transition-colors"
+                                    >
+                                        {pod.name.toLowerCase()}
+                                    </Link>
                                 </TableCell>
                                 <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
                                     <div className="flex flex-col">
@@ -152,12 +157,12 @@ export default function PodsTable({ pods: initialPods }: PodsTableProps) {
                                 <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-end">
                                     <div className="flex justify-end gap-2">
                                         <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20" asChild>
-                                            <Link href={`/dashboard/delivery-head/pods/${pod.id}`}>
+                                            <Link href={`/delivery-head/dashboard/pods/${pod.id}`}>
                                                 <Eye className="h-4 w-4" />
                                             </Link>
                                         </Button>
                                         <Button variant="ghost" size="icon" className="h-8 w-8 text-amber-600 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-900/20" asChild>
-                                            <Link href={`/dashboard/delivery-head/pods/${pod.id}/edit`}>
+                                            <Link href={`/delivery-head/dashboard/pods/${pod.id}/edit`}>
                                                 <Edit2 className="h-4 w-4" />
                                             </Link>
                                         </Button>

@@ -94,12 +94,12 @@ export default function JobsTable({ jobs }: JobsTableProps) {
                                     <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-end">
                                         <div className="flex justify-end gap-2">
                                             <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20" asChild>
-                                                <Link href={`/dashboard/account-manager/jobs/${job.id}`}>
+                                                <Link href={`/account-manager/dashboard/jobs/${job.id}`}>
                                                     <Eye className="h-4 w-4" />
                                                 </Link>
                                             </Button>
                                             <Button variant="ghost" size="icon" className="h-8 w-8 text-amber-600 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-900/20" asChild>
-                                                <Link href={`/dashboard/account-manager/jobs/${job.id}/edit`}>
+                                                <Link href={`/account-manager/dashboard/jobs/${job.id}/edit`}>
                                                     <Edit2 className="h-4 w-4" />
                                                 </Link>
                                             </Button>

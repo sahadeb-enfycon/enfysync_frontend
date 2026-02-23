@@ -48,7 +48,7 @@ export default async function DeliveryHeadPodsPage() {
                         <p className="text-muted-foreground italic text-sm">Managing recruitment pods and assigning team leaders.</p>
                     </div>
                     <Button asChild className="h-10 px-4 bg-primary hover:bg-primary/90">
-                        <Link href="/dashboard/delivery-head/pods/create">
+                        <Link href="/delivery-head/dashboard/pods/create">
                             <Plus className="h-4 w-4 mr-2" />
                             Create New Pod
                         </Link>

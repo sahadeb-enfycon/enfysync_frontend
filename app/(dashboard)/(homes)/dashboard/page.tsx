@@ -14,15 +14,15 @@ export default async function DashboardRedirect() {
     const normalizedRoles = roles.map((r: string) => r.toUpperCase());
 
     if (normalizedRoles.includes("DELIVERY_HEAD") || normalizedRoles.includes("DELIVERY-HEAD")) {
-        redirect("/dashboard/delivery-head");
+        redirect("/delivery-head/dashboard");
     } else if (normalizedRoles.includes("ADMIN")) {
-        redirect("/dashboard/admin");
+        redirect("/admin/dashboard");
     } else if (normalizedRoles.includes("ACCOUNT_MANAGER") || normalizedRoles.includes("ACCOUNT-MANAGER")) {
-        redirect("/dashboard/account-manager");
+        redirect("/account-manager/dashboard");
     } else if (normalizedRoles.includes("RECRUITER")) {
-        redirect("/dashboard/recruiter");
+        redirect("/recruiter/dashboard");
     } else if (normalizedRoles.includes("POD_LEAD") || normalizedRoles.includes("POD-LEAD")) {
-        redirect("/dashboard/pod-lead");
+        redirect("/pod-lead/dashboard");
     } else {
         // Default fallback if no specific role matched
         return (

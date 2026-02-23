@@ -376,7 +376,7 @@ export const getSidebarData = (role: string) => {
       items: [
         {
           title: "Dashboard Overview",
-          url: "/dashboard/account-manager",
+          url: "/account-manager/dashboard",
           circleColor: "bg-primary",
         },
       ],
@@ -392,12 +392,12 @@ export const getSidebarData = (role: string) => {
       items: [
         {
           title: "Post a New Job",
-          url: "/dashboard/account-manager/jobs/create",
+          url: "/account-manager/dashboard/jobs/create",
           circleColor: "bg-yellow-500",
         },
         {
           title: "My Posted Jobs",
-          url: "/dashboard/account-manager/jobs",
+          url: "/account-manager/dashboard/jobs",
           circleColor: "bg-cyan-500",
         },
       ],
@@ -429,7 +429,7 @@ export const getSidebarData = (role: string) => {
       items: [
         {
           title: "Dashboard Overview",
-          url: "/dashboard/delivery-head",
+          url: "/delivery-head/dashboard",
           circleColor: "bg-primary",
         },
       ],
@@ -445,7 +445,7 @@ export const getSidebarData = (role: string) => {
       items: [
         {
           title: "All Jobs",
-          url: "/dashboard/delivery-head/jobs",
+          url: "/delivery-head/dashboard/jobs",
           circleColor: "bg-cyan-500",
         },
       ],
@@ -461,12 +461,12 @@ export const getSidebarData = (role: string) => {
       items: [
         {
           title: "All Pods",
-          url: "/dashboard/delivery-head/pods",
+          url: "/delivery-head/dashboard/pods",
           circleColor: "bg-purple-500",
         },
         {
           title: "Create Pod",
-          url: "/dashboard/delivery-head/pods/create",
+          url: "/delivery-head/dashboard/pods/create",
           circleColor: "bg-green-500",
         },
       ],
