@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye, Edit2, Users, Trash2 } from "lucide-react";
+import { Eye, Edit2, Users } from "lucide-react";
 import Link from "next/link";
 
 interface PodMember {
@@ -32,6 +32,7 @@ interface Pod {
         recruiters: number;
     };
     createdAt: string;
+    updatedAt: string;
 }
 
 interface PodsTableProps {
@@ -40,45 +41,9 @@ interface PodsTableProps {
 
 export default function PodsTable({ pods: initialPods }: PodsTableProps) {
     const [pods, setPods] = useState<Pod[]>(initialPods);
-    const [isDeleting, setIsDeleting] = useState<string | null>(null);
     const { data: session } = useSession();
     const router = useRouter();
 
-    const handleDelete = async (id: string, name: string) => {
-        if (!window.confirm(`Are you sure you want to delete pod "${name}"? This action cannot be undone.`)) {
-            return;
-        }
-
-        const token = (session as any)?.user?.accessToken;
-        if (!token) {
-            toast.error("You must be logged in to delete a pod.");
-            return;
-        }
-
-        setIsDeleting(id);
-        try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/pods/${id}`, {
-                method: "DELETE",
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
-
-            if (response.ok) {
-                toast.success("Pod deleted successfully");
-                setPods(pods.filter(p => p.id !== id));
-                router.refresh();
-            } else {
-                const errData = await response.json();
-                toast.error(errData.message || "Failed to delete pod");
-            }
-        } catch (error) {
-            console.error("Error deleting pod:", error);
-            toast.error("An error occurred while deleting the pod");
-        } finally {
-            setIsDeleting(null);
-        }
-    };
 
     return (
         <div className="rounded-lg border border-neutral-200 dark:border-slate-600 overflow-hidden">
@@ -95,7 +60,7 @@ export default function PodsTable({ pods: initialPods }: PodsTableProps) {
                             Recruiters
                         </TableHead>
                         <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-start">
-                            Created Date
+                            Last Updated
                         </TableHead>
                         <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-end">
                             Actions
@@ -152,7 +117,22 @@ export default function PodsTable({ pods: initialPods }: PodsTableProps) {
                                     </div>
                                 </TableCell>
                                 <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
-                                    {new Date(pod.createdAt).toLocaleDateString()}
+                                    <div className="flex flex-col">
+                                        <span className="text-sm">
+                                            {new Date(pod.updatedAt).toLocaleDateString(undefined, {
+                                                year: 'numeric',
+                                                month: 'short',
+                                                day: 'numeric'
+                                            })}
+                                        </span>
+                                        <span className="text-[10px] text-muted-foreground italic uppercase">
+                                            {new Date(pod.updatedAt).toLocaleTimeString([], {
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                                hour12: true
+                                            })}
+                                        </span>
+                                    </div>
                                 </TableCell>
                                 <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-end">
                                     <div className="flex justify-end gap-2">
@@ -165,15 +145,6 @@ export default function PodsTable({ pods: initialPods }: PodsTableProps) {
                                             <Link href={`/delivery-head/dashboard/pods/${pod.id}/edit`}>
                                                 <Edit2 className="h-4 w-4" />
                                             </Link>
-                                        </Button>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
-                                            onClick={() => handleDelete(pod.id, pod.name)}
-                                            disabled={isDeleting === pod.id}
-                                        >
-                                            <Trash2 className="h-4 w-4" />
                                         </Button>
                                     </div>
                                 </TableCell>

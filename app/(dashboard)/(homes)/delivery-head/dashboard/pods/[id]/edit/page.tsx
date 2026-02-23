@@ -18,115 +18,101 @@ import { MultiSelect, Option } from "@/components/shared/multi-select";
 import { useSession } from "next-auth/react";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
-
-// Initial empty options, will be populated from API
-const INITIAL_RECRUITER_OPTIONS: Option[] = [];
+import { transformPodUpdateData } from "./transform-pod-data";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function DeliveryHeadEditPodPage({ params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = React.use(params);
     const podId = resolvedParams.id;
-    const { data: session } = useSession();
+    const { data: session, status } = useSession();
     const router = useRouter();
-    const [selectedRecruiters, setSelectedRecruiters] = React.useState<string[]>([]);
-    const [selectedPodLead, setSelectedPodLead] = React.useState<string>("");
+
+    // Consolidated form state
+    const [formData, setFormData] = React.useState({
+        podName: "",
+        description: "",
+        selectedPodLead: "",
+        selectedRecruiters: [] as string[]
+    });
     const [recruiterOptions, setRecruiterOptions] = React.useState<Option[]>([]);
     const [isLoading, setIsLoading] = React.useState(true);
-    const [podName, setPodName] = React.useState("");
-    const [description, setDescription] = React.useState("");
     const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-    React.useEffect(() => {
-        async function fetchData() {
-            const token = (session as any)?.user?.accessToken;
-            if (!token) return;
+    const token = (session as any)?.user?.accessToken;
 
-            try {
-                // Fetch recruiters
-                const recruitersRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/pods/delivery-head/available-recruiters`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+    const fetchData = React.useCallback(async (authToken: string) => {
+        setIsLoading(true);
+        try {
+            const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+            const headers = { Authorization: `Bearer ${authToken}` };
 
-                let fetchedOptions: Option[] = [];
-                if (recruitersRes.ok) {
-                    const recruiters = await recruitersRes.json();
-                    fetchedOptions = recruiters.map((r: any) => ({
-                        label: r.fullName,
-                        value: r.id || r.keycloakId
-                    }));
-                }
+            // Parallel fetching
+            const [recruitersRes, podRes] = await Promise.all([
+                fetch(`${baseUrl}/pods/delivery-head/available-recruiters`, { headers }),
+                fetch(`${baseUrl}/pods/${podId}`, { headers })
+            ]);
 
-                // Also fetch existing pod details to populate the form
-                const podRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/pods/${podId}`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-
-                if (podRes.ok) {
-                    const podData = await podRes.json();
-                    setPodName(podData.name || "");
-
-                    const currentMembers: Option[] = [];
-                    if (podData.podHead) {
-                        currentMembers.push({ label: podData.podHead.fullName, value: podData.podHead.id });
-                    }
-                    if (podData.recruiters && Array.isArray(podData.recruiters)) {
-                        podData.recruiters.forEach((r: any) => {
-                            currentMembers.push({ label: r.fullName, value: r.id });
-                        });
-                    }
-
-                    // Deduplicate by value
-                    const combinedOptions = [...fetchedOptions, ...currentMembers];
-                    const uniqueOptions = Array.from(new Map(combinedOptions.map(m => [m.value, m])).values()) as Option[];
-                    setRecruiterOptions(uniqueOptions);
-
-                    if (podData.podHeadId) {
-                        setSelectedPodLead(podData.podHeadId);
-                    }
-                    if (podData.recruiters && Array.isArray(podData.recruiters)) {
-                        setSelectedRecruiters(podData.recruiters.map((r: any) => r.id));
-                    }
-                } else {
-                    toast.error("Failed to fetch pod details.");
-                    router.push('/delivery-head/dashboard/pods');
-                }
-
-            } catch (error) {
-                console.error("Error fetching data:", error);
-            } finally {
-                setIsLoading(false);
+            if (!podRes.ok) {
+                toast.error("Failed to fetch pod details.");
+                router.push('/delivery-head/dashboard/pods');
+                return;
             }
+
+            const [recruiters, podData] = await Promise.all([
+                recruitersRes.ok ? recruitersRes.json() : Promise.resolve([]),
+                podRes.json()
+            ]);
+
+            const transformed = transformPodUpdateData(recruiters, podData);
+
+            setFormData({
+                podName: transformed.podName,
+                description: transformed.description,
+                selectedPodLead: transformed.selectedPodLead,
+                selectedRecruiters: transformed.selectedRecruiters
+            });
+            setRecruiterOptions(transformed.recruiterOptions);
+        } catch (error) {
+            console.error("Error fetching data:", error);
+            toast.error("An unexpected error occurred while loading data.");
+        } finally {
+            setIsLoading(false);
         }
+    }, [podId, router]);
 
-        if (session) {
-            fetchData();
+    React.useEffect(() => {
+        if (status === "authenticated" && token) {
+            fetchData(token);
+        } else if (status === "unauthenticated") {
+            router.push('/login');
         }
-    }, [session]);
+    }, [status, token, fetchData, router]);
 
-    const handlePodLeadChange = (value: string) => {
-        const previousLead = selectedPodLead;
-        setSelectedPodLead(value);
+    const handlePodLeadChange = React.useCallback((value: string) => {
+        setFormData(prev => {
+            const previousLead = prev.selectedPodLead;
+            let newRecs = [...prev.selectedRecruiters];
 
-        setSelectedRecruiters((prev) => {
-            if (prev.includes(value)) return prev;
-
-            if (prev.length < 5) {
-                return [...prev, value];
-            } else {
-                if (previousLead && prev.includes(previousLead)) {
-                    return prev.map(id => id === previousLead ? value : id);
+            if (!newRecs.includes(value)) {
+                if (newRecs.length < 5) {
+                    newRecs.push(value);
+                } else if (previousLead && newRecs.includes(previousLead)) {
+                    newRecs = newRecs.map(id => id === previousLead ? value : id);
                 } else {
                     toast.error("Maximum 5 members allowed. Replaced a recruiter with the Pod Lead.");
-                    const newRecs = [...prev];
                     newRecs[0] = value;
-                    return newRecs;
                 }
             }
-        });
-    };
 
-    const handleRecruitersChange = (values: string[]) => {
-        console.log("handleRecruitersChange called with:", values);
-        // Deduplicate values
+            return {
+                ...prev,
+                selectedPodLead: value,
+                selectedRecruiters: newRecs
+            };
+        });
+    }, []);
+
+    const handleRecruitersChange = React.useCallback((values: string[]) => {
         const uniqueValues = Array.from(new Set(values));
 
         if (uniqueValues.length > 5) {
@@ -134,28 +120,27 @@ export default function DeliveryHeadEditPodPage({ params }: { params: Promise<{ 
             return;
         }
 
-        if (selectedPodLead && !uniqueValues.includes(selectedPodLead)) {
+        if (formData.selectedPodLead && !uniqueValues.includes(formData.selectedPodLead)) {
             toast.error("The Pod Lead must be included in the recruiters list.");
             return;
         }
 
-        setSelectedRecruiters(uniqueValues);
-    };
+        setFormData(prev => ({ ...prev, selectedRecruiters: uniqueValues }));
+    }, [formData.selectedPodLead]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!podName.trim()) {
+        if (!formData.podName.trim()) {
             toast.error("Pod Name is required.");
             return;
         }
-        if (!selectedPodLead) {
+        if (!formData.selectedPodLead) {
             toast.error("Please assign a Pod Lead.");
             return;
         }
 
         setIsSubmitting(true);
-        const token = (session as any)?.user?.accessToken;
 
         try {
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/pods/${podId}`, {
@@ -165,9 +150,9 @@ export default function DeliveryHeadEditPodPage({ params }: { params: Promise<{ 
                     Authorization: `Bearer ${token}`
                 },
                 body: JSON.stringify({
-                    name: podName,
-                    podHeadId: selectedPodLead,
-                    recruiterIds: selectedRecruiters
+                    name: formData.podName,
+                    podHeadId: formData.selectedPodLead,
+                    recruiterIds: formData.selectedRecruiters
                 })
             });
 
@@ -187,6 +172,48 @@ export default function DeliveryHeadEditPodPage({ params }: { params: Promise<{ 
         }
     };
 
+    if (isLoading && status !== "unauthenticated") {
+        return (
+            <>
+                <DashboardBreadcrumb title="Edit Pod" text="Pod Management" />
+                <div className="p-6">
+                    <DefaultCardComponent title="Edit Pod Details">
+                        <div className="flex flex-col gap-4">
+                            <div className="flex flex-col gap-6">
+                                <div>
+                                    <Skeleton className="h-4 w-20 mb-2" />
+                                    <Skeleton className="h-12 w-full rounded-lg" />
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <Skeleton className="h-4 w-32 mb-2" />
+                                        <Skeleton className="h-12 w-full rounded-lg" />
+                                    </div>
+                                    <div>
+                                        <Skeleton className="h-4 w-32 mb-2" />
+                                        <Skeleton className="h-12 w-full rounded-lg" />
+                                        <Skeleton className="h-3 w-48 mt-2" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="mt-4">
+                                <Skeleton className="h-4 w-28 mb-2" />
+                                <Skeleton className="h-[120px] w-full rounded-lg" />
+                            </div>
+
+                            <div className="flex justify-end gap-3 mt-4">
+                                <Skeleton className="h-12 px-8 w-24" />
+                                <Skeleton className="h-12 px-8 w-32" />
+                            </div>
+                        </div>
+                    </DefaultCardComponent>
+                </div>
+            </>
+        );
+    }
+
     return (
         <>
             <DashboardBreadcrumb title="Edit Pod" text="Pod Management" />
@@ -196,13 +223,21 @@ export default function DeliveryHeadEditPodPage({ params }: { params: Promise<{ 
                         <div className="flex flex-col gap-6">
                             <div>
                                 <Label htmlFor="podName" className="text-[#4b5563] dark:text-white mb-2">Pod Name *</Label>
-                                <Input type="text" id="podName" value={podName} onChange={(e) => setPodName(e.target.value)} className="border border-neutral-300 px-5 dark:border-slate-500 focus:border-primary dark:focus:border-primary focus-visible:border-primary h-12 rounded-lg !shadow-none !ring-0 w-full" placeholder="e.g. Engineering Pod Alpha" required />
+                                <Input
+                                    type="text"
+                                    id="podName"
+                                    value={formData.podName}
+                                    onChange={(e) => setFormData(p => ({ ...p, podName: e.target.value }))}
+                                    className="border border-neutral-300 px-5 dark:border-slate-500 focus:border-primary dark:focus:border-primary focus-visible:border-primary h-12 rounded-lg !shadow-none !ring-0 w-full"
+                                    placeholder="e.g. Engineering Pod Alpha"
+                                    required
+                                />
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <Label htmlFor="podLead" className="text-[#4b5563] dark:text-white mb-2">Assign Pod Lead *</Label>
-                                    <Select required onValueChange={handlePodLeadChange} value={selectedPodLead}>
+                                    <Select required onValueChange={handlePodLeadChange} value={formData.selectedPodLead}>
                                         <SelectTrigger className="border border-neutral-300 px-5 dark:border-slate-500 focus:border-primary dark:focus:border-primary focus-visible:border-primary !h-12 rounded-lg !shadow-none !ring-0 w-full bg-transparent text-left">
                                             <SelectValue placeholder="Select a Pod Lead" />
                                         </SelectTrigger>
@@ -220,9 +255,9 @@ export default function DeliveryHeadEditPodPage({ params }: { params: Promise<{ 
                                     <Label className="text-[#4b5563] dark:text-white mb-2 block">Assign Recruiters</Label>
                                     <MultiSelect
                                         options={recruiterOptions}
-                                        selected={selectedRecruiters}
+                                        selected={formData.selectedRecruiters}
                                         onChange={handleRecruitersChange}
-                                        placeholder={isLoading ? "Loading recruiters..." : "Select recruiter(s)..."}
+                                        placeholder="Select recruiter(s)..."
                                     />
                                     <p className="text-xs text-neutral-500 mt-2">Select one or more recruiters to join this pod (Max 5 total).</p>
                                 </div>
@@ -231,7 +266,13 @@ export default function DeliveryHeadEditPodPage({ params }: { params: Promise<{ 
 
                         <div className="mt-4">
                             <Label htmlFor="description" className="text-[#4b5563] dark:text-white mb-2">Pod Description</Label>
-                            <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} className="border border-neutral-300 px-5 py-4 dark:border-slate-500 focus:border-primary dark:focus:border-primary focus-visible:border-primary min-h-[120px] rounded-lg !shadow-none !ring-0" placeholder="Optional details about this pod's focus or goals..." />
+                            <Textarea
+                                id="description"
+                                value={formData.description}
+                                onChange={(e) => setFormData(p => ({ ...p, description: e.target.value }))}
+                                className="border border-neutral-300 px-5 py-4 dark:border-slate-500 focus:border-primary dark:focus:border-primary focus-visible:border-primary min-h-[120px] rounded-lg !shadow-none !ring-0"
+                                placeholder="Optional details about this pod's focus or goals..."
+                            />
                         </div>
 
                         <div className="flex justify-end gap-3 mt-4">
