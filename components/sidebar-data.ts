@@ -354,8 +354,23 @@ export const getSidebarData = (role: string) => {
       isActive: true,
       items: [
         {
-          title: "Dashboard Overview",
-          url: "/delivery-head/dashboard",
+          title: "Home",
+          url: "/delivery-head/dashboard/home",
+          circleColor: "bg-primary",
+        },
+        {
+          title: "Jobs",
+          url: "/delivery-head/dashboard/jobs",
+          circleColor: "bg-primary",
+        },
+        {
+          title: "Recurters",
+          url: "/delivery-head/dashboard/recurters",
+          circleColor: "bg-primary",
+        },
+        {
+          title: "Pods",
+          url: "/delivery-head/dashboard/pods",
           circleColor: "bg-primary",
         },
       ],
