@@ -32,18 +32,7 @@ import { Input } from "@/components/ui/input";
 import { useSession } from "next-auth/react";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
-
-interface PodMember {
-    id: string;
-    fullName: string | null;
-    email: string;
-}
-
-interface Pod {
-    id: string;
-    name: string;
-    recruiters: PodMember[];
-}
+import RecruiterAssignCell, { TeamMember } from "./RecruiterAssignCell";
 
 interface Job {
     id: string;
@@ -56,12 +45,7 @@ interface Job {
         fullName: string | null;
         email: string;
     };
-    recruiterId?: string | null;
-    recruiter?: {
-        id: string;
-        fullName: string | null;
-        email: string;
-    };
+    recruiters?: TeamMember[];
     pod?: {
         id: string;
         name: string;
@@ -94,10 +78,25 @@ export default function RecruiterJobsTable({
     const [clientFilter, setClientFilter] = useState<string>("all");
     const [searchQuery, setSearchQuery] = useState("");
     const [sortBy, setSortBy] = useState<string>("date-desc");
-    const [isUpdating, setIsUpdating] = useState<string | null>(null);
+    const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
 
     const token = (session as any)?.user?.accessToken;
     const itemsPerPage = 10;
+
+    // Fetch team members from /pods/my-team once
+    useEffect(() => {
+        if (!token) return;
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/pods/my-team`, {
+            headers: { Authorization: `Bearer ${token}` },
+        })
+            .then((res) => res.ok ? res.json() : [])
+            .then((data) => {
+                // API may return array directly or { members: [] }
+                const members = Array.isArray(data) ? data : (data?.members ?? data?.recruiters ?? []);
+                setTeamMembers(members);
+            })
+            .catch(() => setTeamMembers([]));
+    }, [token]);
 
     // Extract unique values for filters
     const filterOptions = useMemo(() => {
@@ -317,14 +316,13 @@ export default function RecruiterJobsTable({
                                             </div>
                                         </TableCell>
                                         <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
-                                            {job.recruiter ? (
-                                                <div className="flex flex-col">
-                                                    <span className="font-medium text-sm">{job.recruiter.fullName || "N/A"}</span>
-                                                    <span className="text-[10px] text-muted-foreground">{job.recruiter.email}</span>
-                                                </div>
-                                            ) : (
-                                                <Badge variant="outline" className="text-neutral-400 font-normal">Unassigned</Badge>
-                                            )}
+                                            <RecruiterAssignCell
+                                                jobId={job.id}
+                                                assignedRecruiters={job.recruiters ?? []}
+                                                teamMembers={teamMembers}
+                                                token={token}
+                                                onSuccess={onRefresh}
+                                            />
                                         </TableCell>
                                         <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
                                             {new Date(job.createdAt).toLocaleDateString()}
