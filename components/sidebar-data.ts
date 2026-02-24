@@ -38,7 +38,7 @@ export const getSidebarData = (role: string) => {
           url: "/am",
           circleColor: "bg-yellow-500",
         },
-        
+
       ],
     },
     {
@@ -430,6 +430,59 @@ export const getSidebarData = (role: string) => {
     },
   ];
 
+  const recruiterNav = [
+    {
+      title: "Dashboard",
+      url: "#",
+      icon: House,
+      isActive: true,
+      items: [
+        {
+          title: "Home",
+          url: "/recruiter/dashboard",
+          circleColor: "bg-primary",
+        },
+          {
+          title: "Jobs",
+          url: "/recruiter/dashboard/jobs",
+          circleColor: "bg-primary",
+        },
+      ],
+    },
+    {
+      label: "Job Management",
+    },
+    {
+      title: "Jobs",
+      url: "#",
+      icon: BriefcaseBusiness,
+      isActive: true,
+      items: [
+        {
+          title: "Available Jobs",
+          url: "/recruiter/dashboard/jobs",
+          circleColor: "bg-cyan-500",
+        },
+      ],
+    },
+    {
+      label: "System",
+    },
+    {
+      title: "Administration",
+      url: "#",
+      icon: Settings,
+      isActive: true,
+      items: [
+        {
+          title: "Settings",
+          url: "/settings-notification",
+          circleColor: "bg-primary",
+        },
+      ],
+    },
+  ];
+
   // Map roles to their specific navigation
   const roleUpper = role ? role.toUpperCase() : "ADMIN";
 
@@ -437,6 +490,8 @@ export const getSidebarData = (role: string) => {
     return { navMain: accountManagerNav };
   } else if (roleUpper === "DELIVERY_HEAD" || roleUpper === "DELIVERY-HEAD") {
     return { navMain: deliveryHeadNav };
+  } else if (roleUpper === "RECRUITER") {
+    return { navMain: recruiterNav };
   }
 
   // Default to Admin
