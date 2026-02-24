@@ -42,7 +42,9 @@ interface PodMember {
 interface Pod {
     id: string;
     name: string;
+    podHeadId: string;
     recruiters: PodMember[];
+    podHead: PodMember & { roles: string[] };
 }
 
 interface Job {
@@ -70,6 +72,7 @@ interface Job {
 
 interface RecruiterJobsTableProps {
     jobs: Job[];
+    team?: Pod | null;
     baseUrl?: string;
     onRefresh?: () => void;
 }
@@ -84,6 +87,7 @@ const statusMap: Record<string, { label: string; variant: "default" | "secondary
 
 export default function RecruiterJobsTable({
     jobs,
+    team,
     baseUrl = "/recruiter/dashboard/jobs",
     onRefresh
 }: RecruiterJobsTableProps) {
@@ -97,6 +101,10 @@ export default function RecruiterJobsTable({
     const [isUpdating, setIsUpdating] = useState<string | null>(null);
 
     const token = (session as any)?.user?.accessToken;
+    const currentUserId = session?.user?.id;
+    const roles = session?.user?.roles || [];
+    const isPodHead = team?.podHeadId === currentUserId || roles.includes("POD_LEAD");
+
     const itemsPerPage = 10;
 
     // Extract unique values for filters
@@ -134,6 +142,15 @@ export default function RecruiterJobsTable({
 
     const sortedJobs = useMemo(() => {
         return [...filteredJobs].sort((a, b) => {
+            // Primary sort: Assigned jobs first
+            const aAssigned = a.recruiterId || a.recruiter?.id || (a as any).assignedRecruiterId ? 1 : 0;
+            const bAssigned = b.recruiterId || b.recruiter?.id || (b as any).assignedRecruiterId ? 1 : 0;
+
+            if (aAssigned !== bAssigned) {
+                return bAssigned - aAssigned; // 1 (assigned) comes before 0 (unassigned)
+            }
+
+            // Secondary sort: Based on sortBy criteria
             switch (sortBy) {
                 case "date-desc":
                     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
@@ -172,6 +189,41 @@ export default function RecruiterJobsTable({
         setSearchQuery("");
         setSortBy("date-desc");
         setCurrentPage(1);
+    };
+
+    const handleAssignRecruiter = async (jobId: string, recruiterId: string) => {
+        if (!token) {
+            toast.error("You must be logged in to assign recruiters.");
+            return;
+        }
+
+        setIsUpdating(jobId);
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs/${jobId}/assign`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    recruiterId: recruiterId === "unassigned" ? null : recruiterId,
+                }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || "Failed to assign recruiter");
+            }
+
+            toast.success("Recruiter assigned successfully");
+            if (onRefresh) onRefresh();
+            else router.refresh();
+        } catch (error: any) {
+            console.error("Error assigning recruiter:", error);
+            toast.error(error.message || "Failed to assign recruiter");
+        } finally {
+            setIsUpdating(null);
+        }
     };
 
     return (
@@ -317,14 +369,41 @@ export default function RecruiterJobsTable({
                                             </div>
                                         </TableCell>
                                         <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
-                                            {job.recruiter ? (
-                                                <div className="flex flex-col">
-                                                    <span className="font-medium text-sm">{job.recruiter.fullName || "N/A"}</span>
-                                                    <span className="text-[10px] text-muted-foreground">{job.recruiter.email}</span>
-                                                </div>
-                                            ) : (
-                                                <Badge variant="outline" className="text-neutral-400 font-normal">Unassigned</Badge>
-                                            )}
+                                            {(() => {
+                                                const assignedRecruiterId = job.recruiter?.id || job.recruiterId || (job as any).assignedRecruiterId;
+                                                const recruiterInfo = job.recruiter || team?.recruiters.find(r => r.id === assignedRecruiterId);
+
+                                                if (isPodHead && team) {
+                                                    return (
+                                                        <Select
+                                                            disabled={isUpdating === job.id}
+                                                            value={assignedRecruiterId || "unassigned"}
+                                                            onValueChange={(value) => handleAssignRecruiter(job.id, value)}
+                                                        >
+                                                            <SelectTrigger className="w-[180px] h-9 bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-600 rounded-lg text-xs">
+                                                                <SelectValue placeholder="Assign Recruiter" />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem value="unassigned">Unassigned</SelectItem>
+                                                                {team.recruiters.map(member => (
+                                                                    <SelectItem key={member.id} value={member.id}>
+                                                                        {member.fullName || member.email}
+                                                                    </SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
+                                                    );
+                                                }
+
+                                                return recruiterInfo ? (
+                                                    <div className="flex flex-col">
+                                                        <span className="font-medium text-sm">{recruiterInfo.fullName || "N/A"}</span>
+                                                        <span className="text-[10px] text-muted-foreground">{recruiterInfo.email}</span>
+                                                    </div>
+                                                ) : (
+                                                    <Badge variant="outline" className="text-neutral-400 font-normal">Unassigned</Badge>
+                                                );
+                                            })()}
                                         </TableCell>
                                         <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
                                             {new Date(job.createdAt).toLocaleDateString()}

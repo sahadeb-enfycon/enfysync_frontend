@@ -33,8 +33,35 @@ async function getJobs() {
     }
 }
 
+async function getTeam() {
+    const session = await auth();
+    const token = (session as any)?.user?.accessToken;
+
+    if (!token) return null;
+
+    try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/pods/my-team`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+            cache: 'no-store',
+        });
+
+        if (!response.ok) {
+            console.error("Failed to fetch team. Status:", response.status);
+            return null;
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error("Error fetching team:", error);
+        return null;
+    }
+}
+
 export default async function RecruiterJobsPage() {
     const jobs = await getJobs();
+    const team = await getTeam();
     console.log(`RecruiterJobsPage: fetched ${jobs.length} jobs`);
 
     return (
@@ -43,6 +70,7 @@ export default async function RecruiterJobsPage() {
             <div className="p-6">
                 <RecruiterJobsTable
                     jobs={jobs}
+                    team={team}
                     baseUrl="/recruiter/dashboard/jobs"
                 />
             </div>
