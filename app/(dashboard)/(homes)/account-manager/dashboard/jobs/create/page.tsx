@@ -16,21 +16,75 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { LocationSelect } from "@/components/shared/location-select";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { toast } from "react-hot-toast";
 
 export default function AccountManagerCreateJobPage() {
+    const { data: session } = useSession();
+    const router = useRouter();
     const [location, setLocation] = useState("remote"); // Default to Remote as per user request example
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+
+        const formData = new FormData(e.currentTarget);
+        const data = Object.fromEntries(formData.entries());
+
+        // Prepare the payload according to the requested JSON body
+        const payload = {
+            jobTitle: data.jobTitle,
+            jobLocation: data.jobLocation,
+            visaType: data.visaType,
+            clientBillRate: data.clientBillRate,
+            payRate: data.payRate,
+            clientName: data.clientName,
+            endClientName: data.endClientName,
+            noOfPositions: parseInt(data.noOfPositions as string, 10),
+            submissionRequired: parseInt(data.submissionRequired as string, 10),
+            urgency: data.urgency,
+            accountManagerId: session?.user?.id || "",
+            status: "ACTIVE",
+            isDeleted: false,
+            podId: "" // Added as per requested body
+        };
+
+        const token = (session as any)?.user?.accessToken;
+
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                toast.success("Job posted successfully!");
+                router.push("/account-manager/dashboard/jobs");
+                router.refresh();
+            } else {
+                const errorData = await response.json();
+                toast.error(errorData.message || "Failed to post job.");
+            }
+        } catch (error) {
+            console.error("Error posting job:", error);
+            toast.error("An error occurred while posting the job.");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     return (
         <>
             <DashboardBreadcrumb title="Post a New Job" text="Job Management" />
             <div className="p-6">
                 <DefaultCardComponent title="Job Details">
-                    <form className="flex flex-col gap-4">
-                        {/* Background Hidden Fields */}
-                        <input type="hidden" name="accountManagerId" value="38def2f5-4780-4378-9116-54e30289cc05" />
-                        <input type="hidden" name="status" value="ACTIVE" />
-                        <input type="hidden" name="isDeleted" value="false" />
-
+                    <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <Label htmlFor="jobTitle" className="text-[#4b5563] dark:text-white mb-2">Job Title *</Label>
@@ -108,8 +162,10 @@ export default function AccountManagerCreateJobPage() {
 
 
                         <div className="flex justify-end gap-3 mt-4">
-                            <Button type="button" variant="outline" className="h-12 px-8">Cancel</Button>
-                            <Button type="submit" variant="default" className="h-12 px-8">Post Job</Button>
+                            <Button type="button" variant="outline" className="h-12 px-8" onClick={() => router.back()} disabled={isSubmitting}>Cancel</Button>
+                            <Button type="submit" variant="default" className="h-12 px-8" disabled={isSubmitting}>
+                                {isSubmitting ? "Posting..." : "Post Job"}
+                            </Button>
                         </div>
                     </form>
                 </DefaultCardComponent>

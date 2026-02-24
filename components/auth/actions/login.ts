@@ -1,5 +1,8 @@
 'use server'
 
+import { signIn } from "@/auth"
+import { AuthError } from "next-auth"
+
 export const handleLoginAction = async (formData: FormData) => {
   const email = formData.get('email') as string
   const password = formData.get('password') as string
@@ -8,11 +11,22 @@ export const handleLoginAction = async (formData: FormData) => {
     return { error: 'Email and password are required.' }
   }
 
-  // (Optional) Validate credentials format
-  if (!email.includes('@')) {
-    return { error: 'Invalid email format.' }
+  try {
+    await signIn("credentials", {
+      email,
+      password,
+      redirectTo: "/dashboard",
+    })
+    return { success: true }
+  } catch (error) {
+    if (error instanceof AuthError) {
+      switch (error.type) {
+        case "CredentialsSignin":
+          return { error: "Invalid credentials." }
+        default:
+          return { error: "Something went wrong." }
+      }
+    }
+    throw error // Re-throw to allow Next.js redirect to work
   }
-
-  // You can optionally log or validate against DB here
-  return { success: true }
 }

@@ -20,7 +20,7 @@ async function getJobs() {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
-            next: { revalidate: 60 }, // Revalidate every minute
+            cache: 'no-store',
         });
 
         if (!response.ok) {

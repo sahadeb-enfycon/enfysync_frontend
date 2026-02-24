@@ -60,24 +60,17 @@ const LoginForm = () => {
 
         if (res?.error) {
           toast.error(res.error)
-        } else {
-          const signInRes = await signIn('credentials', {
-            redirect: false,
-            email: values.email,
-            password: values.password,
-          })
-
-          if (signInRes?.error) {
-            toast.error('Invalid credentials. Please try again.')
-          } else {
-            toast.success('Login successful!')
-            router.push('/dashboard')
-          }
+          setLoading(false)
         }
+        // No need for router.push or client-side signIn here, 
+        // the server action handles redirection on success.
       } catch (error) {
-        toast.error('Something went wrong. Please try again.')
-      } finally {
-        setLoading(false)
+        // Next.js redirect throws an error, which is caught here.
+        // We only want to toast if it's NOT a redirect error.
+        if (!(error instanceof Error && error.message === 'NEXT_REDIRECT')) {
+          toast.error('Something went wrong. Please try again.')
+          setLoading(false)
+        }
       }
     });
 
