@@ -2,16 +2,10 @@
 
 import LoginForm from "@/components/auth/login-form";
 import ThemeLogo from "@/components/shared/theme-logo";
+import SocialLogin from "@/components/auth/social-login";
 import AuthImage from "@/public/assets/images/auth/auth-img.png";
 import { StaticImg } from "@/types/static-image";
-import type { Metadata } from "next";
 import Image from "next/image";
-
-const metadata: Metadata = {
-  title: "Register & Create Account | enfysync Admin Dashboard",
-  description:
-    "Login to your enfysync account",
-};
 
 const forgotPassImage: StaticImg = {
   image: AuthImage,
@@ -48,6 +42,14 @@ const Login = () => {
 
           {/* Login Form */}
           <LoginForm />
+
+          {/* Divider and Social Login (Optional/Bottom) */}
+          {/* <div className="mt-8 relative text-center before:absolute before:w-full before:h-px before:bg-neutral-300 dark:before:bg-slate-600 before:top-1/2 before:left-0">
+            <span className="relative z-10 px-4 bg-white dark:bg-slate-900 text-base">
+              Or sign in with
+            </span>
+          </div>
+          <SocialLogin /> */}
         </div>
       </div>
     </section>

@@ -1,10 +1,7 @@
 // ============================================= Server side way start =======================================
 import { doSocialLogin } from "@/app/actions";
 import { useLoading } from "@/contexts/LoadingContext";
-import GithubIcon from "@/public/assets/images/icons/github-icon.png";
-import GoogleIcon from "@/public/assets/images/icons/google-icon.png";
 import { Loader2 } from "lucide-react";
-import Image from "next/image";
 import React, { useState } from "react";
 import { Button } from "../ui/button";
 
@@ -12,19 +9,12 @@ const SocialLogin = () => {
   const { loading, setLoading } = useLoading();
 
   const [loadingButtonProvider, setLoadingButtonProvider] = useState<
-    null | "google" | "github" | "keycloak"
+    null | "keycloak"
   >(null);
 
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     setLoading(true);
-
-    const form = e.currentTarget;
-    const clickedButton = (document.activeElement as HTMLButtonElement)?.value;
-    setLoadingButtonProvider(
-      clickedButton === "google" || clickedButton === "github" || clickedButton === "keycloak"
-        ? clickedButton as "google" | "github" | "keycloak"
-        : null
-    );
+    setLoadingButtonProvider("keycloak");
 
     setTimeout(() => {
       setLoading(false);
@@ -34,58 +24,14 @@ const SocialLogin = () => {
 
   return (
     <form
-      className="mt-8 flex items-center gap-3"
+      className="mt-8 flex items-center"
       action={doSocialLogin}
       onSubmit={handleFormSubmit}
     >
-      {/* Google Button */}
-      <Button
-        className="font-semibold text-neutral-600 hover:text-neutral-600 dark:text-neutral-200 py-6 px-2 w-1/3 border border-neutral-600/50 rounded-xl text-sm flex items-center justify-center gap-3 line-height-1 hover:border-blue-400 hover:bg-primary/10 disabled:opacity-80"
-        variant="outline"
-        type="submit"
-        name="action"
-        value="google"
-        disabled={loadingButtonProvider === "google" || loading}
-      >
-        {loadingButtonProvider === "google" ? (
-          <>
-            <Loader2 className="animate-spin h-4.5 w-4.5" />
-            Loading...
-          </>
-        ) : (
-          <>
-            <Image src={GoogleIcon} alt="google" width={18} height={18} />
-            Google
-          </>
-        )}
-      </Button>
-
-      {/* GitHub Button */}
-      <Button
-        className="font-semibold text-neutral-600 hover:text-neutral-600 dark:text-neutral-200 py-6 px-2 w-1/3 border border-neutral-600/50 rounded-xl text-sm flex items-center justify-center gap-3 line-height-1 hover:border-slate-400 hover:bg-slate-600/10 disabled:opacity-80"
-        variant="outline"
-        type="submit"
-        name="action"
-        value="github"
-        disabled={loadingButtonProvider === "github" || loading}
-      >
-        {loadingButtonProvider === "github" ? (
-          <>
-            <Loader2 className="animate-spin h-4.5 w-4.5" />
-            Loading...
-          </>
-        ) : (
-          <>
-            <Image src={GithubIcon} alt="github" width={18} height={18} />
-            Github
-          </>
-        )}
-      </Button>
-
       {/* Keycloak Button */}
       <Button
-        className="font-semibold text-neutral-600 hover:text-neutral-600 dark:text-neutral-200 py-6 px-2 w-1/3 border border-neutral-600/50 rounded-xl text-sm flex items-center justify-center gap-3 line-height-1 hover:border-orange-400 hover:bg-orange-600/10 disabled:opacity-80"
-        variant="outline"
+        className="font-bold text-white py-6 w-full rounded-xl text-lg flex items-center justify-center gap-3 bg-orange-600 hover:bg-orange-700 disabled:opacity-80"
+        variant="default"
         type="submit"
         name="action"
         value="keycloak"
@@ -93,12 +39,12 @@ const SocialLogin = () => {
       >
         {loadingButtonProvider === "keycloak" ? (
           <>
-            <Loader2 className="animate-spin h-4.5 w-4.5" />
-            Loading...
+            <Loader2 className="animate-spin h-6 w-6" />
+            Connecting to Keycloak...
           </>
         ) : (
           <>
-            Keycloak
+            Sign In with Keycloak
           </>
         )}
       </Button>
