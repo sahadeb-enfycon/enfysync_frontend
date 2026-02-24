@@ -1,7 +1,20 @@
 'use server'
 
-import { signIn } from "@/auth"
+import { signIn, auth } from "@/auth"
 import { AuthError } from "next-auth"
+
+function getRoleDashboard(roles: string[]): string {
+  const normalized = roles.map((r) => r.toUpperCase())
+  if (normalized.includes("DELIVERY_HEAD") || normalized.includes("DELIVERY-HEAD"))
+    return "/delivery-head/dashboard"
+  if (normalized.includes("ADMIN")) return "/admin/dashboard"
+  if (normalized.includes("ACCOUNT_MANAGER") || normalized.includes("ACCOUNT-MANAGER"))
+    return "/account-manager/dashboard"
+  if (normalized.includes("RECRUITER")) return "/recruiter/dashboard"
+  if (normalized.includes("POD_LEAD") || normalized.includes("POD-LEAD"))
+    return "/pod-lead/dashboard"
+  return "/dashboard"
+}
 
 export const handleLoginAction = async (formData: FormData) => {
   const email = formData.get('email') as string
@@ -17,7 +30,13 @@ export const handleLoginAction = async (formData: FormData) => {
       password,
       redirect: false,
     })
-    return { success: true }
+
+    // Read the newly-created session to determine the correct dashboard
+    const session = await auth()
+    const roles: string[] = (session?.user as any)?.roles || []
+    const redirectUrl = getRoleDashboard(roles)
+
+    return { success: true, redirectUrl }
   } catch (error) {
     if (error instanceof AuthError) {
       switch (error.type) {
@@ -27,6 +46,6 @@ export const handleLoginAction = async (formData: FormData) => {
           return { error: "Something went wrong." }
       }
     }
-    throw error // Re-throw to allow Next.js redirect to work
+    throw error
   }
 }

@@ -297,7 +297,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           // But usually we set it to force re-login.
           return { ...token, error: "RefreshTokenError" }
         } finally {
-          refreshPromise = null;
+          setTimeout(() => {
+            refreshPromise = null;
+          }, 10000);
         }
       })();
 

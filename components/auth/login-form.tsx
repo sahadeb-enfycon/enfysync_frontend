@@ -62,8 +62,8 @@ const LoginForm = () => {
           setLoading(false)
         } else if (res?.success) {
           toast.success('Login successful!')
-          // Force a hard redirect to ensure the session is picked up by the provider
-          window.location.href = '/dashboard'
+          // Use the role-specific URL from server, avoiding a second round-trip through /dashboard
+          window.location.href = res.redirectUrl || '/dashboard'
         }
       } catch (error) {
         // Next.js redirect throws an error, which is caught here.
