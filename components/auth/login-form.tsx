@@ -34,10 +34,9 @@ const LoginForm = () => {
   const formRef = useRef<HTMLFormElement>(null)
 
   useEffect(() => {
-    if (status === 'authenticated') {
-      router.push('/dashboard')
-    }
-  }, [status, router])
+    // Reset global loading state on mount to prevent disablement leak
+    setLoading(false)
+  }, [setLoading])
 
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -61,9 +60,11 @@ const LoginForm = () => {
         if (res?.error) {
           toast.error(res.error)
           setLoading(false)
+        } else if (res?.success) {
+          toast.success('Login successful!')
+          // Force a hard redirect to ensure the session is picked up by the provider
+          window.location.href = '/dashboard'
         }
-        // No need for router.push or client-side signIn here, 
-        // the server action handles redirection on success.
       } catch (error) {
         // Next.js redirect throws an error, which is caught here.
         // We only want to toast if it's NOT a redirect error.

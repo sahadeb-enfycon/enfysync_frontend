@@ -16,7 +16,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, Loader2, Lock, Mail, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { z } from "zod";
@@ -36,6 +36,11 @@ const RegisterForm = () => {
       password: "",
     },
   });
+
+  useEffect(() => {
+    // Reset global loading state on mount to prevent disablement leak
+    setLoading(false);
+  }, [setLoading]);
 
   const handleRegisterFormSubmit = async (
     values: z.infer<typeof registerSchema>

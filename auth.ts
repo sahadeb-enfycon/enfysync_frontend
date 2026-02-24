@@ -26,6 +26,8 @@ declare module "next-auth/jwt" {
     expiresAt: number
     roles: string[]
     id: string
+    name?: string | null
+    email?: string | null
     image?: string | null
     error?: "RefreshTokenError"
   }
@@ -156,15 +158,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           expiresAt: new Date(expiresAt).toISOString(),
         });
 
-        return {
+        const newToken = {
           ...token,
           accessToken: (user as any).accessToken || account.access_token,
           refreshToken: (user as any).refreshToken || account.refresh_token,
           expiresAt,
           roles: (user as any).roles || [],
           id: user.id as string,
+          name: user.name || (user as any).fullName,
+          email: user.email,
           image: user.image || (user as any).picture,
         }
+
+        return newToken;
       }
 
       // Return previous token if the access token has not expired yet
@@ -246,6 +252,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.roles = token.roles
         session.user.accessToken = token.accessToken
         session.user.image = token.image
+        session.user.name = token.name as string
+        session.user.email = token.email as string
         session.error = token.error
       }
       return session

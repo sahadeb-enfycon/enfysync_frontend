@@ -15,7 +15,7 @@ export const handleLoginAction = async (formData: FormData) => {
     await signIn("credentials", {
       email,
       password,
-      redirectTo: "/dashboard",
+      redirect: false,
     })
     return { success: true }
   } catch (error) {

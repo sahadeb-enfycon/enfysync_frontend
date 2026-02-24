@@ -15,7 +15,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2, Mail } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useRef, useTransition } from 'react'
+import { useEffect, useRef, useTransition } from 'react'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import { z } from 'zod'
@@ -33,6 +33,11 @@ const ForgotPasswordComponent = () => {
       email: '',
     },
   })
+
+  useEffect(() => {
+    // Reset global loading state on mount to prevent disablement leak
+    setLoading(false)
+  }, [setLoading])
 
   const onSubmit = (values: z.infer<typeof forgotPasswordSchema>) => {
     setLoading(true)

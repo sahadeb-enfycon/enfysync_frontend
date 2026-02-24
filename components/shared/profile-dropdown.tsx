@@ -16,8 +16,18 @@ const ProfileDropdown = () => {
   const { data: session } = useSession();
 
   const rawRoles = (session?.user as any)?.roles || [];
-  const validRoles = ["ADMIN", "POD_LEAD", "ACCOUNT_MANAGER", "RECRUITER", "DELIVERY_HEAD"];
-  const displayRoleRaw = rawRoles.find((role: string) => validRoles.includes(role.toUpperCase())) || "Admin";
+  const validRoles = [
+    "ADMIN",
+    "POD_LEAD", "POD-LEAD",
+    "ACCOUNT_MANAGER", "ACCOUNT-MANAGER",
+    "RECRUITER",
+    "DELIVERY_HEAD", "DELIVERY-HEAD"
+  ];
+
+  const displayRoleRaw = rawRoles.find((role: string) =>
+    validRoles.includes(role.toUpperCase())
+  ) || "Admin";
+
   const formattedRole = displayRoleRaw
     .replace(/[_:-]/g, " ")
     .toLowerCase()
