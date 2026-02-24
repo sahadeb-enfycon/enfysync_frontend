@@ -13,6 +13,7 @@ declare module "next-auth" {
       accessToken: string
       email: string
       name: string
+      image?: string | null
     }
     error?: "RefreshTokenError"
   }
@@ -25,6 +26,7 @@ declare module "next-auth/jwt" {
     expiresAt: number
     roles: string[]
     id: string
+    image?: string | null
     error?: "RefreshTokenError"
   }
 }
@@ -49,6 +51,9 @@ function getNextScheduledLogout(): number {
   return scheduledTime.getTime();
 }
 
+// Base URL for API calls. Standardizing this prevents double-slash issues.
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || "https://api.enfycon.com").replace(/\/+$/, "");
+
 // Global variable to store the refresh promise and avoid multiple simultaneous refresh calls
 let refreshPromise: Promise<any> | null = null;
 
@@ -61,31 +66,22 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
       authorize: async (credentials) => {
         try {
-          const { email, password } = await loginSchema.parseAsync(credentials)
+          // Validate credentials locally without async wait if possible
+          const { email, password } = loginSchema.parse(credentials);
 
-          const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://api.enfycon.com"
-          const res = await fetch(`${apiUrl}/auth/login`, {
+          // Hitting the custom backend login endpoint with offline_access scope
+          const res = await fetch(`${API_URL}/auth/login?scope=offline_access`, {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              email,
-              password,
-              scope: "openid profile email offline_access", // Requesting offline session for long-lived refresh tokens
-            }),
-          })
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password }),
+          });
 
-          if (!res.ok) {
-            console.error("Login failed with status:", res.status);
-            return null
-          }
+          if (!res.ok) return null;
+          const data = await res.json();
 
-          const data = await res.json()
-
-          if (!data || !data.user) {
-            console.error("Invalid login response data:", data);
-            return null
+          if (!data?.user || !data?.access_token) {
+            console.error("Invalid response from auth server:", data);
+            return null;
           }
 
           // DEBUG: Structure investigation
@@ -94,14 +90,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             userKeys: Object.keys(data.user),
             hasAccessToken: !!data.access_token,
             hasRefreshToken: !!data.refresh_token,
-            accessTokenPrefix: data.access_token?.substring(0, 10),
-            refreshTokenPrefix: data.refresh_token?.substring(0, 10),
           });
 
           const { user: userData, access_token, refresh_token, expires_in } = data
 
           return {
-            ...userData, // Spread first so explicit fields overwrite if there's a conflict
+            ...userData,
             id: userData.id,
             email: userData.email,
             name: userData.fullName || userData.email,
@@ -160,7 +154,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           hasAccessToken: !!((user as any).accessToken || account.access_token),
           hasRefreshToken: !!((user as any).refreshToken || account.refresh_token),
           expiresAt: new Date(expiresAt).toISOString(),
-          scheduledLogout: new Date(scheduledLogout).toISOString()
         });
 
         return {
@@ -170,19 +163,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           expiresAt,
           roles: (user as any).roles || [],
           id: user.id as string,
+          image: user.image || (user as any).picture,
         }
       }
 
       // Return previous token if the access token has not expired yet
-      // Refresh 30 seconds before expiry for safety
       if (Date.now() < token.expiresAt - 30 * 1000) {
         return token
       }
 
       // Access token has expired, try to update it
-      // Use a shared promise to prevent race conditions during refresh
       if (refreshPromise) {
-        console.log("Waiting for existing refresh promise...");
         return await refreshPromise;
       }
 
@@ -194,13 +185,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
       refreshPromise = (async () => {
         try {
-          const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://api.enfycon.com"
-          // Using the exact URL format provided by the user (double slash after domain)
-          const refreshUrl = `${apiUrl}//auth/refresh`;
+          const refreshUrl = `${API_URL}/auth/refresh`;
 
           console.log(`Attempting refresh at ${refreshUrl}...`, {
-            tokenType: typeof token.refreshToken,
-            tokenLength: token.refreshToken?.length,
             tokenPrefix: token.refreshToken?.substring(0, 15)
           });
 
@@ -211,8 +198,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             },
             body: JSON.stringify({
               refresh_token: token.refreshToken,
-              refreshToken: token.refreshToken, // Alias in case the backend uses camelCase
-              grant_type: "refresh_token",      // Common OIDC field
+              grant_type: "refresh_token",
+              scope: "offline_access", // Maintain the offline session
             }),
           })
 
@@ -239,9 +226,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return {
             ...token,
             accessToken: tokens.access_token,
-            refreshToken: tokens.refresh_token ?? token.refreshToken, // Fallback to old refresh token
+            refreshToken: tokens.refresh_token ?? token.refreshToken,
             expiresAt,
-            error: null // Clear any previous error
+            error: null
           }
         } catch (error) {
           console.error("Failed to refresh access token:", error)
@@ -258,6 +245,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.id = token.id
         session.user.roles = token.roles
         session.user.accessToken = token.accessToken
+        session.user.image = token.image
         session.error = token.error
       }
       return session
