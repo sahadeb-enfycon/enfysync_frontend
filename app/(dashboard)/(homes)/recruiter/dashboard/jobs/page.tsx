@@ -1,6 +1,6 @@
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import { auth } from "@/auth";
-import JobsTable from "@/components/dashboard/account-manager/JobsTable";
+import RecruiterJobsTable from "@/components/dashboard/recruiter/RecruiterJobsTable";
 
 export const dynamic = 'force-dynamic';
 
@@ -35,18 +35,15 @@ async function getJobs() {
 
 export default async function RecruiterJobsPage() {
     const jobs = await getJobs();
+    console.log(`RecruiterJobsPage: fetched ${jobs.length} jobs`);
 
     return (
         <>
             <DashboardBreadcrumb title="Available Jobs" text="Job Management" />
             <div className="p-6">
-                <JobsTable
+                <RecruiterJobsTable
                     jobs={jobs}
                     baseUrl="/recruiter/dashboard/jobs"
-                    showAccountManager={true}
-                    showPod={true}
-                    showActions={true}
-                    showFilters={true}
                 />
             </div>
         </>

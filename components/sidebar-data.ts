@@ -449,38 +449,23 @@ export const getSidebarData = (role: string) => {
         },
       ],
     },
-    {
-      label: "Job Management",
-    },
-    {
-      title: "Jobs",
-      url: "#",
-      icon: BriefcaseBusiness,
-      isActive: true,
-      items: [
-        {
-          title: "Available Jobs",
-          url: "/recruiter/dashboard/jobs",
-          circleColor: "bg-cyan-500",
-        },
-      ],
-    },
-    {
-      label: "System",
-    },
-    {
-      title: "Administration",
-      url: "#",
-      icon: Settings,
-      isActive: true,
-      items: [
-        {
-          title: "Settings",
-          url: "/settings-notification",
-          circleColor: "bg-primary",
-        },
-      ],
-    },
+    // {
+    //   label: "Job Management",
+    // },
+    // {
+    //   title: "Jobs",
+    //   url: "#",
+    //   icon: BriefcaseBusiness,
+    //   isActive: true,
+    //   items: [
+    //     {
+    //       title: "Available Jobs",
+    //       url: "/recruiter/dashboard/jobs",
+    //       circleColor: "bg-cyan-500",
+    //     },
+    //   ],
+    // },
+    
   ];
 
   // Map roles to their specific navigation
