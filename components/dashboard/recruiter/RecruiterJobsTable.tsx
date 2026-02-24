@@ -45,7 +45,7 @@ interface Job {
         fullName: string | null;
         email: string;
     };
-    recruiters?: TeamMember[];
+    assignedRecruiters?: TeamMember[];
     pod?: {
         id: string;
         name: string;
@@ -318,10 +318,10 @@ export default function RecruiterJobsTable({
                                         <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
                                             <RecruiterAssignCell
                                                 jobId={job.id}
-                                                assignedRecruiters={job.recruiters ?? []}
+                                                assignedRecruiters={job.assignedRecruiters ?? []}
                                                 teamMembers={teamMembers}
                                                 token={token}
-                                                onSuccess={onRefresh}
+                                                onSuccess={() => router.refresh()}
                                             />
                                         </TableCell>
                                         <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
