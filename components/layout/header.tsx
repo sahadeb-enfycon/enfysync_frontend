@@ -14,7 +14,7 @@ const Header = () => {
             </div>
             <div className="flex items-center gap-3">
                 <ModeToggle />
-                <MessageDropdown />
+                {/* <MessageDropdown /> */}
                 <NotificationDropdown />
                 <ProfileDropdown />
             </div>
