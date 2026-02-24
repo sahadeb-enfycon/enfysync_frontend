@@ -1,9 +1,39 @@
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import { auth } from "@/auth";
+import RecruiterStatsCards from "./components/recruiter-stats-cards";
+import RecruiterPerformanceChart from "./components/performance-chart";
+import RecentJobsTable from "./components/recent-jobs-table";
+import { Suspense } from "react";
+import LoadingSkeleton from "@/components/loading-skeleton";
+
+async function getJobs() {
+    const session = await auth();
+    const token = (session as any)?.user?.accessToken;
+
+    if (!token) return [];
+
+    try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs/recruiter/available-jobs`, {
+            headers: { Authorization: `Bearer ${token}` },
+            cache: 'no-store',
+        });
+
+        if (!response.ok) {
+            console.error("Failed to fetch jobs. Status:", response.status);
+            return [];
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error("Error fetching jobs:", error);
+        return [];
+    }
+}
 
 export default async function RecruiterDashboard() {
     const session = await auth();
     const userName = session?.user?.name || "Recruiter";
+    const jobs = await getJobs();
 
     const hour = new Date().getHours();
     let greeting = "Good Evening";
@@ -12,12 +42,34 @@ export default async function RecruiterDashboard() {
 
     const welcomeMessage = `${greeting}, ${userName}!`;
 
+    // Calculate basic stats
+    const totalJobs = jobs.length;
+    const activeJobs = jobs.filter((j: any) => j.status === 'ACTIVE').length;
+
     return (
         <>
-            <DashboardBreadcrumb title={welcomeMessage} text="Dashboard" />
-            <div className="p-6">
-                <h1 className="text-2xl font-bold">Welcome, Recruiter</h1>
-                <p className="mt-2 text-muted-foreground">This is your dedicated dashboard view.</p>
+            <DashboardBreadcrumb title={welcomeMessage} text="Recruiter Dashboard" />
+            <div className="p-6 space-y-6">
+                <Suspense fallback={<LoadingSkeleton />}>
+                    <RecruiterStatsCards
+                        jobsCount={totalJobs}
+                        activeJobsCount={activeJobs}
+                        submissionsCount={totalJobs * 3} // Placeholder ratio
+                    />
+                </Suspense>
+
+                <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+                    <div className="xl:col-span-8">
+                        <Suspense fallback={<LoadingSkeleton />}>
+                            <RecentJobsTable jobs={jobs} />
+                        </Suspense>
+                    </div>
+                    {/* <div className="xl:col-span-4">
+                        <Suspense fallback={<LoadingSkeleton />}>
+                            <RecruiterPerformanceChart />
+                        </Suspense>
+                    </div> */}
+                </div>
             </div>
         </>
     );
