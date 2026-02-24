@@ -81,20 +81,35 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           if (!res.ok) return null;
           const data = await res.json();
 
-          if (!data?.user || !data?.access_token) {
-            console.error("Invalid response from auth server:", data);
+          if (!data?.user || !(data?.access_token || data?.accessToken)) {
+            console.error("Invalid response from auth server:", {
+              hasUser: !!data?.user,
+              hasToken: !!(data?.access_token || data?.accessToken),
+              keys: Object.keys(data || {})
+            });
             return null;
           }
 
-          // DEBUG: Structure investigation
-          console.log("Login successful. Data structure:", {
-            keys: Object.keys(data),
-            userKeys: Object.keys(data.user),
-            hasAccessToken: !!data.access_token,
-            hasRefreshToken: !!data.refresh_token,
-          });
+          // Extract tokens with fallbacks for both formats
+          const {
+            user: userData,
+            access_token,
+            accessToken,
+            refresh_token,
+            refreshToken,
+            expires_in,
+            expiresIn
+          } = data
 
-          const { user: userData, access_token, refresh_token, expires_in } = data
+          const finalAccessToken = access_token || accessToken;
+          const finalRefreshToken = refresh_token || refreshToken;
+          const finalExpiresIn = expires_in || expiresIn;
+
+          console.log("Login successful. Mapping tokens:", {
+            accessToken: !!finalAccessToken,
+            refreshToken: !!finalRefreshToken,
+            expiresIn: finalExpiresIn
+          });
 
           return {
             ...userData,
@@ -102,9 +117,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             email: userData.email,
             name: userData.fullName || userData.email,
             roles: userData.roles,
-            accessToken: access_token,
-            refreshToken: refresh_token,
-            expiresIn: expires_in,
+            accessToken: finalAccessToken,
+            refreshToken: finalRefreshToken,
+            expiresIn: finalExpiresIn,
           }
         }
         catch (error) {
@@ -139,14 +154,21 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         if ((user as any).expiresIn) {
           // From Credentials provider
+          console.log("Setting expiry from user.expiresIn:", (user as any).expiresIn);
           expiresAt = Date.now() + (user as any).expiresIn * 1000;
         } else if (account.expires_at) {
           // From OAuth providers
+          console.log("Setting expiry from account.expires_at:", account.expires_at);
           expiresAt = account.expires_at * 1000;
         }
 
         // CAP EXPIRE AT TO NEXT 6:30 PM IST (13:00 UTC)
         const scheduledLogout = getNextScheduledLogout();
+        console.log("Scheduled logout check:", {
+          calculatedExpiresAt: new Date(expiresAt).toISOString(),
+          scheduledLogout: new Date(scheduledLogout).toISOString(),
+          capping: expiresAt > scheduledLogout
+        });
         if (expiresAt > scheduledLogout) {
           expiresAt = scheduledLogout;
         }
@@ -174,11 +196,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
 
       // Return previous token if the access token has not expired yet
-      if (Date.now() < token.expiresAt - 30 * 1000) {
+      // Increased buffer to 60s to be safer for short 5min sessions
+      const isExpired = Date.now() >= token.expiresAt - 60 * 1000;
+
+      if (!isExpired) {
         return token
       }
 
       // Access token has expired, try to update it
+      console.log("JWT Refresh Branch Triggered:", {
+        now: new Date().toISOString(),
+        expiresAt: new Date(token.expiresAt).toISOString(),
+        diffMs: token.expiresAt - Date.now(),
+        isExpired
+      });
       if (refreshPromise) {
         return await refreshPromise;
       }
@@ -186,15 +217,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       console.log("Refresh required. Token state:", {
         now: new Date().toISOString(),
         expiresAt: new Date(token.expiresAt).toISOString(),
-        hasRefreshToken: !!token.refreshToken
+        hasRefreshToken: !!token.refreshToken,
+        id: token.id
       });
 
       refreshPromise = (async () => {
         try {
           const refreshUrl = `${API_URL}/auth/refresh`;
 
-          console.log(`Attempting refresh at ${refreshUrl}...`, {
-            tokenPrefix: token.refreshToken?.substring(0, 15)
+          console.log(`Attempting refresh at ${refreshUrl} (JSON format)...`, {
+            tokenPrefix: token.refreshToken?.substring(0, 15),
+            nowIST: new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
+            expiresAtIST: new Date(token.expiresAt).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })
           });
 
           const response = await fetch(refreshUrl, {
@@ -204,40 +238,63 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             },
             body: JSON.stringify({
               refresh_token: token.refreshToken,
+              refreshToken: token.refreshToken,
               grant_type: "refresh_token",
-              scope: "offline_access", // Maintain the offline session
+              client_id: process.env.KEYCLOAK_CLIENT_ID || "submission_tracker_app",
+              client_secret: process.env.KEYCLOAK_CLIENT_SECRET,
             }),
           })
 
           const tokens = await response.json()
+          console.log("Refresh response raw data:", tokens);
 
           if (!response.ok) {
             console.error("Refresh token API error details:", {
               status: response.status,
               url: refreshUrl,
-              body: tokens
+              sentBodyKeys: ["refresh_token", "refreshToken", "grant_type", "client_id"],
+              responseBody: tokens
             });
             throw tokens;
           }
 
-          let expiresAt = Date.now() + (tokens.expires_in ?? 300) * 1000;
+          const {
+            access_token,
+            accessToken,
+            refresh_token,
+            refreshToken,
+            expires_in,
+            expiresIn
+          } = tokens;
+
+          const finalAccessToken = access_token || accessToken;
+          const finalRefreshToken = refresh_token || refreshToken || token.refreshToken;
+          const finalExpiresIn = expires_in || expiresIn;
+
+          let expiresAt = Date.now() + (finalExpiresIn ?? 300) * 1000;
 
           const scheduledLogout = getNextScheduledLogout();
           if (expiresAt > scheduledLogout) {
             expiresAt = scheduledLogout;
           }
 
-          console.log("Successfully refreshed token. New expiry:", new Date(expiresAt).toISOString());
+          console.log("Successfully refreshed token. Mapping:", {
+            hasAccessToken: !!finalAccessToken,
+            hasRefreshToken: !!finalRefreshToken,
+            expiresAt: new Date(expiresAt).toISOString()
+          });
 
           return {
             ...token,
-            accessToken: tokens.access_token,
-            refreshToken: tokens.refresh_token ?? token.refreshToken,
+            accessToken: finalAccessToken,
+            refreshToken: finalRefreshToken,
             expiresAt,
             error: null
           }
         } catch (error) {
-          console.error("Failed to refresh access token:", error)
+          console.error("Failed to refresh access token. Error details:", error);
+          // Only set error if it's a real failure, not just a network hiccup?
+          // But usually we set it to force re-login.
           return { ...token, error: "RefreshTokenError" }
         } finally {
           refreshPromise = null;

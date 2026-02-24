@@ -26,7 +26,13 @@ export async function proxy(req: NextRequest) {
 
   try {
     session = await auth();
+    console.log("Proxy session check:", {
+      pathname,
+      hasSession: !!session,
+      error: session?.error
+    });
   } catch (error) {
+    console.error("Proxy auth error:", error);
     return NextResponse.redirect(new URL("/auth/login", req.url));
   }
 
