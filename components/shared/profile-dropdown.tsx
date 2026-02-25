@@ -33,6 +33,9 @@ const ProfileDropdown = () => {
     .toLowerCase()
     .replace(/\b\w/g, (char: string) => char.toUpperCase());
 
+  const rolePrefix = displayRoleRaw.replace(/[_]/g, "-").toLowerCase();
+  const profileUrl = `/${rolePrefix}/view-profile`;
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -85,7 +88,7 @@ const ProfileDropdown = () => {
           <ul className="flex flex-col gap-3">
             <li>
               <Link
-                href="/view-profile"
+                href={profileUrl}
                 className="text-black dark:text-white hover:text-primary dark:hover:text-primary flex items-center gap-3"
               >
                 <User className="w-5 h-5" /> My Profile

@@ -1,7 +1,7 @@
-import ChangePasswordTabContent from "@/app/(dashboard)/view-profile/components/change-password-tab-content";
-import EditProfileTabContent from "@/app/(dashboard)/view-profile/components/edit-profile-tab-content";
-import NotificationPasswordTabContent from "@/app/(dashboard)/view-profile/components/notification-password-tab-content";
-import ViewProfileSidebar from "@/app/(dashboard)/view-profile/components/view-profile-sidebar";
+import ChangePasswordTabContent from "@/app/(dashboard)/[role]/view-profile/components/change-password-tab-content";
+import EditProfileTabContent from "@/app/(dashboard)/[role]/view-profile/components/edit-profile-tab-content";
+import NotificationPasswordTabContent from "@/app/(dashboard)/[role]/view-profile/components/notification-password-tab-content";
+import ViewProfileSidebar from "@/app/(dashboard)/[role]/view-profile/components/view-profile-sidebar";
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
