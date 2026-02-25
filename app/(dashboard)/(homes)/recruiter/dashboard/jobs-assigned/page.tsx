@@ -7,15 +7,15 @@ export const dynamic = 'force-dynamic';
 async function getAssignedJobs() {
     const session = await auth();
     const token = (session as any)?.user?.accessToken;
-    const userId = (session as any)?.user?.id;
 
-    if (!token || !userId) {
-        console.error("No access token or user ID found in session");
+    if (!token) {
+        console.error("No access token found in session");
         return [];
     }
 
     try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs`, {
+        // Use the dedicated endpoint for recruiter assigned jobs
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs?my=true`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
@@ -23,21 +23,13 @@ async function getAssignedJobs() {
         });
 
         if (!response.ok) {
-            console.error("Failed to fetch jobs. Status:", response.status);
+            console.error("Failed to fetch assigned jobs. Status:", response.status);
             return [];
         }
 
-        const allJobs = await response.json();
+        const assignedJobs = await response.json();
+        return Array.isArray(assignedJobs) ? assignedJobs : [];
 
-        // Filter jobs strictly where the current user is in assignedRecruiters
-        if (Array.isArray(allJobs)) {
-            const assignedJobs = allJobs.filter((job: any) =>
-                job.assignedRecruiters?.some((recruiter: any) => recruiter.id === userId)
-            );
-            return assignedJobs;
-        }
-
-        return [];
     } catch (error) {
         console.error("Error fetching assigned jobs:", error);
         return [];
