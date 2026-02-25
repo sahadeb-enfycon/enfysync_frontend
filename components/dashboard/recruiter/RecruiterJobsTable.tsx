@@ -56,6 +56,7 @@ interface RecruiterJobsTableProps {
     jobs: Job[];
     baseUrl?: string;
     onRefresh?: () => void;
+    hideRecruiterFilter?: boolean;
 }
 
 const statusMap: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" | "warning" | "info" }> = {
@@ -69,7 +70,8 @@ const statusMap: Record<string, { label: string; variant: "default" | "secondary
 export default function RecruiterJobsTable({
     jobs,
     baseUrl = "/recruiter/dashboard/jobs",
-    onRefresh
+    onRefresh,
+    hideRecruiterFilter = false
 }: RecruiterJobsTableProps) {
     const { data: session } = useSession();
     const router = useRouter();
@@ -225,20 +227,22 @@ export default function RecruiterJobsTable({
                     </Select>
                 </div>
 
-                <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-semibold text-neutral-500 uppercase tracking-wider ml-1">Recruiter</label>
-                    <Select value={recruiterFilter} onValueChange={(v) => { setRecruiterFilter(v); setCurrentPage(1); }}>
-                        <SelectTrigger className="w-[180px] h-10 bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-600 rounded-lg">
-                            <SelectValue placeholder="All Recruiters" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">All Recruiters</SelectItem>
-                            {filterOptions.recruiters.map(rec => (
-                                <SelectItem key={rec.id} value={rec.id}>{rec.name}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
+                {!hideRecruiterFilter && (
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-xs font-semibold text-neutral-500 uppercase tracking-wider ml-1">Recruiter</label>
+                        <Select value={recruiterFilter} onValueChange={(v) => { setRecruiterFilter(v); setCurrentPage(1); }}>
+                            <SelectTrigger className="w-[180px] h-10 bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-600 rounded-lg">
+                                <SelectValue placeholder="All Recruiters" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Recruiters</SelectItem>
+                                {filterOptions.recruiters.map(rec => (
+                                    <SelectItem key={rec.id} value={rec.id}>{rec.name}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                )}
 
                 <div className="flex flex-col gap-1.5">
                     <label className="text-xs font-semibold text-neutral-500 uppercase tracking-wider ml-1">Client</label>
