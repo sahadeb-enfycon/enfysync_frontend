@@ -11,7 +11,6 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { useLoading } from '@/contexts/LoadingContext'
-import { loginSchema } from '@/lib/zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Eye, EyeOff, Loader2, Lock, Mail } from 'lucide-react'
 import { signIn, useSession } from 'next-auth/react'
@@ -23,6 +22,13 @@ import toast from 'react-hot-toast'
 import { z } from 'zod'
 import { handleLoginAction } from './actions/login'
 import SocialLogin from './social-login'
+
+const formLoginSchema = z.object({
+  emailPrefix: z.string().min(1, "Email prefix is required").refine(val => !val.includes('@'), {
+    message: "Enter prefix only, do not include @domain",
+  }),
+  password: z.string().min(1, "Password is required"),
+})
 
 const LoginForm = () => {
   const { data: session, status } = useSession()
@@ -38,15 +44,15 @@ const LoginForm = () => {
     setLoading(false)
   }, [setLoading])
 
-  const form = useForm<z.infer<typeof loginSchema>>({
-    resolver: zodResolver(loginSchema),
+  const form = useForm<z.infer<typeof formLoginSchema>>({
+    resolver: zodResolver(formLoginSchema),
     defaultValues: {
-      email: 'imsahadeb@gmail.com',
-      password: '12345678',
+      emailPrefix: '',
+      password: '',
     },
   })
 
-  const onSubmit = (values: z.infer<typeof loginSchema>) => {
+  const onSubmit = (values: z.infer<typeof formLoginSchema>) => {
     setLoading(true)
     setIsSubmitting(true)
 
@@ -54,7 +60,9 @@ const LoginForm = () => {
       try {
         if (!formRef.current) return
 
-        const formData = new FormData(formRef.current)
+        const formData = new FormData()
+        formData.append('email', `${values.emailPrefix}@enfycon.com`)
+        formData.append('password', values.password)
         const res = await handleLoginAction(formData)
 
         if (res?.error) {
@@ -88,10 +96,10 @@ const LoginForm = () => {
           onSubmit={form.handleSubmit(onSubmit)}
           className="space-y-5"
         >
-          {/* Email Field */}
+          {/* Email Prefix Field */}
           <FormField
             control={form.control}
-            name="email"
+            name="emailPrefix"
             render={({ field }) => (
               <FormItem>
                 <FormControl>
@@ -99,12 +107,14 @@ const LoginForm = () => {
                     <Mail className="absolute start-5 top-1/2 transform -translate-y-1/2 w-5 h-5 text-neutral-700 dark:text-neutral-200" />
                     <Input
                       {...field}
-                      type="email"
-                      placeholder="Email"
-                      name="email"
-                      className="ps-13 pe-12 h-14 rounded-xl bg-neutral-100 dark:bg-slate-800 border border-neutral-300 dark:border-slate-700 focus:border-primary dark:focus:border-primary focus-visible:border-primary !shadow-none !ring-0"
+                      type="text"
+                      placeholder="Email Prefix"
+                      className="ps-13 pe-[120px] h-14 rounded-xl bg-neutral-100 dark:bg-slate-800 border border-neutral-300 dark:border-slate-700 focus:border-primary dark:focus:border-primary focus-visible:border-primary !shadow-none !ring-0"
                       disabled={loading}
                     />
+                    <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-neutral-500 font-medium">
+                      @enfycon.com
+                    </div>
                   </div>
                 </FormControl>
                 <FormMessage />
