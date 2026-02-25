@@ -41,7 +41,7 @@ export const getSidebarData = (role: string) => {
 
       ],
     },
-  
+
   ];
 
   const accountManagerNav = [
@@ -66,10 +66,15 @@ export const getSidebarData = (role: string) => {
           url: "/account-manager/dashboard/jobs",
           circleColor: "bg-cyan-500",
         },
+        {
+          title: "Submitted Jobs",
+          url: "/account-manager/dashboard/jobs-submitted",
+          circleColor: "bg-purple-500",
+        },
       ],
     },
- 
-  
+
+
   ];
 
   const deliveryHeadNav = [
@@ -115,6 +120,11 @@ export const getSidebarData = (role: string) => {
           url: "/delivery-head/dashboard/jobs",
           circleColor: "bg-cyan-500",
         },
+        {
+          title: "Submitted Jobs",
+          url: "/delivery-head/dashboard/jobs-submitted",
+          circleColor: "bg-purple-500",
+        },
       ],
     },
     {
@@ -138,22 +148,7 @@ export const getSidebarData = (role: string) => {
         },
       ],
     },
-    {
-      label: "System",
-    },
-    {
-      title: "Administration",
-      url: "#",
-      icon: Settings,
-      isActive: true,
-      items: [
-        {
-          title: "Settings",
-          url: "/settings-notification",
-          circleColor: "bg-primary",
-        },
-      ],
-    },
+    
   ];
 
   const recruiterNav = [
@@ -168,7 +163,7 @@ export const getSidebarData = (role: string) => {
           url: "/recruiter/dashboard",
           circleColor: "bg-primary",
         },
-            {
+        {
           title: "Assigned Jobs",
           url: "/recruiter/dashboard/jobs-assigned",
           circleColor: "bg-primary",
@@ -178,12 +173,12 @@ export const getSidebarData = (role: string) => {
           url: "/recruiter/dashboard/jobs-submitted",
           circleColor: "bg-primary",
         },
-          {
+        {
           title: "Jobs in my Pods",
           url: "/recruiter/dashboard/jobs",
           circleColor: "bg-primary",
         },
-     
+
       ],
     },
     // {
@@ -202,7 +197,7 @@ export const getSidebarData = (role: string) => {
     //     },
     //   ],
     // },
-    
+
   ];
 
   // Map roles to their specific navigation
