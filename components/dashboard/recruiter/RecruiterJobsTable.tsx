@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import {
     Table,
     TableBody,
@@ -19,6 +19,7 @@ import {
     ChevronsRight,
     Search,
     X,
+    Zap,
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -90,6 +91,25 @@ export default function RecruiterJobsTable({
     const { data: session } = useSession();
     const router = useRouter();
     const [currentPage, setCurrentPage] = useState(1);
+    const [newJobIds, setNewJobIds] = useState<Set<string>>(new Set());
+    const prevJobIdsRef = useRef<Set<string>>(new Set(jobs.map(j => j.id)));
+
+    // Detect newly arrived jobs and highlight them briefly
+    useEffect(() => {
+        const added = jobs.filter(j => !prevJobIdsRef.current.has(j.id)).map(j => j.id);
+        added.forEach(id => prevJobIdsRef.current.add(id));
+        if (added.length > 0) {
+            setNewJobIds(prev => new Set([...prev, ...added]));
+            const timer = setTimeout(() => {
+                setNewJobIds(prev => {
+                    const next = new Set(prev);
+                    added.forEach(id => next.delete(id));
+                    return next;
+                });
+            }, 4000);
+            return () => clearTimeout(timer);
+        }
+    }, [jobs]);
     const [amFilter, setAmFilter] = useState<string>("all");
     const [clientFilter, setClientFilter] = useState<string>("all");
     const [searchQuery, setSearchQuery] = useState("");
@@ -176,6 +196,16 @@ export default function RecruiterJobsTable({
 
     return (
         <div className="space-y-4">
+            {/* Live indicator */}
+            <div className="flex items-center gap-2">
+                <span className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-2.5 py-1 rounded-full">
+                    <Zap className="h-3.5 w-3.5" />
+                    LIVE – updates automatically
+                </span>
+                <span className="text-xs text-muted-foreground">
+                    {jobs.length} job{jobs.length !== 1 ? 's' : ''} available
+                </span>
+            </div>
             <div className="bg-neutral-50 dark:bg-slate-800/40 p-4 rounded-xl border border-neutral-200 dark:border-slate-700 flex flex-wrap gap-4 items-end">
                 <div className="flex-1 min-w-[200px] flex flex-col gap-1.5">
                     <label className="text-xs font-semibold text-neutral-500 uppercase tracking-wider ml-1">Search</label>
@@ -296,9 +326,10 @@ export default function RecruiterJobsTable({
                         ) : (
                             currentJobs.map((job) => {
                                 const status = statusMap[job.status] || { label: job.status, variant: "secondary" };
+                                const isNew = newJobIds.has(job.id);
 
                                 return (
-                                    <TableRow key={job.id} className="hover:bg-neutral-50 dark:hover:bg-slate-800/50 transition-colors">
+                                    <TableRow key={job.id} className={`hover:bg-neutral-50 dark:hover:bg-slate-800/50 transition-colors ${isNew ? 'bg-emerald-50 dark:bg-emerald-900/20 animate-pulse-once' : ''}`}>
                                         <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start font-medium capitalize">
                                             {job.jobTitle.toLowerCase()}
                                         </TableCell>

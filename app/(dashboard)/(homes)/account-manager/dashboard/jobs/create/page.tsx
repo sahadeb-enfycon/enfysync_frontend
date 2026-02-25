@@ -64,6 +64,21 @@ export default function AccountManagerCreateJobPage() {
             });
 
             if (response.ok) {
+                const createdJob = await response.json().catch(() => ({}));
+
+                // Broadcast live notification to pod leads and recruiters
+                fetch("/api/notifications/broadcast", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        event: "job_created",
+                        jobTitle: payload.jobTitle,
+                        clientName: payload.clientName,
+                        postedBy: session?.user?.name || session?.user?.email || "Account Manager",
+                        jobId: createdJob?.id || "",
+                    }),
+                }).catch(() => { }); // fire-and-forget, don't block the UX
+
                 toast.success("Job posted successfully!");
                 router.push("/account-manager/dashboard/jobs");
                 router.refresh();

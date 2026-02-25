@@ -225,6 +225,20 @@ export default function JobsTable({
 
             if (response.ok) {
                 toast.success("Job deleted successfully");
+
+                // Broadcast deletion to pod leads / recruiters watching job tables
+                fetch("/api/notifications/broadcast", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        event: "job_deleted",
+                        jobTitle: jobToDelete.jobTitle,
+                        clientName: jobToDelete.clientName,
+                        jobId: jobToDelete.id,
+                        postedBy: (session as any)?.user?.name || "Account Manager",
+                    }),
+                }).catch(() => { });
+
                 if (onRefresh) {
                     onRefresh();
                 } else {
