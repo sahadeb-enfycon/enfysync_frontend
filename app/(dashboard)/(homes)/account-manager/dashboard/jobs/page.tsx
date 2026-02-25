@@ -4,22 +4,11 @@ import JobsTable from "@/components/dashboard/account-manager/JobsTable";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import Link from "next/link";
+import { serverApiClient } from "@/lib/serverApiClient";
 
 async function getJobs() {
-    const session = await auth();
-    // In auth.ts, accessToken is added to session.user
-    const token = (session as any)?.user?.accessToken;
-
-    if (!token) {
-        console.error("No access token found in session");
-        return [];
-    }
-
     try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs?my=true`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
+        const response = await serverApiClient("/jobs?my=true", {
             cache: 'no-store',
         });
 

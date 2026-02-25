@@ -4,23 +4,13 @@ import PodsTable from "@/components/dashboard/delivery-head/PodsTable";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import Link from "next/link";
+import { serverApiClient } from "@/lib/serverApiClient";
 
 export const dynamic = 'force-dynamic';
 
 async function getPods() {
-    const session = await auth();
-    const token = (session as any)?.user?.accessToken;
-
-    if (!token) {
-        console.error("No access token found in session");
-        return [];
-    }
-
     try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/pods/my-pods`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
+        const response = await serverApiClient("/pods/my-pods", {
             cache: 'no-store',
         });
 

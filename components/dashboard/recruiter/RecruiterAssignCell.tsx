@@ -11,6 +11,7 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover";
+import { apiClient } from "@/lib/apiClient";
 
 export interface TeamMember {
     id: string;
@@ -103,17 +104,13 @@ export default function RecruiterAssignCell({
 
         setSaving(true);
         try {
-            const res = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}/jobs/${jobId}/assign`,
-                {
-                    method: "PATCH",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`,
-                    },
-                    body: JSON.stringify({ recruiterIds: [...selected] }),
-                }
-            );
+            const res = await apiClient(`/jobs/${jobId}/assign`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ recruiterIds: [...selected] }),
+            });
 
             if (!res.ok) {
                 const err = await res.json().catch(() => ({}));
@@ -157,8 +154,8 @@ export default function RecruiterAssignCell({
         ) : (
             <button
                 className={`flex items-center gap-1 rounded-lg px-1.5 py-1 transition-colors ${canEdit
-                        ? "hover:bg-neutral-100 dark:hover:bg-slate-700"
-                        : "cursor-default"
+                    ? "hover:bg-neutral-100 dark:hover:bg-slate-700"
+                    : "cursor-default"
                     }`}
                 type="button"
                 disabled={!canEdit}
@@ -239,8 +236,8 @@ export default function RecruiterAssignCell({
                                     type="button"
                                     onClick={() => toggleMember(member.id)}
                                     className={`w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors hover:bg-neutral-50 dark:hover:bg-slate-700/60 ${isSelected
-                                            ? "bg-blue-50/60 dark:bg-blue-900/20"
-                                            : ""
+                                        ? "bg-blue-50/60 dark:bg-blue-900/20"
+                                        : ""
                                         }`}
                                 >
                                     {/* Avatar */}
@@ -261,8 +258,8 @@ export default function RecruiterAssignCell({
                                     {/* Checkbox */}
                                     <span
                                         className={`shrink-0 flex items-center justify-center h-4 w-4 rounded border transition-colors ${isSelected
-                                                ? "bg-blue-600 border-blue-600"
-                                                : "border-neutral-300 dark:border-slate-500"
+                                            ? "bg-blue-600 border-blue-600"
+                                            : "border-neutral-300 dark:border-slate-500"
                                             }`}
                                     >
                                         {isSelected && (

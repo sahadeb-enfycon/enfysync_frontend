@@ -35,6 +35,7 @@ import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import RecruiterAssignCell, { TeamMember } from "./RecruiterAssignCell";
 import JobSubmissionDialog from "./JobSubmissionDialog";
+import { apiClient } from "@/lib/apiClient";
 
 interface Job {
     id: string;
@@ -98,10 +99,7 @@ export default function RecruiterJobsTable({
 
     // Fetch team members from /pods/my-team once
     useEffect(() => {
-        if (!token) return;
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/pods/my-team`, {
-            headers: { Authorization: `Bearer ${token}` },
-        })
+        apiClient("/pods/my-team")
             .then((res) => res.ok ? res.json() : [])
             .then((data) => {
                 // API may return array directly or { members: [] }

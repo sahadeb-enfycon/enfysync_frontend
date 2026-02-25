@@ -4,26 +4,21 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import SubmittedJobsTable, { CandidateSubmission } from "@/components/dashboard/recruiter/SubmittedJobsTable";
 import { Loader2 } from "lucide-react";
+import { apiClient } from "@/lib/apiClient";
 
 
 export default function SubmittedJobsPage() {
-    const { data: session } = useSession();
-    const token = (session as any)?.user?.accessToken;
+    const { status } = useSession();
     const [submissions, setSubmissions] = useState<CandidateSubmission[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState("");
 
     const fetchSubmissions = async () => {
-        if (!token) return;
         setIsLoading(true);
         setError("");
 
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/recruiter-submissions`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
+            const res = await apiClient("/recruiter-submissions");
 
             if (!res.ok) {
                 throw new Error("Failed to fetch submitted jobs");
@@ -44,12 +39,14 @@ export default function SubmittedJobsPage() {
     };
 
     useEffect(() => {
-        if (token) {
+        if (status === "authenticated") {
             fetchSubmissions();
+        } else if (status === "unauthenticated") {
+            setIsLoading(false);
         }
-    }, [token]);
+    }, [status]);
 
-    if (!session) {
+    if (status === "loading") {
         return null;
     }
 

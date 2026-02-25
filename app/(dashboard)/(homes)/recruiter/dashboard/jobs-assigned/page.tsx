@@ -1,24 +1,14 @@
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import { auth } from "@/auth";
 import RecruiterJobsTable from "@/components/dashboard/recruiter/RecruiterJobsTable";
+import { serverApiClient } from "@/lib/serverApiClient";
 
 export const dynamic = 'force-dynamic';
 
 async function getAssignedJobs() {
-    const session = await auth();
-    const token = (session as any)?.user?.accessToken;
-
-    if (!token) {
-        console.error("No access token found in session");
-        return [];
-    }
-
     try {
         // Use the dedicated endpoint for recruiter assigned jobs
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs?my=true`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
+        const response = await serverApiClient("/jobs?my=true", {
             cache: 'no-store',
         });
 

@@ -53,6 +53,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import { apiClient } from "@/lib/apiClient";
 
 interface Job {
     id: string;
@@ -115,7 +116,6 @@ export default function JobsTable({
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
 
-    const token = (session as any)?.user?.accessToken;
 
     const itemsPerPage = 10;
 
@@ -212,15 +212,12 @@ export default function JobsTable({
     };
 
     const handleDeleteConfirm = async () => {
-        if (!jobToDelete || !token) return;
+        if (!jobToDelete) return;
 
         setIsDeleting(true);
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs/${jobToDelete.id}`, {
+            const response = await apiClient(`/jobs/${jobToDelete.id}`, {
                 method: "DELETE",
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
             });
 
             if (response.ok) {

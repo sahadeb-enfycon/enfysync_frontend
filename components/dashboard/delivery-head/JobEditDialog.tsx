@@ -22,6 +22,7 @@ import {
 import { toast } from "react-hot-toast";
 import { useSession } from "next-auth/react";
 import { Textarea } from "@/components/ui/textarea";
+import { apiClient } from "@/lib/apiClient";
 
 interface Job {
     id: string;
@@ -64,12 +65,10 @@ export default function JobEditDialog({ job, isOpen, onClose, onSuccess }: JobEd
     const token = (session as any)?.user?.accessToken;
 
     const fetchJobDetails = React.useCallback(async () => {
-        if (!job || !token) return;
+        if (!job) return;
         setIsLoading(true);
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs/${job.id}`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
+            const response = await apiClient(`/jobs/${job.id}`);
             if (response.ok) {
                 const fullJob = await response.json();
                 setFormData({
@@ -97,7 +96,7 @@ export default function JobEditDialog({ job, isOpen, onClose, onSuccess }: JobEd
         } finally {
             setIsLoading(false);
         }
-    }, [job, token]);
+    }, [job]);
 
     React.useEffect(() => {
         if (isOpen && job) {
@@ -109,11 +108,8 @@ export default function JobEditDialog({ job, isOpen, onClose, onSuccess }: JobEd
 
     React.useEffect(() => {
         const fetchPods = async () => {
-            if (!token) return;
             try {
-                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/pods/my-pods`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
+                const response = await apiClient("/pods/my-pods");
                 if (response.ok) {
                     const data = await response.json();
                     setPods(data);
@@ -130,7 +126,7 @@ export default function JobEditDialog({ job, isOpen, onClose, onSuccess }: JobEd
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!job || !token) return;
+        if (!job) return;
 
         setIsSubmitting(true);
         try {
@@ -151,11 +147,10 @@ export default function JobEditDialog({ job, isOpen, onClose, onSuccess }: JobEd
                 }
             }
 
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs/${job.id}`, {
+            const response = await apiClient(`/jobs/${job.id}`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify(patchData),
             });

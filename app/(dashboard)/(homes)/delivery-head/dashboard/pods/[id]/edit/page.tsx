@@ -20,6 +20,7 @@ import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { transformPodUpdateData } from "./transform-pod-data";
 import { Skeleton } from "@/components/ui/skeleton";
+import { apiClient } from "@/lib/apiClient";
 
 export default function DeliveryHeadEditPodPage({ params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = React.use(params);
@@ -40,16 +41,13 @@ export default function DeliveryHeadEditPodPage({ params }: { params: Promise<{ 
 
     const token = (session as any)?.user?.accessToken;
 
-    const fetchData = React.useCallback(async (authToken: string) => {
+    const fetchData = React.useCallback(async () => {
         setIsLoading(true);
         try {
-            const baseUrl = process.env.NEXT_PUBLIC_API_URL;
-            const headers = { Authorization: `Bearer ${authToken}` };
-
             // Parallel fetching
             const [recruitersRes, podRes] = await Promise.all([
-                fetch(`${baseUrl}/pods/delivery-head/available-recruiters`, { headers }),
-                fetch(`${baseUrl}/pods/${podId}`, { headers })
+                apiClient("/pods/delivery-head/available-recruiters"),
+                apiClient(`/pods/${podId}`)
             ]);
 
             if (!podRes.ok) {
@@ -81,12 +79,12 @@ export default function DeliveryHeadEditPodPage({ params }: { params: Promise<{ 
     }, [podId, router]);
 
     React.useEffect(() => {
-        if (status === "authenticated" && token) {
-            fetchData(token);
+        if (status === "authenticated") {
+            fetchData();
         } else if (status === "unauthenticated") {
             router.push('/login');
         }
-    }, [status, token, fetchData, router]);
+    }, [status, fetchData, router]);
 
     const handlePodLeadChange = React.useCallback((value: string) => {
         setFormData(prev => {
@@ -143,11 +141,10 @@ export default function DeliveryHeadEditPodPage({ params }: { params: Promise<{ 
         setIsSubmitting(true);
 
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/pods/${podId}`, {
+            const response = await apiClient(`/pods/${podId}`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`
                 },
                 body: JSON.stringify({
                     name: formData.podName,

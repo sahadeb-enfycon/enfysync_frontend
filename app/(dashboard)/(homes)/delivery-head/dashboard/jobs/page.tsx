@@ -1,23 +1,13 @@
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import { auth } from "@/auth";
 import JobsTable from "@/components/dashboard/account-manager/JobsTable";
+import { serverApiClient } from "@/lib/serverApiClient";
 
 export const dynamic = 'force-dynamic';
 
 async function getJobs() {
-    const session = await auth();
-    const token = (session as any)?.user?.accessToken;
-
-    if (!token) {
-        console.error("No access token found in session");
-        return [];
-    }
-
     try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
+        const response = await serverApiClient("/jobs", {
             cache: 'no-store',
         });
 

@@ -5,16 +5,11 @@ import RecruiterPerformanceChart from "./components/performance-chart";
 import RecentJobsTable from "./components/recent-jobs-table";
 import { Suspense } from "react";
 import LoadingSkeleton from "@/components/loading-skeleton";
+import { serverApiClient } from "@/lib/serverApiClient";
 
 async function getJobs() {
-    const session = await auth();
-    const token = (session as any)?.user?.accessToken;
-
-    if (!token) return [];
-
     try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs/recruiter/available-jobs`, {
-            headers: { Authorization: `Bearer ${token}` },
+        const response = await serverApiClient("/jobs/recruiter/available-jobs", {
             cache: 'no-store',
         });
 

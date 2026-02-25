@@ -19,6 +19,7 @@ import { LocationSelect } from "@/components/shared/location-select";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
+import { apiClient } from "@/lib/apiClient";
 
 export default function AccountManagerCreateJobPage() {
     const { data: session } = useSession();
@@ -51,14 +52,11 @@ export default function AccountManagerCreateJobPage() {
             podId: "" // Added as per requested body
         };
 
-        const token = (session as any)?.user?.accessToken;
-
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs`, {
+            const response = await apiClient("/jobs", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`
                 },
                 body: JSON.stringify(payload)
             });

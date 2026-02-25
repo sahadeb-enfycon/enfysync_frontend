@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "react-hot-toast";
+import { apiClient } from "@/lib/apiClient";
 
 interface JobSubmissionDialogProps {
     isOpen: boolean;
@@ -74,11 +75,10 @@ export default function JobSubmissionDialog({
                 recruiterComment: formData.recruiterComment,
             };
 
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/recruiter-submissions`, {
+            const res = await apiClient("/recruiter-submissions", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify(payload),
             });

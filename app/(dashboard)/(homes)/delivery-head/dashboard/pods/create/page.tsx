@@ -22,6 +22,8 @@ import { useRouter } from "next/navigation";
 // Initial empty options, will be populated from API
 const INITIAL_RECRUITER_OPTIONS: Option[] = [];
 
+import { apiClient } from "@/lib/apiClient";
+
 export default function DeliveryHeadCreatePodPage() {
     const { data: session } = useSession();
     const router = useRouter();
@@ -35,14 +37,9 @@ export default function DeliveryHeadCreatePodPage() {
 
     React.useEffect(() => {
         async function fetchData() {
-            const token = (session as any)?.user?.accessToken;
-            if (!token) return;
-
             try {
                 // Fetch recruiters
-                const recruitersRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/pods/delivery-head/available-recruiters`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+                const recruitersRes = await apiClient("/pods/delivery-head/available-recruiters");
 
                 if (recruitersRes.ok) {
                     const recruiters = await recruitersRes.json();
@@ -127,14 +124,12 @@ export default function DeliveryHeadCreatePodPage() {
         }
 
         setIsSubmitting(true);
-        const token = (session as any)?.user?.accessToken;
 
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/pods`, {
+            const response = await apiClient("/pods", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`
                 },
                 body: JSON.stringify({
                     name: podName,
