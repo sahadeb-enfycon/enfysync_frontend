@@ -38,7 +38,7 @@ export default async function DeliveryHeadJobsPage() {
 
     return (
         <>
-            <DashboardBreadcrumb title="All Jobs" text="Job Management" />
+            <DashboardBreadcrumb title="All Jobs" text="Jobs" />
             <div className="p-6">
                 {/* <div className="flex justify-between items-center mb-6">
                     <div>
