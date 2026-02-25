@@ -81,6 +81,11 @@ export default function RecruiterJobsTable({
     const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
 
     const token = (session as any)?.user?.accessToken;
+    const roles: string[] = (session?.user as any)?.roles || [];
+    const isPodLead = roles.some((role) => {
+        const normalizedRole = role?.toUpperCase?.();
+        return normalizedRole === "POD_LEAD" || normalizedRole === "POD-LEAD";
+    });
     const itemsPerPage = 10;
 
     // Fetch team members from /pods/my-team once
@@ -321,6 +326,7 @@ export default function RecruiterJobsTable({
                                                 assignedRecruiters={job.assignedRecruiters ?? []}
                                                 teamMembers={teamMembers}
                                                 token={token}
+                                                canEdit={isPodLead}
                                                 onSuccess={() => router.refresh()}
                                             />
                                         </TableCell>
