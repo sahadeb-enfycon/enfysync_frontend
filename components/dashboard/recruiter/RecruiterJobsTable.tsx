@@ -19,6 +19,7 @@ import {
     ChevronsRight,
     Search,
     X,
+    UserPlus,
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -33,6 +34,7 @@ import { useSession } from "next-auth/react";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import RecruiterAssignCell, { TeamMember } from "./RecruiterAssignCell";
+import JobSubmissionDialog from "./JobSubmissionDialog";
 
 interface Job {
     id: string;
@@ -41,6 +43,8 @@ interface Job {
     jobCode: string;
     status: string;
     createdAt: string;
+    submissionRequired?: number;
+    submissionDone?: number;
     accountManager?: {
         fullName: string | null;
         email: string;
@@ -82,6 +86,7 @@ export default function RecruiterJobsTable({
     const [searchQuery, setSearchQuery] = useState("");
     const [sortBy, setSortBy] = useState<string>("date-desc");
     const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+    const [submissionJob, setSubmissionJob] = useState<{ id: string; jobCode: string } | null>(null);
 
     const token = (session as any)?.user?.accessToken;
     const roles: string[] = (session?.user as any)?.roles || [];
@@ -339,9 +344,18 @@ export default function RecruiterJobsTable({
                                             {job.jobTitle.toLowerCase()}
                                         </TableCell>
                                         <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
-                                            <code className="bg-neutral-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-xs font-mono">
-                                                {job.jobCode}
-                                            </code>
+                                            <div className="flex flex-col gap-1">
+                                                <div className="flex items-center gap-2">
+                                                    <code className="bg-neutral-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-xs font-mono w-fit">
+                                                        {job.jobCode}
+                                                    </code>
+                                                    {job.submissionRequired !== undefined && (
+                                                        <Badge variant="outline" className="text-[10px] h-5 px-1.5 bg-neutral-50 dark:bg-slate-800 text-neutral-500 whitespace-nowrap">
+                                                            {job.submissionDone || 0} / {job.submissionRequired} done
+                                                        </Badge>
+                                                    )}
+                                                </div>
+                                            </div>
                                         </TableCell>
                                         <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
                                             {job.clientName}
@@ -362,8 +376,25 @@ export default function RecruiterJobsTable({
                                                 onSuccess={() => router.refresh()}
                                             />
                                         </TableCell>
-                                        <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
-                                            {new Date(job.createdAt).toLocaleDateString()}
+                                        <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start whitespace-nowrap">
+                                            <div className="flex flex-col">
+                                                <span className="text-sm">
+                                                    {new Intl.DateTimeFormat("en-US", {
+                                                        timeZone: "America/New_York",
+                                                        month: "short",
+                                                        day: "numeric",
+                                                        year: "numeric"
+                                                    }).format(new Date(job.createdAt))}
+                                                </span>
+                                                <span className="text-[10px] text-muted-foreground">
+                                                    {new Intl.DateTimeFormat("en-US", {
+                                                        timeZone: "America/New_York",
+                                                        hour: "numeric",
+                                                        minute: "numeric",
+                                                        timeZoneName: "short"
+                                                    }).format(new Date(job.createdAt))}
+                                                </span>
+                                            </div>
                                         </TableCell>
                                         <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-center">
                                             <Badge variant={status.variant as any} className="font-semibold px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wider">
@@ -372,6 +403,15 @@ export default function RecruiterJobsTable({
                                         </TableCell>
                                         <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-end">
                                             <div className="flex justify-end gap-2">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-primary hover:text-primary/80 hover:bg-primary/10"
+                                                    onClick={() => setSubmissionJob({ id: job.id, jobCode: job.jobCode })}
+                                                    title="Submit Candidate"
+                                                >
+                                                    <UserPlus className="h-4 w-4" />
+                                                </Button>
                                                 <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20" asChild>
                                                     <Link href={`${baseUrl}/${job.id}`}>
                                                         <Eye className="h-4 w-4" />
@@ -458,6 +498,20 @@ export default function RecruiterJobsTable({
                         </Button>
                     </div>
                 </div>
+            )}
+
+            {submissionJob && (
+                <JobSubmissionDialog
+                    isOpen={!!submissionJob}
+                    onClose={() => setSubmissionJob(null)}
+                    jobCode={submissionJob.jobCode}
+                    recruiterId={(session?.user as any)?.id || ""}
+                    token={token}
+                    onSuccess={() => {
+                        if (onRefresh) onRefresh();
+                        else router.refresh();
+                    }}
+                />
             )}
         </div>
     );
