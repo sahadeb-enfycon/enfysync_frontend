@@ -76,6 +76,7 @@ export default function RecruiterJobsTable({
     const [currentPage, setCurrentPage] = useState(1);
     const [amFilter, setAmFilter] = useState<string>("all");
     const [clientFilter, setClientFilter] = useState<string>("all");
+    const [recruiterFilter, setRecruiterFilter] = useState<string>("all");
     const [searchQuery, setSearchQuery] = useState("");
     const [sortBy, setSortBy] = useState<string>("date-desc");
     const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
@@ -105,8 +106,9 @@ export default function RecruiterJobsTable({
 
     // Extract unique values for filters
     const filterOptions = useMemo(() => {
-        const ams = new Map();
+        const ams = new Map<string, string>();
         const clients = new Set<string>();
+        const recruiters = new Map<string, string>();
 
         jobs.forEach(job => {
             if (job.accountManager) {
@@ -114,11 +116,19 @@ export default function RecruiterJobsTable({
                 ams.set(job.accountManager.email, name);
             }
             if (job.clientName) clients.add(job.clientName);
+
+            if (job.assignedRecruiters) {
+                job.assignedRecruiters.forEach(rec => {
+                    const name = rec.fullName || rec.email;
+                    recruiters.set(rec.id, name);
+                });
+            }
         });
 
         return {
             ams: Array.from(ams.entries()).map(([email, name]) => ({ email, name })),
             clients: Array.from(clients).sort(),
+            recruiters: Array.from(recruiters.entries()).map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name)),
         };
     }, [jobs]);
 
@@ -127,14 +137,16 @@ export default function RecruiterJobsTable({
         return jobs.filter(job => {
             const matchesAM = amFilter === "all" || job.accountManager?.email === amFilter;
             const matchesClient = clientFilter === "all" || job.clientName === clientFilter;
+            const matchesRecruiter = recruiterFilter === "all" ||
+                (job.assignedRecruiters && job.assignedRecruiters.some(r => r.id === recruiterFilter));
             const matchesSearch = !searchQuery ||
                 job.jobTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 job.jobCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 job.clientName.toLowerCase().includes(searchQuery.toLowerCase());
 
-            return matchesAM && matchesClient && matchesSearch;
+            return matchesAM && matchesClient && matchesRecruiter && matchesSearch;
         });
-    }, [jobs, amFilter, clientFilter, searchQuery]);
+    }, [jobs, amFilter, clientFilter, recruiterFilter, searchQuery]);
 
     const sortedJobs = useMemo(() => {
         return [...filteredJobs].sort((a, b) => {
@@ -173,6 +185,7 @@ export default function RecruiterJobsTable({
     const clearFilters = () => {
         setAmFilter("all");
         setClientFilter("all");
+        setRecruiterFilter("all");
         setSearchQuery("");
         setSortBy("date-desc");
         setCurrentPage(1);
@@ -213,6 +226,21 @@ export default function RecruiterJobsTable({
                 </div>
 
                 <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-semibold text-neutral-500 uppercase tracking-wider ml-1">Recruiter</label>
+                    <Select value={recruiterFilter} onValueChange={(v) => { setRecruiterFilter(v); setCurrentPage(1); }}>
+                        <SelectTrigger className="w-[180px] h-10 bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-600 rounded-lg">
+                            <SelectValue placeholder="All Recruiters" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Recruiters</SelectItem>
+                            {filterOptions.recruiters.map(rec => (
+                                <SelectItem key={rec.id} value={rec.id}>{rec.name}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
                     <label className="text-xs font-semibold text-neutral-500 uppercase tracking-wider ml-1">Client</label>
                     <Select value={clientFilter} onValueChange={(v) => { setClientFilter(v); setCurrentPage(1); }}>
                         <SelectTrigger className="w-[150px] h-10 bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-600 rounded-lg">
@@ -244,7 +272,7 @@ export default function RecruiterJobsTable({
                     </Select>
                 </div>
 
-                {(amFilter !== "all" || clientFilter !== "all" || searchQuery || sortBy !== "date-desc") && (
+                {(amFilter !== "all" || clientFilter !== "all" || recruiterFilter !== "all" || searchQuery || sortBy !== "date-desc") && (
                     <Button
                         variant="ghost"
                         size="icon"

@@ -168,11 +168,22 @@ export const getSidebarData = (role: string) => {
           url: "/recruiter/dashboard",
           circleColor: "bg-primary",
         },
+            {
+          title: "Assigned Jobs",
+          url: "/recruiter/dashboard/jobs-assigned",
+          circleColor: "bg-primary",
+        },
+        {
+          title: "Submitted Jobs",
+          url: "/recruiter/dashboard/jobs-submitted",
+          circleColor: "bg-primary",
+        },
           {
-          title: "Jobs",
+          title: "Jobs in my Pods",
           url: "/recruiter/dashboard/jobs",
           circleColor: "bg-primary",
         },
+     
       ],
     },
     // {
