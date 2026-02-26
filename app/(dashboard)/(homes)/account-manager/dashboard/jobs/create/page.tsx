@@ -18,12 +18,33 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import { apiClient } from "@/lib/apiClient";
+import RichTextEditor from "@/components/shared/rich-text-editor";
 
 export default function AccountManagerCreateJobPage() {
     const { data: session } = useSession();
     const router = useRouter();
     const [location, setLocation] = useState("remote"); // Default to Remote as per user request example
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [descriptionHtml, setDescriptionHtml] = useState("");
+
+    const sanitizeRichHtml = (html: string) => {
+        const container = document.createElement("div");
+        container.innerHTML = html;
+        container.querySelectorAll("script,style,iframe,object,embed").forEach((el) => el.remove());
+
+        container.querySelectorAll("*").forEach((el) => {
+            Array.from(el.attributes).forEach((attr) => {
+                const name = attr.name.toLowerCase();
+                const value = attr.value.trim().toLowerCase();
+                if (name.startsWith("on")) el.removeAttribute(attr.name);
+                if ((name === "href" || name === "src") && value.startsWith("javascript:")) {
+                    el.removeAttribute(attr.name);
+                }
+            });
+        });
+
+        return container.innerHTML.trim();
+    };
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -31,13 +52,13 @@ export default function AccountManagerCreateJobPage() {
 
         const formData = new FormData(e.currentTarget);
         const data = Object.fromEntries(formData.entries());
-        // NOTE: Job description is temporarily disabled.
-        // Uncomment when needed:
-        // const cleanedDescription = sanitizeRichHtml(descriptionHtml);
+        const cleanedDescription = sanitizeRichHtml(descriptionHtml);
 
         // Prepare the payload according to the requested JSON body
         const payload = {
             jobTitle: data.jobTitle,
+            jobType: data.jobType,
+            jobDescription: cleanedDescription,
             jobLocation: data.jobLocation,
             visaType: data.visaType,
             clientBillRate: data.clientBillRate,
@@ -51,7 +72,6 @@ export default function AccountManagerCreateJobPage() {
             status: "ACTIVE",
             isDeleted: false,
             podId: "", // Added as per requested body
-            // description: cleanedDescription,
         };
 
         try {
@@ -89,6 +109,22 @@ export default function AccountManagerCreateJobPage() {
                             <div>
                                 <Label htmlFor="jobTitle" className="text-[#4b5563] dark:text-white mb-2">Job Title *</Label>
                                 <Input type="text" id="jobTitle" name="jobTitle" className="border border-neutral-300 px-5 dark:border-slate-500 focus:border-primary dark:focus:border-primary focus-visible:border-primary h-12 rounded-lg !shadow-none !ring-0" placeholder="e.g. Senior React Developer" required />
+                            </div>
+
+                            <div>
+                                <Label htmlFor="jobType" className="text-[#4b5563] dark:text-white mb-2">Job Type *</Label>
+                                <Select name="jobType" required>
+                                    <SelectTrigger className="border border-neutral-300 px-5 dark:border-slate-500 focus:border-primary dark:focus:border-primary focus-visible:border-primary !h-12 rounded-lg !shadow-none !ring-0 w-full bg-transparent text-left">
+                                        <SelectValue placeholder="Select Job Type" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="FULL_TIME">Full Time</SelectItem>
+                                        <SelectItem value="PART_TIME">Part Time</SelectItem>
+                                        <SelectItem value="CONTRACT">Contract</SelectItem>
+                                        <SelectItem value="C2C">C2C</SelectItem>
+                                        <SelectItem value="W2">W2</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </div>
 
                             <div>
@@ -160,9 +196,6 @@ export default function AccountManagerCreateJobPage() {
                             </div>
                         </div>
 
-                        {/* NOTE: Job Description is temporarily hidden.
-                            Uncomment this block to restore Rich Text description input.
-                        
                         <div>
                             <Label className="text-[#4b5563] dark:text-white mb-2">Job Description</Label>
                             <RichTextEditor
@@ -171,7 +204,6 @@ export default function AccountManagerCreateJobPage() {
                                 placeholder="Add role summary, responsibilities, must-have skills, and interview process..."
                             />
                         </div>
-                        */}
 
                         <div className="flex justify-end gap-3 mt-4">
                             <Button type="button" variant="outline" className="h-12 px-8" onClick={() => router.back()} disabled={isSubmitting}>Cancel</Button>
