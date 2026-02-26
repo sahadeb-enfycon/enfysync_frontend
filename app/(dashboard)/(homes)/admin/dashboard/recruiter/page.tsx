@@ -72,6 +72,13 @@ export default async function AdminRecruiterDashboardPage() {
   const session = await auth();
   const userName = session?.user?.name || "Admin";
   const [jobs, submissions] = await Promise.all([getRecruiterJobs(), getSubmissions()]);
+  const recentJobs = jobs.map((job) => ({
+    id: job.id,
+    jobTitle: job.jobTitle || "Untitled Job",
+    clientName: job.clientName || "Unknown Client",
+    status: job.status || "ACTIVE",
+    createdAt: job.createdAt || new Date(0).toISOString(),
+  }));
 
   const hour = new Date().getHours();
   let greeting = "Good Evening";
@@ -242,7 +249,7 @@ export default async function AdminRecruiterDashboardPage() {
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
           <div className="xl:col-span-8">
             <Suspense fallback={<LoadingSkeleton />}>
-              <RecentJobsTable jobs={jobs} />
+              <RecentJobsTable jobs={recentJobs} />
             </Suspense>
           </div>
           <div className="xl:col-span-4">

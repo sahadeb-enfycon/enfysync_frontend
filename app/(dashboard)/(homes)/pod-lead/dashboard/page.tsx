@@ -74,6 +74,10 @@ export default async function PodLeadDashboard() {
     const topPods = Array.from(podBuckets.entries())
         .sort((a, b) => b[1].total - a[1].total)
         .slice(0, 6);
+    const podWorkloadRows: Array<[string, { total: number; active: number; filled: number }]> =
+        topPods.length > 0
+            ? topPods
+            : [["No pod data", { total: 0, active: 0, filled: 0 }]];
 
     const stats = [
         {
@@ -201,8 +205,7 @@ export default async function PodLeadDashboard() {
                             Pod Workload Analysis
                         </h6>
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                            {(topPods.length ? topPods : [["No pod data", { total: 0, active: 0, filled: 0 }]]).map(
-                                ([podName, values]) => (
+                            {podWorkloadRows.map(([podName, values]) => (
                                     <div
                                         key={podName}
                                         className="rounded-lg border border-neutral-200 dark:border-slate-700 p-4 bg-neutral-50 dark:bg-slate-800/50"
