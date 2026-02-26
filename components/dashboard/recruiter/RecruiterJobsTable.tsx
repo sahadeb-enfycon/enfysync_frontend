@@ -197,7 +197,7 @@ export default function RecruiterJobsTable({
     };
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-4 w-full min-w-0 overflow-x-hidden">
             <div className="bg-neutral-50 dark:bg-slate-800/40 p-4 rounded-xl border border-neutral-200 dark:border-slate-700 flex flex-wrap gap-4 items-end">
                 <div className="flex-1 min-w-[200px] flex flex-col gap-1.5">
                     <label className="text-xs font-semibold text-neutral-500 uppercase tracking-wider ml-1">Search</label>
@@ -293,136 +293,136 @@ export default function RecruiterJobsTable({
             </div>
 
             <div className="rounded-lg border border-neutral-200 dark:border-slate-600 overflow-hidden">
-                <Table className="table-auto border-spacing-0 border-separate">
-                    <TableHeader>
-                        <TableRow className="border-0">
-                            <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-start">
-                                Job Title
-                            </TableHead>
-                            <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-start">
-                                Job Code
-                            </TableHead>
-                            <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-start">
-                                Client
-                            </TableHead>
-                            <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-start">
-                                Account Manager
-                            </TableHead>
-                            <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-start">
-                                Assigned Recruiter
-                            </TableHead>
-                            <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-start">
-                                Created Date
-                            </TableHead>
-                            <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-center">
-                                Status
-                            </TableHead>
-                            <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-end">
-                                Actions
-                            </TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {currentJobs.length === 0 ? (
-                            <TableRow>
-                                <TableCell
-                                    colSpan={8}
-                                    className="h-24 text-center text-muted-foreground italic"
-                                >
-                                    No jobs found.
-                                </TableCell>
+                    <Table className="table-auto border-spacing-0 border-separate min-w-max">
+                        <TableHeader>
+                            <TableRow className="border-0">
+                                <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-start">
+                                    Job Title
+                                </TableHead>
+                                <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-start">
+                                    Job Code
+                                </TableHead>
+                                <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-start">
+                                    Client
+                                </TableHead>
+                                <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-start">
+                                    Account Manager
+                                </TableHead>
+                                <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-start">
+                                    Assigned Recruiter
+                                </TableHead>
+                                <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-start">
+                                    Created Date
+                                </TableHead>
+                                <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-center">
+                                    Status
+                                </TableHead>
+                                <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-end">
+                                    Actions
+                                </TableHead>
                             </TableRow>
-                        ) : (
-                            currentJobs.map((job) => {
-                                const status = statusMap[job.status] || { label: job.status, variant: "secondary" };
+                        </TableHeader>
+                        <TableBody>
+                            {currentJobs.length === 0 ? (
+                                <TableRow>
+                                    <TableCell
+                                        colSpan={8}
+                                        className="h-24 text-center text-muted-foreground italic"
+                                    >
+                                        No jobs found.
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                currentJobs.map((job) => {
+                                    const status = statusMap[job.status] || { label: job.status, variant: "secondary" };
 
-                                return (
-                                    <TableRow key={job.id} className="hover:bg-neutral-50 dark:hover:bg-slate-800/50 transition-colors">
-                                        <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start font-medium capitalize">
-                                            {job.jobTitle.toLowerCase()}
-                                        </TableCell>
-                                        <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
-                                            <div className="flex flex-col gap-1">
-                                                <div className="flex items-center gap-2">
-                                                    <code className="bg-neutral-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-xs font-mono w-fit">
-                                                        {job.jobCode}
-                                                    </code>
-                                                    {job.submissionRequired !== undefined && (
-                                                        <Badge variant="outline" className="text-[10px] h-5 px-1.5 bg-neutral-50 dark:bg-slate-800 text-neutral-500 whitespace-nowrap">
-                                                            {job.submissionDone || 0} / {job.submissionRequired} done
-                                                        </Badge>
-                                                    )}
+                                    return (
+                                        <TableRow key={job.id} className="hover:bg-neutral-50 dark:hover:bg-slate-800/50 transition-colors">
+                                            <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start font-medium capitalize">
+                                                {job.jobTitle.toLowerCase()}
+                                            </TableCell>
+                                            <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
+                                                <div className="flex flex-col gap-1">
+                                                    <div className="flex items-center gap-2">
+                                                        <code className="bg-neutral-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-xs font-mono w-fit">
+                                                            {job.jobCode}
+                                                        </code>
+                                                        {job.submissionRequired !== undefined && (
+                                                            <Badge variant="outline" className="text-[10px] h-5 px-1.5 bg-neutral-50 dark:bg-slate-800 text-neutral-500 whitespace-nowrap">
+                                                                {job.submissionDone || 0} / {job.submissionRequired} done
+                                                            </Badge>
+                                                        )}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
-                                            {job.clientName}
-                                        </TableCell>
-                                        <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start whitespace-nowrap">
-                                            <div className="flex flex-col">
-                                                <span className="font-medium text-sm">{job.accountManager?.fullName || "N/A"}</span>
-                                                <span className="text-[10px] text-muted-foreground">{job.accountManager?.email}</span>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
-                                            <RecruiterAssignCell
-                                                jobId={job.id}
-                                                assignedRecruiters={job.assignedRecruiters ?? []}
-                                                teamMembers={teamMembers}
-                                                token={token}
-                                                canEdit={isPodLead}
-                                                onSuccess={() => router.refresh()}
-                                            />
-                                        </TableCell>
-                                        <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start whitespace-nowrap">
-                                            <div className="flex flex-col">
-                                                <span className="text-sm">
-                                                    {new Intl.DateTimeFormat("en-US", {
-                                                        timeZone: "America/New_York",
-                                                        month: "short",
-                                                        day: "numeric",
-                                                        year: "numeric"
-                                                    }).format(new Date(job.createdAt))}
-                                                </span>
-                                                <span className="text-[10px] text-muted-foreground">
-                                                    {new Intl.DateTimeFormat("en-US", {
-                                                        timeZone: "America/New_York",
-                                                        hour: "numeric",
-                                                        minute: "numeric",
-                                                        timeZoneName: "short"
-                                                    }).format(new Date(job.createdAt))}
-                                                </span>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-center">
-                                            <Badge variant={status.variant as any} className="font-semibold px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wider">
-                                                {status.label}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-end">
-                                            <div className="flex justify-end gap-2">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-8 w-8 text-primary hover:text-primary/80 hover:bg-primary/10"
-                                                    onClick={() => setSubmissionJob({ id: job.id, jobCode: job.jobCode })}
-                                                    title="Submit Candidate"
-                                                >
-                                                    <UserPlus className="h-4 w-4" />
-                                                </Button>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20" asChild>
-                                                    <Link href={`${baseUrl}/${job.id}`}>
-                                                        <Eye className="h-4 w-4" />
-                                                    </Link>
-                                                </Button>
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                );
-                            })
-                        )}
-                    </TableBody>
-                </Table>
+                                            </TableCell>
+                                            <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
+                                                {job.clientName}
+                                            </TableCell>
+                                            <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start whitespace-nowrap">
+                                                <div className="flex flex-col">
+                                                    <span className="font-medium text-sm">{job.accountManager?.fullName || "N/A"}</span>
+                                                    <span className="text-[10px] text-muted-foreground">{job.accountManager?.email}</span>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
+                                                <RecruiterAssignCell
+                                                    jobId={job.id}
+                                                    assignedRecruiters={job.assignedRecruiters ?? []}
+                                                    teamMembers={teamMembers}
+                                                    token={token}
+                                                    canEdit={isPodLead}
+                                                    onSuccess={() => router.refresh()}
+                                                />
+                                            </TableCell>
+                                            <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start whitespace-nowrap">
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm">
+                                                        {new Intl.DateTimeFormat("en-US", {
+                                                            timeZone: "America/New_York",
+                                                            month: "short",
+                                                            day: "numeric",
+                                                            year: "numeric"
+                                                        }).format(new Date(job.createdAt))}
+                                                    </span>
+                                                    <span className="text-[10px] text-muted-foreground">
+                                                        {new Intl.DateTimeFormat("en-US", {
+                                                            timeZone: "America/New_York",
+                                                            hour: "numeric",
+                                                            minute: "numeric",
+                                                            timeZoneName: "short"
+                                                        }).format(new Date(job.createdAt))}
+                                                    </span>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-center">
+                                                <Badge variant={status.variant as any} className="font-semibold px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wider">
+                                                    {status.label}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-end">
+                                                <div className="flex justify-end gap-2">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8 text-primary hover:text-primary/80 hover:bg-primary/10"
+                                                        onClick={() => setSubmissionJob({ id: job.id, jobCode: job.jobCode })}
+                                                        title="Submit Candidate"
+                                                    >
+                                                        <UserPlus className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20" asChild>
+                                                        <Link href={`${baseUrl}/${job.id}`}>
+                                                            <Eye className="h-4 w-4" />
+                                                        </Link>
+                                                    </Button>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })
+                            )}
+                        </TableBody>
+                    </Table>
             </div>
 
             {/* Pagination Controls */}
