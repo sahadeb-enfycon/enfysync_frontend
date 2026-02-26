@@ -30,12 +30,17 @@ export const getSidebarData = (role: string) => {
         },
         {
           title: "Recruiter",
-          url: "/recruiter",
+          url: "/admin/dashboard/recruiter",
           circleColor: "bg-cyan-500",
         },
         {
+          title: "Pods",
+          url: "/admin/dashboard/pods",
+          circleColor: "bg-emerald-500",
+        },
+        {
           title: "Account Manager",
-          url: "/am",
+          url: "/admin/dashboard/account-manager",
           circleColor: "bg-yellow-500",
         },
 
