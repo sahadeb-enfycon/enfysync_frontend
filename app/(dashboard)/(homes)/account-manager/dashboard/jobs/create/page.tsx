@@ -3,7 +3,6 @@
 import { useState } from "react";
 import DefaultCardComponent from "@/app/(dashboard)/components/default-card-component";
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
-import { DatePicker } from "@/components/shared/date-picker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,18 +13,38 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { LocationSelect } from "@/components/shared/location-select";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import { apiClient } from "@/lib/apiClient";
+import RichTextEditor from "@/components/shared/rich-text-editor";
 
 export default function AccountManagerCreateJobPage() {
     const { data: session } = useSession();
     const router = useRouter();
     const [location, setLocation] = useState("remote"); // Default to Remote as per user request example
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [descriptionHtml, setDescriptionHtml] = useState("");
+
+    const sanitizeRichHtml = (html: string) => {
+        const container = document.createElement("div");
+        container.innerHTML = html;
+        container.querySelectorAll("script,style,iframe,object,embed").forEach((el) => el.remove());
+
+        container.querySelectorAll("*").forEach((el) => {
+            Array.from(el.attributes).forEach((attr) => {
+                const name = attr.name.toLowerCase();
+                const value = attr.value.trim().toLowerCase();
+                if (name.startsWith("on")) el.removeAttribute(attr.name);
+                if ((name === "href" || name === "src") && value.startsWith("javascript:")) {
+                    el.removeAttribute(attr.name);
+                }
+            });
+        });
+
+        return container.innerHTML.trim();
+    };
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -33,6 +52,7 @@ export default function AccountManagerCreateJobPage() {
 
         const formData = new FormData(e.currentTarget);
         const data = Object.fromEntries(formData.entries());
+        const cleanedDescription = sanitizeRichHtml(descriptionHtml);
 
         // Prepare the payload according to the requested JSON body
         const payload = {
@@ -49,7 +69,8 @@ export default function AccountManagerCreateJobPage() {
             accountManagerId: session?.user?.id || "",
             status: "ACTIVE",
             isDeleted: false,
-            podId: "" // Added as per requested body
+            podId: "", // Added as per requested body
+            description: cleanedDescription,
         };
 
         try {
@@ -156,6 +177,15 @@ export default function AccountManagerCreateJobPage() {
                                 <Label htmlFor="submissionRequired" className="text-[#4b5563] dark:text-white mb-2">Submission Required *</Label>
                                 <Input type="number" id="submissionRequired" name="submissionRequired" min="1" className="border border-neutral-300 px-5 dark:border-slate-500 focus:border-primary dark:focus:border-primary focus-visible:border-primary h-12 rounded-lg !shadow-none !ring-0" placeholder="e.g. 1" required />
                             </div>
+                        </div>
+
+                        <div>
+                            <Label className="text-[#4b5563] dark:text-white mb-2">Job Description</Label>
+                            <RichTextEditor
+                                value={descriptionHtml}
+                                onChange={setDescriptionHtml}
+                                placeholder="Add role summary, responsibilities, must-have skills, and interview process..."
+                            />
                         </div>
 
 
