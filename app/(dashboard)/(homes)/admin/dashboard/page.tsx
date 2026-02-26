@@ -12,16 +12,66 @@ import LoadingSkeleton from "@/components/loading-skeleton";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { auth } from "@/auth";
-import { ArrowUp, BriefcaseBusiness, FileText, UsersRound, Timer } from "lucide-react";
+import { serverApiClient } from "@/lib/serverApiClient";
 
 export const metadata: Metadata = {
   title: "Admin Dashboard | enfySync",
   description: "Recruitment Management Dashboard",
 };
 
+interface JobRow {
+  status?: string;
+}
+
+interface SubmissionRow {
+  l1Status?: string;
+  l2Status?: string;
+  l3Status?: string;
+  finalStatus?: string;
+}
+
+const normalizeStatus = (status?: string) => (status || "").trim().toUpperCase();
+const hasStageValue = (status?: string) => normalizeStatus(status) !== "";
+const isFinalized = (status?: string) => {
+  const s = normalizeStatus(status);
+  return s === "SELECTED" || s === "REJECTED" || s === "FILLED" || s === "CLOSED";
+};
+
+function getCurrentPipelineStage(submission: SubmissionRow) {
+  if (isFinalized(submission.finalStatus)) return "FINAL";
+  if (hasStageValue(submission.l3Status)) return "FINAL";
+  if (hasStageValue(submission.l2Status)) return "L2";
+  if (hasStageValue(submission.l1Status)) return "L1";
+  return "UNSTAGED";
+}
+
+async function getJobs(): Promise<JobRow[]> {
+  try {
+    const response = await serverApiClient("/jobs", { cache: "no-store" });
+    if (!response.ok) return [];
+    const data = await response.json();
+    return Array.isArray(data) ? data : [];
+  } catch {
+    return [];
+  }
+}
+
+async function getSubmissions(): Promise<SubmissionRow[]> {
+  try {
+    const response = await serverApiClient("/recruiter-submissions", { cache: "no-store" });
+    if (!response.ok) return [];
+    const data = await response.json();
+    const arr = Array.isArray(data) ? data : data?.submissions;
+    return Array.isArray(arr) ? arr : [];
+  } catch {
+    return [];
+  }
+}
+
 export default async function DashboardPage() {
   const session = await auth();
   const userName = session?.user?.name || "User";
+  const [jobs, submissions] = await Promise.all([getJobs(), getSubmissions()]);
 
   const hour = new Date().getHours();
   let greeting = "Good Evening";
@@ -30,58 +80,80 @@ export default async function DashboardPage() {
 
   const welcomeMessage = `${greeting}, ${userName}!`;
 
+  const openJobs = jobs.filter((job) => {
+    const s = normalizeStatus(job.status);
+    return s === "ACTIVE" || s === "ON_HOLD" || s === "HOLD_BY_CLIENT";
+  }).length;
+
+  const stageCounts = submissions.reduce(
+    (acc, sub) => {
+      const stage = getCurrentPipelineStage(sub);
+      if (stage === "L1") acc.l1 += 1;
+      if (stage === "L2") acc.l2 += 1;
+      if (stage === "FINAL") acc.final += 1;
+      return acc;
+    },
+    { l1: 0, l2: 0, final: 0 }
+  );
+
+  const totalSubmissions = submissions.length;
+  const pipelineCoverage = totalSubmissions > 0
+    ? Math.round(((stageCounts.l1 + stageCounts.l2 + stageCounts.final) / totalSubmissions) * 100)
+    : 0;
+  const openRatio = jobs.length > 0 ? Math.round((openJobs / jobs.length) * 100) : 0;
+
   const adminStats = [
     {
       title: "Total Open Jobs",
-      value: "42",
+      value: String(openJobs),
       icon: "BriefcaseBusiness",
       iconBg: "bg-blue-600",
       gradientFrom: "from-blue-600/10",
-      growth: "+5",
+      growth: `${openRatio}%`,
       growthIcon: "ArrowUp",
       growthColor: "text-green-600 dark:text-green-400",
-      description: "Increase from last month",
+      description: "Open roles vs total jobs",
     },
     {
       title: "Total Submissions",
-      value: "1,248",
+      value: String(totalSubmissions),
       icon: "FileText",
       iconBg: "bg-purple-600",
       gradientFrom: "from-purple-600/10",
-      growth: "+12%",
+      growth: `${pipelineCoverage}%`,
       growthIcon: "ArrowUp",
       growthColor: "text-green-600 dark:text-green-400",
-      description: "Better than last week",
+      description: "Tagged in active pipeline stages",
     },
     {
       title: "Candidates in L1",
-      value: "86",
+      value: String(stageCounts.l1),
       icon: "UsersRound",
       iconBg: "bg-cyan-600",
       gradientFrom: "from-cyan-600/10",
-      growth: "+15",
+      growth: String(stageCounts.l1),
       growthIcon: "ArrowUp",
       growthColor: "text-green-600 dark:text-green-400",
       description: "Currently in screening",
     },
     {
       title: "Candidates in L2",
-      value: "34",
+      value: String(stageCounts.l2),
       icon: "Timer",
       iconBg: "bg-orange-600",
       gradientFrom: "from-orange-600/10",
-      growth: "+4",
+      growth: String(stageCounts.l2),
       growthIcon: "ArrowUp",
       growthColor: "text-green-600 dark:text-green-400",
       description: "Technical rounds scheduled",
     },
     {
       title: "Final Rounds",
-      value: "12",
+      value: String(stageCounts.final),
       icon: "UsersRound",
       iconBg: "bg-green-600",
       gradientFrom: "from-green-600/10",
-      growth: "+2",
+      growth: String(stageCounts.final),
       growthIcon: "ArrowUp",
       growthColor: "text-green-600 dark:text-green-400",
       description: "Waiting for feedback",
