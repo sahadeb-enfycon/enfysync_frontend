@@ -6,14 +6,24 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { apiClient } from "@/lib/apiClient";
 import userImg from "@/public/assets/images/user.png";
 import { ChevronDown, Mail, Settings, Sparkles, User } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+
+type PodTeamMember = {
+  id: string;
+  fullName: string;
+  email: string;
+};
 
 const ProfileDropdown = () => {
   const { data: session } = useSession();
+  const [resolvedPodName, setResolvedPodName] = useState("");
+  const [podTeamMembers, setPodTeamMembers] = useState<PodTeamMember[]>([]);
 
   const rawRoles = ((session?.user as { roles?: string[] } | undefined)?.roles) || [];
   const validRoles = [
@@ -69,8 +79,94 @@ const ProfileDropdown = () => {
   const getRoleColors = (role: string) => roleColorMap[role] || roleColorMap.ADMIN;
 
   const displayName = session?.user?.name?.trim() || "Admin User";
+  const sessionPodName =
+    ((session?.user as { podName?: string | null } | undefined)?.podName || "").trim();
+  const podName = useMemo(() => (sessionPodName || resolvedPodName).trim(), [sessionPodName, resolvedPodName]);
+  const roleAndPodLabel = podName
+    ? `${formattedRoles.join(" + ")} • ${podName}`
+    : formattedRoles.join(" + ");
   const rolePrefix = selectedRoles[0].replace(/[_]/g, "-").toLowerCase();
   const profileUrl = `/${rolePrefix}/view-profile`;
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const parsePodName = (payload: unknown): string => {
+      if (!payload || typeof payload !== "object") return "";
+      const data = payload as {
+        name?: string;
+        pod?: { name?: string };
+        pods?: Array<{ name?: string }>;
+        members?: Array<{ pod?: { name?: string } }>;
+      };
+      if (data.pod?.name) return data.pod.name.trim();
+      if (data.name) return data.name.trim();
+      if (Array.isArray(data.pods) && data.pods[0]?.name) return (data.pods[0].name || "").trim();
+      if (Array.isArray(data.members) && data.members[0]?.pod?.name) return (data.members[0].pod?.name || "").trim();
+      return "";
+    };
+
+    const parseTeamMembers = (payload: unknown): PodTeamMember[] => {
+      if (!payload || typeof payload !== "object") return [];
+      const data = payload as {
+        podHead?: { id?: string; fullName?: string; email?: string };
+        recruiters?: Array<{ id?: string; fullName?: string; email?: string }>;
+      };
+      const rows = [data.podHead, ...(Array.isArray(data.recruiters) ? data.recruiters : [])]
+        .filter(Boolean)
+        .map((member) => {
+          const typed = member as { id?: string; fullName?: string; email?: string };
+          return {
+            id: typed.id || typed.email || typed.fullName || "",
+            fullName: (typed.fullName || "").trim(),
+            email: (typed.email || "").trim(),
+          };
+        })
+        .filter((member) => member.id && (member.fullName || member.email));
+
+      return Array.from(new Map(rows.map((member) => [member.id, member])).values());
+    };
+
+    const resolvePodName = async () => {
+      try {
+        const myTeamRes = await apiClient("/pods/my-team");
+        if (myTeamRes.ok) {
+          const myTeamData: unknown = await myTeamRes.json();
+          const teamPod = Array.isArray(myTeamData)
+            ? (myTeamData[0] as { pod?: { name?: string }; name?: string } | undefined)
+            : myTeamData;
+          const teamPodName = parsePodName(teamPod);
+          const teamMembers = parseTeamMembers(teamPod);
+          if (isMounted) {
+            setPodTeamMembers(teamMembers);
+          }
+          if (!sessionPodName && teamPodName && isMounted) {
+            setResolvedPodName(teamPodName);
+            return;
+          }
+        }
+      } catch {
+        // noop: we'll try next endpoint
+      }
+
+      try {
+        const myPodsRes = await apiClient("/pods/my-pods");
+        if (!myPodsRes.ok) return;
+        const myPodsData: unknown = await myPodsRes.json();
+        const fromArray = Array.isArray(myPodsData)
+          ? ((myPodsData[0] as { name?: string } | undefined)?.name || "").trim()
+          : parsePodName(myPodsData);
+        if (!sessionPodName && fromArray && isMounted) setResolvedPodName(fromArray);
+      } catch {
+        // noop
+      }
+    };
+
+    void resolvePodName();
+    return () => {
+      isMounted = false;
+    };
+  }, [sessionPodName]);
 
   return (
     <DropdownMenu>
@@ -107,6 +203,12 @@ const ProfileDropdown = () => {
               {displayName}
             </span>
             <span className="flex flex-wrap items-center gap-1 max-w-full">
+              {podName ? (
+                <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full border max-w-full text-sky-700 dark:text-sky-200 bg-sky-50/80 dark:bg-sky-950/30 border-sky-100/60 dark:border-sky-900/35">
+                  <span className="shrink-0">#</span>
+                  <span className="truncate">{podName}</span>
+                </span>
+              ) : null}
               {formattedRoles.slice(0, 2).map((roleLabel, index) => (
                 <span
                   key={roleLabel}
@@ -137,12 +239,36 @@ const ProfileDropdown = () => {
               {displayName}
             </h6>
             <span className="text-sm text-neutral-500 dark:text-neutral-300 capitalize">
-              {formattedRoles.join(" + ")}
+              {roleAndPodLabel}
             </span>
           </div>
         </div>
 
         <div className="max-h-[400px] overflow-y-auto scroll-sm pt-4">
+          {podTeamMembers.length > 0 ? (
+            <div className="mb-4 pb-3 border-b border-neutral-200 dark:border-slate-700">
+              <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-300 mb-2">
+                Pod Team
+              </p>
+              <div className="space-y-2">
+                {podTeamMembers.map((member) => (
+                  <div
+                    key={member.id}
+                    className="rounded-lg border border-neutral-200 dark:border-slate-700 px-2.5 py-2 bg-neutral-50/70 dark:bg-slate-800/40"
+                  >
+                    <p className="text-sm font-medium text-neutral-900 dark:text-white leading-tight truncate">
+                      {member.fullName || member.email}
+                    </p>
+                    {member.email ? (
+                      <p className="text-xs text-neutral-500 dark:text-neutral-300 leading-tight truncate">
+                        {member.email}
+                      </p>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
           <ul className="flex flex-col gap-3">
             <li>
               <Link

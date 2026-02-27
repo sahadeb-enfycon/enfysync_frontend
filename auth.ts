@@ -11,6 +11,7 @@ declare module "next-auth" {
       id: string
       roles: string[]
       accessToken: string
+      podName?: string | null
       email: string
       name: string
       image?: string | null
@@ -25,6 +26,7 @@ declare module "next-auth/jwt" {
     refreshToken: string
     expiresAt: number
     roles: string[]
+    podName?: string | null
     id: string
     name?: string | null
     email?: string | null
@@ -186,6 +188,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           refreshToken: (user as any).refreshToken || account.refresh_token,
           expiresAt,
           roles: (user as any).roles || [],
+          podName: (user as any).podName || (user as any).pod?.name || null,
           id: user.id as string,
           name: user.name || (user as any).fullName,
           email: user.email,
@@ -310,6 +313,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.id = token.id
         session.user.roles = token.roles
         session.user.accessToken = token.accessToken
+        session.user.podName = token.podName || null
         session.user.image = token.image
         session.user.name = token.name as string
         session.user.email = token.email as string
