@@ -44,7 +44,7 @@ export default async function AccountManagerJobsPage() {
                     </Button>
                 </div>
 
-                <JobsTable jobs={jobs} showPod={true} />
+                <JobsTable jobs={jobs} showPod={true} showEstCreatedDateTime={true} />
             </div>
         </>
     );

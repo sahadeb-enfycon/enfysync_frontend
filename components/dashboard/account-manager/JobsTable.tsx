@@ -79,6 +79,7 @@ interface JobsTableProps {
     showAccountManager?: boolean;
     showPod?: boolean;
     showFilters?: boolean;
+    showEstCreatedDateTime?: boolean;
     onRefresh?: () => void;
 }
 
@@ -97,6 +98,7 @@ export default function JobsTable({
     showAccountManager = false,
     showPod = false,
     showFilters = false,
+    showEstCreatedDateTime = false,
     onRefresh
 }: JobsTableProps) {
     const { data: session } = useSession();
@@ -177,6 +179,27 @@ export default function JobsTable({
             }
         });
     }, [filteredJobs, sortBy]);
+
+    const estDateFormatter = useMemo(
+        () =>
+            new Intl.DateTimeFormat("en-US", {
+                timeZone: "America/New_York",
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+            }),
+        []
+    );
+    const estTimeFormatter = useMemo(
+        () =>
+            new Intl.DateTimeFormat("en-US", {
+                timeZone: "America/New_York",
+                hour: "numeric",
+                minute: "numeric",
+                timeZoneName: "short",
+            }),
+        []
+    );
 
     const totalPages = Math.ceil(sortedJobs.length / itemsPerPage);
 
@@ -444,8 +467,19 @@ export default function JobsTable({
                                                 )}
                                             </TableCell>
                                         )}
-                                        <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
-                                            {new Date(job.createdAt).toLocaleDateString()}
+                                        <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start whitespace-nowrap">
+                                            {showEstCreatedDateTime
+                                                ? (
+                                                    <div className="flex flex-col">
+                                                        <span className="text-sm">
+                                                            {estDateFormatter.format(new Date(job.createdAt))}
+                                                        </span>
+                                                        <span className="text-[10px] text-muted-foreground">
+                                                            {estTimeFormatter.format(new Date(job.createdAt))}
+                                                        </span>
+                                                    </div>
+                                                )
+                                                : new Date(job.createdAt).toLocaleDateString()}
                                         </TableCell>
                                         <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-center">
                                             <Badge variant={status.variant as any} className="font-semibold px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wider">
