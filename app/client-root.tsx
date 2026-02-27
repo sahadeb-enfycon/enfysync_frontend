@@ -25,11 +25,11 @@ export function ClientRoot({
     >
       <SidebarProvider defaultOpen={defaultOpen}>
         <AppSidebar />
-        <main className="dashboard-body-wrapper grow-[1] min-w-0 overflow-x-hidden flex flex-col">
+        <main className="dashboard-body-wrapper grow-[1] min-w-0 overflow-x-clip flex flex-col">
           <SidebarInset>
             <Header />
           </SidebarInset>
-          <div className="dashboard-body bg-neutral-100 dark:bg-[#1e2734] md:p-6 p-4 flex-1 min-w-0 overflow-x-hidden">
+          <div className="dashboard-body bg-neutral-100 dark:bg-[#1e2734] md:p-6 p-4 flex-1 min-w-0 overflow-x-clip">
             {children}
           </div>
           <Footer />
