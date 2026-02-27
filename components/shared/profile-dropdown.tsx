@@ -39,7 +39,7 @@ const ProfileDropdown = () => {
     .filter((role) => validRoles.includes(role))
     .map((role) => role.replace(/-/g, "_"));
   const uniqueDisplayRoles = Array.from(new Set(displayRolesRaw));
-  const selectedRolesBase = uniqueDisplayRoles.length > 0 ? uniqueDisplayRoles : ["ADMIN"];
+  const selectedRolesBase = uniqueDisplayRoles;
   const hasPodLead = selectedRolesBase.includes("POD_LEAD");
   const hasRecruiter = selectedRolesBase.includes("RECRUITER");
   const selectedRoles =
@@ -76,17 +76,22 @@ const ProfileDropdown = () => {
       banner: "bg-amber-50/90 dark:bg-amber-950/35",
     },
   };
-  const getRoleColors = (role: string) => roleColorMap[role] || roleColorMap.ADMIN;
+  const neutralRoleColors = {
+    chip: "text-slate-700 dark:text-slate-200 bg-slate-50/80 dark:bg-slate-900/30 border-slate-200/60 dark:border-slate-700/35",
+    banner: "bg-slate-50/90 dark:bg-slate-900/35",
+  };
+  const getRoleColors = (role?: string) => (role ? roleColorMap[role] || neutralRoleColors : neutralRoleColors);
 
-  const displayName = session?.user?.name?.trim() || "Admin User";
+  const displayName = session?.user?.name?.trim() || "User";
   const sessionPodName =
     ((session?.user as { podName?: string | null } | undefined)?.podName || "").trim();
   const podName = useMemo(() => (sessionPodName || resolvedPodName).trim(), [sessionPodName, resolvedPodName]);
-  const roleAndPodLabel = podName
-    ? `${formattedRoles.join(" + ")} • ${podName}`
-    : formattedRoles.join(" + ");
-  const rolePrefix = selectedRoles[0].replace(/[_]/g, "-").toLowerCase();
-  const profileUrl = `/${rolePrefix}/view-profile`;
+  const formattedRoleLabel = formattedRoles.join(" + ");
+  const roleAndPodLabel = formattedRoleLabel
+    ? (podName ? `${formattedRoleLabel} • ${podName}` : formattedRoleLabel)
+    : (podName || "No role assigned");
+  const rolePrefix = selectedRoles[0]?.replace(/[_]/g, "-").toLowerCase();
+  const profileUrl = rolePrefix ? `/${rolePrefix}/view-profile` : "/dashboard";
 
   useEffect(() => {
     let isMounted = true;

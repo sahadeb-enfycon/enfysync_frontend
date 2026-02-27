@@ -1,6 +1,5 @@
 import NextAuth from "next-auth"
 import Credentials from "next-auth/providers/credentials"
-import Keycloak from "next-auth/providers/keycloak"
 import { ZodError } from "zod"
 import { loginSchema } from "./lib/zod"
 import { JWT } from "next-auth/jwt"
@@ -67,9 +66,27 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       credentials: {
         email: {},
         password: {},
+        accessToken: {},
+        userString: {},
       },
       authorize: async (credentials) => {
         try {
+          const ssoAccessToken = credentials?.accessToken as string | undefined;
+          const userString = credentials?.userString as string | undefined;
+
+          // SSO callback path: backend has already validated code and returned user + token.
+          if (ssoAccessToken && userString) {
+            const parsedUser = JSON.parse(userString);
+            return {
+              ...parsedUser,
+              id: parsedUser.id,
+              email: parsedUser.email,
+              name: parsedUser.fullName || parsedUser.name || parsedUser.email,
+              roles: parsedUser.roles || [],
+              accessToken: ssoAccessToken,
+            };
+          }
+
           // Validate credentials locally without async wait if possible
           const { email, password } = loginSchema.parse(credentials);
 
@@ -126,20 +143,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
         catch (error) {
           console.error("Authorization error:", error);
-          if (error instanceof ZodError) {
+          if (error instanceof ZodError || error instanceof SyntaxError) {
             return null
           }
           return null
-        }
-      }
-    }),
-    Keycloak({
-      clientId: process.env.KEYCLOAK_CLIENT_ID,
-      clientSecret: process.env.KEYCLOAK_CLIENT_SECRET,
-      issuer: process.env.KEYCLOAK_ISSUER,
-      authorization: {
-        params: {
-          scope: "openid profile email offline_access"
         }
       }
     }),

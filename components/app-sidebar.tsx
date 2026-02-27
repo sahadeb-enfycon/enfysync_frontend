@@ -15,7 +15,7 @@ import { useSession } from "next-auth/react";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: session } = useSession();
-  const rawRoles = (session?.user as any)?.roles || [];
+  const rawRoles = ((session?.user as { roles?: string[] } | undefined)?.roles) || [];
   const validRoles = [
     "ADMIN",
     "POD_LEAD", "POD-LEAD",
@@ -25,9 +25,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   ];
   const primaryRole = rawRoles.find((role: string) =>
     validRoles.includes(role.toUpperCase())
-  ) || "ADMIN";
+  );
 
   console.log("AppSidebar Role Mapping:", { rawRoles, primaryRole });
+
+  if (!primaryRole) {
+    return null;
+  }
 
   const data = getSidebarData(primaryRole);
   return (

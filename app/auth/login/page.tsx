@@ -43,13 +43,13 @@ const Login = () => {
           {/* Login Form */}
           <LoginForm />
 
-          {/* Divider and Social Login (Optional/Bottom) */}
-          {/* <div className="mt-8 relative text-center before:absolute before:w-full before:h-px before:bg-neutral-300 dark:before:bg-slate-600 before:top-1/2 before:left-0">
+          {/* Divider and Social Login */}
+          <div className="mt-8 relative text-center before:absolute before:w-full before:h-px before:bg-neutral-300 dark:before:bg-slate-600 before:top-1/2 before:left-0">
             <span className="relative z-10 px-4 bg-white dark:bg-slate-900 text-base">
               Or sign in with
             </span>
           </div>
-          <SocialLogin /> */}
+          <SocialLogin />
         </div>
       </div>
     </section>

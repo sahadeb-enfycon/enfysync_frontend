@@ -206,9 +206,11 @@ export const getSidebarData = (role: string) => {
   ];
 
   // Map roles to their specific navigation
-  const roleUpper = role ? role.toUpperCase() : "ADMIN";
+  const roleUpper = role ? role.toUpperCase() : "";
 
-  if (roleUpper === "ACCOUNT_MANAGER" || roleUpper === "ACCOUNT-MANAGER") {
+  if (roleUpper === "ADMIN") {
+    return { navMain: adminNav };
+  } else if (roleUpper === "ACCOUNT_MANAGER" || roleUpper === "ACCOUNT-MANAGER") {
     return { navMain: accountManagerNav };
   } else if (roleUpper === "DELIVERY_HEAD" || roleUpper === "DELIVERY-HEAD") {
     return { navMain: deliveryHeadNav };
@@ -216,6 +218,5 @@ export const getSidebarData = (role: string) => {
     return { navMain: recruiterNav };
   }
 
-  // Default to Admin
-  return { navMain: adminNav };
+  return { navMain: [] };
 };

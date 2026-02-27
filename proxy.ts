@@ -7,6 +7,15 @@ const publicRoutes = [
   "/auth/register",
   "/auth/forgot-password",
   "/auth/create-password",
+  "/callback",
+];
+
+const roleRouteAccess = [
+  { prefix: "/admin", roles: ["ADMIN"] },
+  { prefix: "/account-manager", roles: ["ACCOUNT_MANAGER", "ACCOUNT-MANAGER"] },
+  { prefix: "/delivery-head", roles: ["DELIVERY_HEAD", "DELIVERY-HEAD"] },
+  { prefix: "/recruiter", roles: ["RECRUITER"] },
+  { prefix: "/pod-lead", roles: ["POD_LEAD", "POD-LEAD"] },
 ];
 
 export async function proxy(req: NextRequest) {
@@ -40,6 +49,14 @@ export async function proxy(req: NextRequest) {
 
   if (!session?.user && !isPublic) {
     return NextResponse.redirect(new URL("/auth/login", req.url));
+  }
+
+  const userRoles = (((session?.user as { roles?: string[] } | undefined)?.roles) || [])
+    .map((role) => role.toUpperCase());
+
+  const requiredAccess = roleRouteAccess.find((route) => pathname.startsWith(route.prefix));
+  if (requiredAccess && !requiredAccess.roles.some((role) => userRoles.includes(role))) {
+    return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 
   return NextResponse.next();
