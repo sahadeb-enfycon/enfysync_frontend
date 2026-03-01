@@ -66,10 +66,10 @@ export default function DeliveryHeadCreatePodPage() {
             }
         }
 
-        if (session) {
+        if (session?.user?.id) {
             fetchData();
         }
-    }, [session]);
+    }, [session?.user?.id]);
 
     const handlePodLeadChange = (value: string) => {
         const previousLead = selectedPodLead;
