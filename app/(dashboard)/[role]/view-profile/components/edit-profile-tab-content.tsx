@@ -15,7 +15,18 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { handleProfileUpdate } from './actions/handleProfileUpdate';
 
-const EditProfileTabContent = () => {
+const EditProfileTabContent = ({ user }: { user?: any }) => {
+    const getDesignation = (roles: string[] = []) => {
+        if (roles.includes('DELIVERY_HEAD')) return 'Delivery Head';
+        if (roles.includes('POD_LEAD')) return 'Pod Lead';
+        if (roles.includes('RECRUITER')) return 'Recruiter';
+        if (roles.includes('ACCOUNT_MANAGER')) return 'Account Manager';
+        return '';
+    };
+
+    const designation = getDesignation(user?.roles);
+    const department = "US Staffing";
+
     return (
         <div>
             <h6 className="text-base text-neutral-600 dark:text-neutral-200 mb-4">Profile Image</h6>
@@ -30,7 +41,7 @@ const EditProfileTabContent = () => {
                             <Label htmlFor="name" className="inline-block font-semibold text-neutral-600 dark:text-neutral-200 text-sm mb-2">
                                 Full Name <span className="text-red-600">*</span>
                             </Label>
-                            <Input name="name" type="text" id="name" placeholder="Enter Full Name" required />
+                            <Input name="name" type="text" id="name" placeholder="Enter Full Name" defaultValue={user?.fullName || ''} required />
                         </div>
                     </div>
                     <div className="col-span-12 sm:col-span-6">
@@ -38,37 +49,37 @@ const EditProfileTabContent = () => {
                             <Label htmlFor="email" className="inline-block font-semibold text-neutral-600 dark:text-neutral-200 text-sm mb-2">
                                 Email <span className="text-red-600">*</span>
                             </Label>
-                            <Input name="email" type="email" id="email" placeholder="Enter email address" required />
+                            <Input name="email" type="email" id="email" placeholder="Enter email address" defaultValue={user?.email || ''} required />
                         </div>
                     </div>
                     <div className="col-span-12 sm:col-span-6">
                         <div className="mb-5">
                             <Label htmlFor="number" className="inline-block font-semibold text-neutral-600 dark:text-neutral-200 text-sm mb-2">Phone</Label>
-                            <Input name="number" type="tel" id="number" placeholder="Enter phone number" />
+                            <Input name="number" type="tel" id="number" placeholder="Enter phone number" defaultValue={user?.phone || ''} />
                         </div>
                     </div>
                     <div className="col-span-12 sm:col-span-6">
                         <div className="mb-5">
                             <Label htmlFor="department" className="inline-block font-semibold text-neutral-600 dark:text-neutral-200 text-sm mb-2">Department</Label>
-                            <Input name="department" id="department" placeholder="Enter Department" />
+                            <Input name="department" id="department" placeholder="Enter Department" defaultValue={department} />
                         </div>
                     </div>
                     <div className="col-span-12 sm:col-span-6">
                         <div className="mb-5">
                             <Label htmlFor="designation" className="inline-block font-semibold text-neutral-600 dark:text-neutral-200 text-sm mb-2">Designation</Label>
-                            <Input name="designation" id="designation" placeholder="Enter Designation" />
+                            <Input name="designation" id="designation" placeholder="Enter Designation" defaultValue={designation} />
                         </div>
                     </div>
                     <div className="col-span-12 sm:col-span-6">
                         <div className="mb-5">
                             <Label htmlFor="language" className="inline-block font-semibold text-neutral-600 dark:text-neutral-200 text-sm mb-2">Language</Label>
-                            <Input name="language" id="language" placeholder="Enter Language" />
+                            <Input name="language" id="language" placeholder="Enter Language" defaultValue={user?.language || ''} />
                         </div>
                     </div>
                     <div className="col-span-12">
                         <div className="mb-5">
                             <Label htmlFor="desc" className="inline-block font-semibold text-neutral-600 dark:text-neutral-200 text-sm mb-2">Description</Label>
-                            <Textarea name="desc" id="desc" placeholder="Write Description" />
+                            <Textarea name="desc" id="desc" placeholder="Write Description" defaultValue={user?.bio || ''} />
                         </div>
                     </div>
                 </div>

@@ -6,6 +6,7 @@ import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Metadata } from "next";
+import { serverApiClient } from "@/lib/serverApiClient";
 
 const metadata: Metadata = {
     title: "View Profile & User Details | enfySync Admin Dashboard",
@@ -13,14 +14,24 @@ const metadata: Metadata = {
         "Access detailed user profiles and personal information in the enfySync Admin Dashboard built with Next.js and Tailwind CSS.",
 };
 
-const ViewProfile = () => {
+const ViewProfile = async () => {
+    let user = null;
+    try {
+        const response = await serverApiClient("/auth/me", { cache: 'no-store' });
+        if (response.ok) {
+            user = await response.json();
+        }
+    } catch (error) {
+        console.error("Failed to fetch user profile", error);
+    }
+
     return (
         <>
             <DashboardBreadcrumb title="View Profile" text="View Profile" />
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 <div className="col-span-12 lg:col-span-4">
-                    <ViewProfileSidebar />
+                    <ViewProfileSidebar user={user} />
                 </div>
 
                 <div className="col-span-12 lg:col-span-8">
@@ -40,7 +51,7 @@ const ViewProfile = () => {
                                 </TabsList>
 
                                 <TabsContent value="editProfile">
-                                    <EditProfileTabContent />
+                                    <EditProfileTabContent user={user} />
                                 </TabsContent>
                                 <TabsContent value="changePassword">
                                     <ChangePasswordTabContent />
