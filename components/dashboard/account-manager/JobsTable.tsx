@@ -81,13 +81,77 @@ interface JobsTableProps {
     onRefresh?: () => void;
 }
 
-const statusMap: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" | "warning" | "info" }> = {
-    ACTIVE: { label: "Active", variant: "default" },
+const statusMap: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" | "warning" | "success" | "info" }> = {
+    ACTIVE: { label: "Active", variant: "success" },
     CLOSED: { label: "Closed", variant: "destructive" },
     ON_HOLD: { label: "On Hold", variant: "warning" },
-    HOLD_BY_CLIENT: { label: "Hold By Client", variant: "info" },
-    FILLED: { label: "Filled", variant: "outline" },
+    HOLD_BY_CLIENT: { label: "Hold By Client", variant: "secondary" },
+    FILLED: { label: "Filled", variant: "info" },
 };
+
+function JobStatusSelect({ job, onRefresh }: { job: Job; onRefresh?: () => void }) {
+    const [status, setStatus] = useState(job.status);
+    const [isUpdating, setIsUpdating] = useState(false);
+    const { data: session } = useSession();
+
+    const handleStatusChange = async (newStatus: string) => {
+        if (newStatus === status) return;
+        setIsUpdating(true);
+        setStatus(newStatus); // optimistic update
+
+        try {
+            const res = await apiClient(`/jobs/${job.id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ status: newStatus }),
+            });
+
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err?.message || "Failed to update status");
+            }
+
+            toast.success("Job status updated");
+            if (onRefresh) onRefresh();
+        } catch (error: any) {
+            toast.error(error.message || "Something went wrong");
+            setStatus(job.status); // revert on error
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
+    const currentConfig = statusMap[status] || { label: status, variant: "outline" };
+
+    return (
+        <Select
+            value={status}
+            onValueChange={handleStatusChange}
+            disabled={isUpdating}
+        >
+            <SelectTrigger className="h-7 w-[100px] px-2 py-0 border-0 focus:ring-0 bg-transparent flex justify-center shadow-none hover:bg-neutral-100 dark:hover:bg-slate-800 transition-colors rounded-full relative group">
+                <Badge
+                    variant={currentConfig.variant as any}
+                    className="font-semibold px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wider absolute "
+                >
+                    {currentConfig.label}
+                </Badge>
+            </SelectTrigger>
+            <SelectContent>
+                {Object.entries(statusMap).map(([key, config]) => (
+                    <SelectItem key={key} value={key} className="text-xs">
+                        <Badge
+                            variant={config.variant as any}
+                            className="font-semibold px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wider"
+                        >
+                            {config.label}
+                        </Badge>
+                    </SelectItem>
+                ))}
+            </SelectContent>
+        </Select>
+    );
+}
 
 export default function JobsTable({
     jobs,
@@ -461,10 +525,8 @@ export default function JobsTable({
                                                 )
                                                 : new Date(job.createdAt).toLocaleDateString()}
                                         </TableCell>
-                                        <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-center">
-                                            <Badge variant={status.variant as any} className="font-semibold px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wider">
-                                                {status.label}
-                                            </Badge>
+                                        <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-center flex justify-center">
+                                            <JobStatusSelect job={job} onRefresh={onRefresh} />
                                         </TableCell>
                                         {showActions && (
                                             <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-end">

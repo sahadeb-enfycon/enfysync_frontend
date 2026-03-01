@@ -41,7 +41,7 @@ export default async function DeliveryHeadJobsPage() {
                     jobs={jobs}
                     showAccountManager={true}
                     showPod={true}
-                    showActions={true}
+                    showActions={false}
                     showFilters={true}
                     showEstCreatedDateTime={true}
                 />
