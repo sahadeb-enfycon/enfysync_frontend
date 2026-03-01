@@ -30,7 +30,7 @@ const SocialLogin = () => {
     >
       {/* Microsoft SSO Button */}
       <Button
-        className="font-bold text-white py-6 w-full rounded-xl text-lg flex items-center justify-center gap-3 bg-orange-600 hover:bg-orange-700 disabled:opacity-80"
+        className="font-bold text-gray-900 py-6 w-full rounded-xl text-lg flex items-center justify-center gap-3 bg-white border border-gray-200 hover:bg-gray-50 shadow-sm disabled:opacity-80"
         variant="default"
         type="submit"
         name="action"
