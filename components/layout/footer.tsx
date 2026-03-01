@@ -17,7 +17,7 @@ const Footer = () => {
             className="font-medium text-primary dark:text-primary hover:underline"
           >
             {" "}
-            enfycon
+            enfycon Inc
           </Link>
         </p>
       </div>

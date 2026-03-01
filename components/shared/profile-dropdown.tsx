@@ -310,10 +310,19 @@ const ProfileDropdown = () => {
             <li>
               <Link
                 href="/company"
-                className="text-black dark:text-white hover:text-primary dark:hover:text-primary flex items-center gap-3"
+                className="text-black dark:text-white hover:text-primary dark:hover:text-primary flex items-center gap-3 w-full"
               >
                 <Settings className="w-5 h-5" /> Settings
               </Link>
+            </li>
+            <li>
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new CustomEvent('open-theme-customizer'))}
+                className="text-black dark:text-white hover:text-primary dark:hover:text-primary flex items-center gap-3 w-full"
+              >
+                <Settings className="w-5 h-5" /> Theme Settings
+              </button>
             </li>
             <li>
               <Logout />
