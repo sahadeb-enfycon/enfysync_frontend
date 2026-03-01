@@ -1,5 +1,6 @@
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import { auth } from "@/auth";
+import { getGreeting } from "@/lib/utils";
 import DeliveryStatsCards from "./components/delivery-stats-cards";
 import PodSubmissionChart from "./components/pod-submission-chart";
 import JobAgingChart from "./components/job-aging-chart";
@@ -11,12 +12,7 @@ export default async function DeliveryHeadDashboard() {
     const session = await auth();
     const userName = session?.user?.name || "Delivery Head";
 
-    const hour = new Date().getHours();
-    let greeting = "Good Evening";
-    if (hour < 12) greeting = "Good Morning";
-    else if (hour < 18) greeting = "Good Afternoon";
-
-    const welcomeMessage = `${greeting}, ${userName}!`;
+    const welcomeMessage = `${getGreeting()}, ${userName}!`;
 
     return (
         <>

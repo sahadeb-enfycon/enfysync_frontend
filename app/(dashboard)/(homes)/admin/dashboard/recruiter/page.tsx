@@ -1,5 +1,6 @@
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import { auth } from "@/auth";
+import { getGreeting } from "@/lib/utils";
 import RecentJobsTable from "@/app/(dashboard)/(homes)/recruiter/dashboard/components/recent-jobs-table";
 import { Suspense } from "react";
 import LoadingSkeleton from "@/components/loading-skeleton";
@@ -80,12 +81,7 @@ export default async function AdminRecruiterDashboardPage() {
     createdAt: job.createdAt || new Date(0).toISOString(),
   }));
 
-  const hour = new Date().getHours();
-  let greeting = "Good Evening";
-  if (hour < 12) greeting = "Good Morning";
-  else if (hour < 18) greeting = "Good Afternoon";
-
-  const welcomeMessage = `${greeting}, ${userName}!`;
+  const welcomeMessage = `${getGreeting()}, ${userName}!`;
   const totalJobs = jobs.length;
   const activeJobs = jobs.filter((job) => norm(job.status) === "ACTIVE").length;
   const totalSubmissions = submissions.length;

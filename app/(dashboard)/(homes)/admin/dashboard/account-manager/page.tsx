@@ -1,5 +1,6 @@
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import LoadingSkeleton from "@/components/loading-skeleton";
+import { getGreeting } from "@/lib/utils";
 import { auth } from "@/auth";
 import { Suspense } from "react";
 import { serverApiClient } from "@/lib/serverApiClient";
@@ -53,11 +54,7 @@ export default async function AdminAccountManagerDashboardPage() {
   const userName = session?.user?.name || "Admin";
   const [jobs, submissions] = await Promise.all([getJobs(), getSubmissions()]);
 
-  const hour = new Date().getHours();
-  let greeting = "Good Evening";
-  if (hour < 12) greeting = "Good Morning";
-  else if (hour < 18) greeting = "Good Afternoon";
-  const welcomeMessage = `${greeting}, ${userName}!`;
+  const welcomeMessage = `${getGreeting()}, ${userName}!`;
 
   const amBuckets = new Map<string, { name: string; jobs: number; active: number; submissions: number }>();
   const jobToAm = new Map<string, string>();

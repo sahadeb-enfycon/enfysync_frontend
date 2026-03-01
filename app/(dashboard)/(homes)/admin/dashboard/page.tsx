@@ -12,6 +12,7 @@ import LoadingSkeleton from "@/components/loading-skeleton";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { auth } from "@/auth";
+import { getGreeting } from "@/lib/utils";
 import { serverApiClient } from "@/lib/serverApiClient";
 
 export const metadata: Metadata = {
@@ -73,12 +74,7 @@ export default async function DashboardPage() {
   const userName = session?.user?.name || "User";
   const [jobs, submissions] = await Promise.all([getJobs(), getSubmissions()]);
 
-  const hour = new Date().getHours();
-  let greeting = "Good Evening";
-  if (hour < 12) greeting = "Good Morning";
-  else if (hour < 18) greeting = "Good Afternoon";
-
-  const welcomeMessage = `${greeting}, ${userName}!`;
+  const welcomeMessage = `${getGreeting()}, ${userName}!`;
 
   const openJobs = jobs.filter((job) => {
     const s = normalizeStatus(job.status);

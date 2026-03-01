@@ -23,3 +23,16 @@ export function formatUsTime(dateString: string | Date): string {
     timeZoneName: "short"
   }).format(new Date(dateString));
 }
+
+export function getGreeting(): string {
+  const estHourString = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    hour: "numeric",
+    hour12: false,
+  }).format(new Date());
+  const hour = parseInt(estHourString, 10);
+
+  if (hour < 12) return "Good Morning";
+  if (hour < 18) return "Good Afternoon";
+  return "Good Evening";
+}

@@ -1,5 +1,6 @@
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import { auth } from "@/auth";
+import { getGreeting } from "@/lib/utils";
 import { serverApiClient } from "@/lib/serverApiClient";
 import { Suspense } from "react";
 import LoadingSkeleton from "@/components/loading-skeleton";
@@ -55,11 +56,7 @@ export default async function AccountManagerDashboard() {
     const [jobs, submissions] = await Promise.all([getMyJobs(), getSubmissions()]);
 
     const hour = new Date().getHours();
-    let greeting = "Good Evening";
-    if (hour < 12) greeting = "Good Morning";
-    else if (hour < 18) greeting = "Good Afternoon";
-
-    const welcomeMessage = `${greeting}, ${userName}!`;
+    const welcomeMessage = `${getGreeting()}, ${userName}!`;
     const myJobIds = new Set(jobs.map((job) => job.id));
     const mySubmissions = submissions.filter((sub) => (sub.jobId ? myJobIds.has(sub.jobId) : false));
 

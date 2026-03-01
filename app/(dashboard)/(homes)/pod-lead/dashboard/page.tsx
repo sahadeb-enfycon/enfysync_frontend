@@ -1,5 +1,6 @@
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import { auth } from "@/auth";
+import { getGreeting } from "@/lib/utils";
 import { serverApiClient } from "@/lib/serverApiClient";
 import StatCard from "@/app/(dashboard)/(homes)/dashboard/components/stat-card";
 import { Card, CardContent } from "@/components/ui/card";
@@ -52,12 +53,7 @@ export default async function PodLeadDashboard() {
     const userName = session?.user?.name || "Pod Lead";
     const [jobs, pods] = await Promise.all([getJobs(), getMyPods()]);
 
-    const hour = new Date().getHours();
-    let greeting = "Good Evening";
-    if (hour < 12) greeting = "Good Morning";
-    else if (hour < 18) greeting = "Good Afternoon";
-
-    const welcomeMessage = `${greeting}, ${userName}!`;
+    const welcomeMessage = `${getGreeting()}, ${userName}!`;
     const podIdSet = new Set(pods.map((pod) => pod.id));
     const podJobs = jobs.filter((job) => (job.pod?.id ? podIdSet.has(job.pod.id) : false));
 
@@ -206,27 +202,27 @@ export default async function PodLeadDashboard() {
                         </h6>
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                             {podWorkloadRows.map(([podName, values]) => (
-                                    <div
-                                        key={podName}
-                                        className="rounded-lg border border-neutral-200 dark:border-slate-700 p-4 bg-neutral-50 dark:bg-slate-800/50"
-                                    >
-                                        <p className="font-semibold text-neutral-900 dark:text-white truncate">{podName}</p>
-                                        <div className="mt-3 grid grid-cols-3 gap-2 text-center">
-                                            <div>
-                                                <p className="text-xs text-neutral-500">Total</p>
-                                                <p className="font-semibold">{values.total}</p>
-                                            </div>
-                                            <div>
-                                                <p className="text-xs text-neutral-500">Active</p>
-                                                <p className="font-semibold text-blue-600">{values.active}</p>
-                                            </div>
-                                            <div>
-                                                <p className="text-xs text-neutral-500">Filled</p>
-                                                <p className="font-semibold text-emerald-600">{values.filled}</p>
-                                            </div>
+                                <div
+                                    key={podName}
+                                    className="rounded-lg border border-neutral-200 dark:border-slate-700 p-4 bg-neutral-50 dark:bg-slate-800/50"
+                                >
+                                    <p className="font-semibold text-neutral-900 dark:text-white truncate">{podName}</p>
+                                    <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+                                        <div>
+                                            <p className="text-xs text-neutral-500">Total</p>
+                                            <p className="font-semibold">{values.total}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-neutral-500">Active</p>
+                                            <p className="font-semibold text-blue-600">{values.active}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-neutral-500">Filled</p>
+                                            <p className="font-semibold text-emerald-600">{values.filled}</p>
                                         </div>
                                     </div>
-                                )
+                                </div>
+                            )
                             )}
                         </div>
                     </CardContent>

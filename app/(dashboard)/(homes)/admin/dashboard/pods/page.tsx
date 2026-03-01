@@ -1,5 +1,6 @@
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import LoadingSkeleton from "@/components/loading-skeleton";
+import { getGreeting } from "@/lib/utils";
 import { auth } from "@/auth";
 import { Suspense } from "react";
 import { serverApiClient } from "@/lib/serverApiClient";
@@ -33,11 +34,7 @@ export default async function AdminPodsDashboardPage() {
   const userName = session?.user?.name || "Admin";
   const jobs = await getJobs();
 
-  const hour = new Date().getHours();
-  let greeting = "Good Evening";
-  if (hour < 12) greeting = "Good Morning";
-  else if (hour < 18) greeting = "Good Afternoon";
-  const welcomeMessage = `${greeting}, ${userName}!`;
+  const welcomeMessage = `${getGreeting()}, ${userName}!`;
 
   const podBuckets = new Map<string, { total: number; active: number; filled: number }>();
 
