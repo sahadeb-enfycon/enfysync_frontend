@@ -30,9 +30,11 @@ interface MultiSelectProps {
     selected: string[]
     onChange: (selected: string[]) => void
     placeholder?: string
+    disabled?: boolean
+    emptyMessage?: string
 }
 
-export function MultiSelect({ options, selected, onChange, placeholder = "Select options..." }: MultiSelectProps) {
+export function MultiSelect({ options, selected, onChange, placeholder = "Select options...", disabled = false, emptyMessage = "No results found." }: MultiSelectProps) {
     const [open, setOpen] = React.useState(false)
 
     const handleUnselect = (item: string) => {
@@ -46,6 +48,7 @@ export function MultiSelect({ options, selected, onChange, placeholder = "Select
                     variant="outline"
                     role="combobox"
                     aria-expanded={open}
+                    disabled={disabled}
                     className="w-full h-auto min-h-12 justify-between border-neutral-300 dark:border-slate-500 hover:bg-transparent px-5 rounded-lg text-left"
                 >
                     <div className="flex gap-1 flex-wrap items-center">
@@ -77,7 +80,7 @@ export function MultiSelect({ options, selected, onChange, placeholder = "Select
                 <Command>
                     <CommandInput placeholder="Search..." />
                     <CommandList>
-                        <CommandEmpty>No results found.</CommandEmpty>
+                        <CommandEmpty>{emptyMessage}</CommandEmpty>
                         <CommandGroup>
                             {options.map((option) => (
                                 <CommandItem

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
     Table,
     TableBody,
@@ -21,8 +21,7 @@ import {
     Search,
     X,
     Calendar as CalendarIcon,
-    Filter,
-    Trash2
+    Filter
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -40,19 +39,13 @@ import {
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { format, isSameDay } from "date-fns";
-import { cn } from "@/lib/utils";
+import { cn, formatUsDate, formatUsTime } from "@/lib/utils";
 import JobEditDialog from "../delivery-head/JobEditDialog";
 import { useSession } from "next-auth/react";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog";
+import PodAssignCell from "../delivery-head/PodAssignCell";
+
 import { apiClient } from "@/lib/apiClient";
 
 interface Job {
@@ -70,6 +63,11 @@ interface Job {
         id: string;
         name: string;
     };
+    pods?: {
+        id: string;
+        name: string;
+    }[];
+    podIds?: string[];
 }
 
 interface JobsTableProps {
@@ -114,10 +112,25 @@ export default function JobsTable({
     // Modal states
     const [editJob, setEditJob] = useState<Job | null>(null);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-    const [jobToDelete, setJobToDelete] = useState<Job | null>(null);
-    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-    const [isDeleting, setIsDeleting] = useState(false);
 
+    const [availablePods, setAvailablePods] = useState<{ id: string, name: string }[]>([]);
+
+    useEffect(() => {
+        if (showPod) {
+            apiClient("/pods/my-pods")
+                .then(res => res.ok ? res.json() : [])
+                .then(data => {
+                    if (Array.isArray(data)) {
+                        setAvailablePods(data.map((p: any) => ({ id: p.id, name: p.name })));
+                    } else if (data && Array.isArray(data.items)) {
+                        setAvailablePods(data.items.map((p: any) => ({ id: p.id, name: p.name })));
+                    } else if (data && Array.isArray(data.data)) {
+                        setAvailablePods(data.data.map((p: any) => ({ id: p.id, name: p.name })));
+                    }
+                })
+                .catch(console.error);
+        }
+    }, [showPod]);
 
     const itemsPerPage = 10;
 
@@ -129,6 +142,13 @@ export default function JobsTable({
 
         jobs.forEach(job => {
             if (job.pod) pods.set(job.pod.id, job.pod.name);
+            if (job.pods) job.pods.forEach((p: any) => pods.set(p.id, p.name));
+            if (job.podIds && job.podIds.length > 0) {
+                job.podIds.forEach(id => {
+                    const found = availablePods.find(p => p.id === id);
+                    if (found) pods.set(found.id, found.name);
+                });
+            }
             if (job.accountManager) {
                 const name = job.accountManager.fullName || job.accountManager.email;
                 ams.set(job.accountManager.email, name);
@@ -146,7 +166,7 @@ export default function JobsTable({
     // Apply filtering
     const filteredJobs = useMemo(() => {
         return jobs.filter(job => {
-            const matchesPod = podFilter === "all" || job.pod?.id === podFilter;
+            const matchesPod = podFilter === "all" || job.pod?.id === podFilter || job.pods?.some((p: any) => p.id === podFilter) || job.podIds?.includes(podFilter);
             const matchesAM = amFilter === "all" || job.accountManager?.email === amFilter;
             const matchesClient = clientFilter === "all" || job.clientName === clientFilter;
             const matchesDate = !dateFilter || isSameDay(new Date(job.createdAt), dateFilter);
@@ -180,26 +200,8 @@ export default function JobsTable({
         });
     }, [filteredJobs, sortBy]);
 
-    const estDateFormatter = useMemo(
-        () =>
-            new Intl.DateTimeFormat("en-US", {
-                timeZone: "America/New_York",
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-            }),
-        []
-    );
-    const estTimeFormatter = useMemo(
-        () =>
-            new Intl.DateTimeFormat("en-US", {
-                timeZone: "America/New_York",
-                hour: "numeric",
-                minute: "numeric",
-                timeZoneName: "short",
-            }),
-        []
-    );
+    const estDateFormatter = { format: (date: Date) => formatUsDate(date) };
+    const estTimeFormatter = { format: (date: Date) => formatUsTime(date) };
 
     const totalPages = Math.ceil(sortedJobs.length / itemsPerPage);
 
@@ -229,40 +231,7 @@ export default function JobsTable({
         setIsEditDialogOpen(true);
     };
 
-    const handleDeleteClick = (job: any) => {
-        setJobToDelete(job);
-        setIsDeleteDialogOpen(true);
-    };
 
-    const handleDeleteConfirm = async () => {
-        if (!jobToDelete) return;
-
-        setIsDeleting(true);
-        try {
-            const response = await apiClient(`/jobs/${jobToDelete.id}`, {
-                method: "DELETE",
-            });
-
-            if (response.ok) {
-                toast.success("Job deleted successfully");
-                if (onRefresh) {
-                    onRefresh();
-                } else {
-                    router.refresh();
-                }
-            } else {
-                const error = await response.json();
-                toast.error(error.message || "Failed to delete job");
-            }
-        } catch (error) {
-            console.error("Error deleting job:", error);
-            toast.error("An error occurred while deleting the job");
-        } finally {
-            setIsDeleting(false);
-            setIsDeleteDialogOpen(false);
-            setJobToDelete(null);
-        }
-    };
 
     return (
         <div className="space-y-4">
@@ -458,13 +427,24 @@ export default function JobsTable({
                                         )}
                                         {showPod && (
                                             <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
-                                                {job.pod ? (
-                                                    <Badge variant="secondary" className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 border-none font-medium">
-                                                        {job.pod.name}
-                                                    </Badge>
-                                                ) : (
-                                                    <span className="text-xs text-muted-foreground italic">Unassigned</span>
-                                                )}
+                                                <PodAssignCell
+                                                    jobId={job.id}
+                                                    assignedPods={
+                                                        job.pods && job.pods.length > 0
+                                                            ? job.pods
+                                                            : job.podIds && job.podIds.length > 0 && availablePods.length > 0
+                                                                ? (job.podIds.map(id => availablePods.find(p => p.id === id)).filter(Boolean) as { id: string; name: string }[])
+                                                                : job.pod
+                                                                    ? [job.pod]
+                                                                    : []
+                                                    }
+                                                    availablePods={availablePods}
+                                                    canEdit={(session as any)?.user?.roles?.includes("DELIVERY_HEAD") || (session as any)?.user?.roles?.includes("ADMIN")}
+                                                    onSuccess={() => {
+                                                        if (onRefresh) onRefresh();
+                                                        else router.refresh();
+                                                    }}
+                                                />
                                             </TableCell>
                                         )}
                                         <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start whitespace-nowrap">
@@ -497,9 +477,7 @@ export default function JobsTable({
                                                     <Button variant="ghost" size="icon" className="h-8 w-8 text-amber-600 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-900/20" onClick={() => handleEdit(job)}>
                                                         <Edit2 className="h-4 w-4" />
                                                     </Button>
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20" onClick={() => handleDeleteClick(job)}>
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
+
                                                 </div>
                                             </TableCell>
                                         )}
@@ -524,29 +502,7 @@ export default function JobsTable({
                 }}
             />
 
-            <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Are you sure?</DialogTitle>
-                        <DialogDescription>
-                            This will permanently delete the job <strong>{jobToDelete?.jobCode}</strong>. This action cannot be undone.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)} disabled={isDeleting}>Cancel</Button>
-                        <Button
-                            onClick={(e: React.MouseEvent) => {
-                                e.preventDefault();
-                                handleDeleteConfirm();
-                            }}
-                            variant="destructive"
-                            disabled={isDeleting}
-                        >
-                            {isDeleting ? "Deleting..." : "Delete"}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+
 
             {/* Pagination Controls */}
             {totalPages > 1 && (

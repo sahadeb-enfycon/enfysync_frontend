@@ -43,6 +43,7 @@ export default async function DeliveryHeadJobsPage() {
                     showPod={true}
                     showActions={true}
                     showFilters={true}
+                    showEstCreatedDateTime={true}
                 />
             </div>
         </>

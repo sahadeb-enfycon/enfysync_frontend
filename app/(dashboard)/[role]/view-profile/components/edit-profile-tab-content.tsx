@@ -18,7 +18,7 @@ import { handleProfileUpdate } from './actions/handleProfileUpdate';
 const EditProfileTabContent = ({ user }: { user?: any }) => {
     const getDesignation = (roles: string[] = []) => {
         if (roles.includes('DELIVERY_HEAD')) return 'Delivery Head';
-        if (roles.includes('POD_LEAD')) return 'Pod Lead';
+        if (roles.includes('POD_LEAD') || user?.isPodHead) return 'Pod Lead';
         if (roles.includes('RECRUITER')) return 'Recruiter';
         if (roles.includes('ACCOUNT_MANAGER')) return 'Account Manager';
         return '';

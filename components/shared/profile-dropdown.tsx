@@ -24,8 +24,12 @@ const ProfileDropdown = () => {
   const { data: session } = useSession();
   const [resolvedPodName, setResolvedPodName] = useState("");
   const [podTeamMembers, setPodTeamMembers] = useState<PodTeamMember[]>([]);
+  const [isPodHeadVerified, setIsPodHeadVerified] = useState(false);
 
-  const rawRoles = ((session?.user as { roles?: string[] } | undefined)?.roles) || [];
+  const rawRoles = [...(((session?.user as { roles?: string[] } | undefined)?.roles) || [])];
+  if (isPodHeadVerified && !rawRoles.includes("POD_LEAD")) {
+    rawRoles.push("POD_LEAD");
+  }
   const validRoles = [
     "ADMIN",
     "POD_LEAD", "POD-LEAD",
@@ -42,6 +46,7 @@ const ProfileDropdown = () => {
   const selectedRolesBase = uniqueDisplayRoles;
   const hasPodLead = selectedRolesBase.includes("POD_LEAD");
   const hasRecruiter = selectedRolesBase.includes("RECRUITER");
+  const hasDeliveryHead = selectedRolesBase.includes("DELIVERY_HEAD");
   const selectedRoles =
     hasPodLead && hasRecruiter
       ? selectedRolesBase.filter((role) => role !== "RECRUITER")
@@ -87,9 +92,10 @@ const ProfileDropdown = () => {
     ((session?.user as { podName?: string | null } | undefined)?.podName || "").trim();
   const podName = useMemo(() => (sessionPodName || resolvedPodName).trim(), [sessionPodName, resolvedPodName]);
   const formattedRoleLabel = formattedRoles.join(" + ");
+  const activePodName = hasDeliveryHead ? "" : podName;
   const roleAndPodLabel = formattedRoleLabel
-    ? (podName ? `${formattedRoleLabel} • ${podName}` : formattedRoleLabel)
-    : (podName || "No role assigned");
+    ? (activePodName ? `${formattedRoleLabel} • ${activePodName}` : formattedRoleLabel)
+    : (activePodName || "No role assigned");
   const rolePrefix = selectedRoles[0]?.replace(/[_]/g, "-").toLowerCase();
   const profileUrl = rolePrefix ? `/${rolePrefix}/view-profile` : "/dashboard";
 
@@ -133,6 +139,16 @@ const ProfileDropdown = () => {
     };
 
     const resolvePodName = async () => {
+      try {
+        const authMeRes = await apiClient("/auth/me");
+        if (authMeRes.ok) {
+          const authMeData = await authMeRes.json();
+          if (authMeData.isPodHead && isMounted) {
+            setIsPodHeadVerified(true);
+          }
+        }
+      } catch { }
+
       try {
         const myTeamRes = await apiClient("/pods/my-team");
         if (myTeamRes.ok) {
@@ -208,10 +224,10 @@ const ProfileDropdown = () => {
               {displayName}
             </span>
             <span className="flex flex-wrap items-center gap-1 max-w-full">
-              {podName ? (
+              {activePodName ? (
                 <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full border max-w-full text-sky-700 dark:text-sky-200 bg-sky-50/80 dark:bg-sky-950/30 border-sky-100/60 dark:border-sky-900/35">
                   <span className="shrink-0">#</span>
-                  <span className="truncate">{podName}</span>
+                  <span className="truncate">{activePodName}</span>
                 </span>
               ) : null}
               {formattedRoles.slice(0, 2).map((roleLabel, index) => (

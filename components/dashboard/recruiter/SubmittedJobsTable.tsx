@@ -27,7 +27,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
+import { cn, formatUsDate, formatUsTime } from "@/lib/utils";
 
 export interface CandidateSubmission {
     id: string;
@@ -373,19 +373,10 @@ export default function SubmittedJobsTable({
                                             <TableCell className="px-6 py-4 text-start whitespace-nowrap">
                                                 <div className="flex flex-col gap-0.5">
                                                     <span className="text-sm text-gray-900 font-medium">
-                                                        {new Intl.DateTimeFormat("en-US", {
-                                                            timeZone: "America/New_York",
-                                                            month: "short",
-                                                            day: "numeric",
-                                                            year: "numeric"
-                                                        }).format(new Date(sub.submissionDate))}
+                                                        {formatUsDate(sub.submissionDate)}
                                                     </span>
                                                     <span className="text-xs text-gray-400">
-                                                        {new Intl.DateTimeFormat("en-US", {
-                                                            timeZone: "America/New_York",
-                                                            hour: "numeric",
-                                                            minute: "numeric",
-                                                        }).format(new Date(sub.submissionDate))} EST
+                                                        {formatUsTime(sub.submissionDate)}
                                                     </span>
                                                 </div>
                                             </TableCell>

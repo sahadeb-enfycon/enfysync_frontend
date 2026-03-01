@@ -169,9 +169,9 @@ export default function DeliveryHeadCreatePodPage() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <Label htmlFor="podLead" className="text-[#4b5563] dark:text-white mb-2">Assign Pod Lead *</Label>
-                                    <Select required onValueChange={handlePodLeadChange} value={selectedPodLead}>
+                                    <Select required onValueChange={handlePodLeadChange} value={selectedPodLead} disabled={!isLoading && recruiterOptions.length === 0}>
                                         <SelectTrigger className="border border-neutral-300 px-5 dark:border-slate-500 focus:border-primary dark:focus:border-primary focus-visible:border-primary !h-12 rounded-lg !shadow-none !ring-0 w-full bg-transparent text-left">
-                                            <SelectValue placeholder="Select a Pod Lead" />
+                                            <SelectValue placeholder={isLoading ? "Loading recruiters..." : (recruiterOptions.length === 0 ? "No recruiter found" : "Select a Pod Lead")} />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {recruiterOptions.map(option => (
@@ -189,7 +189,9 @@ export default function DeliveryHeadCreatePodPage() {
                                         options={recruiterOptions}
                                         selected={selectedRecruiters}
                                         onChange={handleRecruitersChange}
-                                        placeholder={isLoading ? "Loading recruiters..." : "Select recruiter(s)..."}
+                                        placeholder={isLoading ? "Loading recruiters..." : (recruiterOptions.length === 0 ? "No recruiter found" : "Select recruiter(s)...")}
+                                        disabled={!isLoading && recruiterOptions.length === 0}
+                                        emptyMessage="No recruiter found"
                                     />
                                     <p className="text-xs text-neutral-500 mt-2">Select one or more recruiters to join this pod (Max 5 total).</p>
                                 </div>
