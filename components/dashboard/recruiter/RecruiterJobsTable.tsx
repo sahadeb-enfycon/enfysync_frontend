@@ -104,9 +104,9 @@ export default function RecruiterJobsTable({
     // Fetch team members from /pods/my-team once
     useEffect(() => {
         apiClient("/auth/me")
-            .then((res) => res.ok ? res.json() : {})
-            .then((data) => {
-                if (data.isPodHead) {
+            .then((res) => (res.ok ? res.json() : {}))
+            .then((data: any) => {
+                if (data?.isPodHead) {
                     setIsPodHeadUser(true);
                 }
             })
