@@ -133,10 +133,22 @@ function EditStatusPopover({ sub, onSaved }: { sub: CandidateSubmission; onSaved
     const handleSave = async () => {
         setSaving(true);
         try {
+            const changedFields: any = {};
+            if (form.l1Status !== sub.l1Status) changedFields.l1Status = form.l1Status;
+            if (form.l2Status !== sub.l2Status) changedFields.l2Status = form.l2Status;
+            if (form.l3Status !== sub.l3Status) changedFields.l3Status = form.l3Status;
+            if (form.finalStatus !== sub.finalStatus) changedFields.finalStatus = form.finalStatus;
+            if (form.remarks !== (sub.remarks || "")) changedFields.remarks = form.remarks;
+
+            if (Object.keys(changedFields).length === 0) {
+                setOpen(false);
+                return;
+            }
+
             const res = await apiClient(`/recruiter-submissions/${sub.id}`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(form),
+                body: JSON.stringify(changedFields),
             });
             if (!res.ok) {
                 const err = await res.json().catch(() => ({}));
@@ -154,6 +166,23 @@ function EditStatusPopover({ sub, onSaved }: { sub: CandidateSubmission; onSaved
 
     const sf = (key: keyof typeof form) => (val: string) => setForm(p => ({ ...p, [key]: val }));
 
+    const isL1Rejected = form.l1Status === "REJECTED";
+    const isL2Rejected = form.l2Status === "REJECTED";
+    const isL3Rejected = form.l3Status === "REJECTED";
+    const isAnyRejected = isL1Rejected || isL2Rejected || isL3Rejected;
+
+    const disableL2 = isL1Rejected || !form.l1Status || form.l1Status === "PENDING";
+    const disableL3 = disableL2 || isL2Rejected || !form.l2Status || form.l2Status === "PENDING";
+    const disableFinal = isAnyRejected;
+
+    const displayFinalStatus = isAnyRejected ? "REJECTED" : form.finalStatus;
+
+    const stages = [
+        { key: "l1Status", label: "L1", disabled: false },
+        { key: "l2Status", label: "L2", disabled: disableL2 },
+        { key: "l3Status", label: "L3", disabled: disableL3 },
+    ] as const;
+
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
@@ -164,10 +193,10 @@ function EditStatusPopover({ sub, onSaved }: { sub: CandidateSubmission; onSaved
             <PopoverContent className="w-72 p-4 space-y-3" align="end">
                 <p className="text-xs font-semibold text-neutral-700 border-b pb-2">Update Pipeline Status</p>
 
-                {(["l1Status", "l2Status", "l3Status"] as const).map((key, i) => (
-                    <div key={key} className="flex items-center gap-2">
-                        <span className="text-xs font-semibold w-6 text-neutral-500">L{i + 1}</span>
-                        <Select value={form[key]} onValueChange={sf(key)}>
+                {stages.map((stage) => (
+                    <div key={stage.key} className="flex items-center gap-2">
+                        <span className="text-xs font-semibold w-6 text-neutral-500">{stage.label}</span>
+                        <Select value={form[stage.key]} onValueChange={sf(stage.key)} disabled={stage.disabled}>
                             <SelectTrigger className="h-7 text-xs flex-1">
                                 <SelectValue />
                             </SelectTrigger>
@@ -182,7 +211,7 @@ function EditStatusPopover({ sub, onSaved }: { sub: CandidateSubmission; onSaved
 
                 <div className="flex items-center gap-2">
                     <span className="text-xs font-semibold w-6 text-neutral-500">Final</span>
-                    <Select value={form.finalStatus} onValueChange={sf("finalStatus")}>
+                    <Select value={displayFinalStatus} onValueChange={sf("finalStatus")} disabled={disableFinal}>
                         <SelectTrigger className="h-7 text-xs flex-1">
                             <SelectValue />
                         </SelectTrigger>
@@ -214,10 +243,23 @@ function EditStatusPopover({ sub, onSaved }: { sub: CandidateSubmission; onSaved
 
 // Pipeline Component for L1/L2/L3
 const PipelineProgress = ({ sub }: { sub: CandidateSubmission }) => {
+    // Determine effective status based on cascading rules
+    const effectiveL1 = sub.l1Status || "PENDING";
+    const isL1Rejected = effectiveL1 === "REJECTED";
+    const isL1Pending = effectiveL1 === "PENDING";
+
+    // If L1 is pending or rejected, L2 must visually be pending
+    const effectiveL2 = (isL1Rejected || isL1Pending) ? "PENDING" : (sub.l2Status || "PENDING");
+    const isL2Rejected = effectiveL2 === "REJECTED";
+    const isL2Pending = effectiveL2 === "PENDING";
+
+    // If L2 is pending or rejected (which cascades from L1), L3 must visually be pending
+    const effectiveL3 = (isL2Rejected || isL2Pending) ? "PENDING" : (sub.l3Status || "PENDING");
+
     const stages = [
-        { label: "L1", status: sub.l1Status, date: sub.l1Date },
-        { label: "L2", status: sub.l2Status, date: sub.l2Date },
-        { label: "L3", status: sub.l3Status, date: sub.l3Date },
+        { label: "L1", status: effectiveL1, date: sub.l1Date },
+        { label: "L2", status: effectiveL2, date: sub.l2Date },
+        { label: "L3", status: effectiveL3, date: sub.l3Date },
     ];
 
     return (
@@ -227,18 +269,18 @@ const PipelineProgress = ({ sub }: { sub: CandidateSubmission }) => {
                 let circleColor = "bg-gray-200 border-gray-300"; // Pending default
                 let textColor = "text-gray-400";
 
-                if (s === "PASSED" || s === "SELECTED" || s === "APPROVED") {
+                if (s === "CLEARED") {
                     circleColor = "bg-green-500 border-green-600";
                     textColor = "text-green-700 font-medium";
                 } else if (s === "REJECTED") {
                     circleColor = "bg-red-500 border-red-600";
                     textColor = "text-red-700 font-medium";
-                } else if (s === "PENDING" || s === "ACTIVE" || s === "SUBMITTED") {
+                } else if (s === "PENDING") {
                     circleColor = "bg-blue-500 border-blue-600 ring-2 ring-blue-200";
                     textColor = "text-blue-700 font-medium";
                 } else if (s) {
-                    circleColor = "bg-blue-500 border-blue-600";
-                    textColor = "text-blue-700 font-medium";
+                    circleColor = "bg-gray-400 border-gray-500";
+                    textColor = "text-gray-600 font-medium";
                 }
 
                 return (
@@ -248,7 +290,7 @@ const PipelineProgress = ({ sub }: { sub: CandidateSubmission }) => {
                             <span className={cn("text-[10px]", textColor)}>{stage.label}</span>
                         </div>
                         {idx < stages.length - 1 && (
-                            <div className={cn("w-6 h-px mb-4", (s === "PASSED" || s === "SELECTED") ? "bg-green-500" : "bg-gray-200")} />
+                            <div className={cn("w-6 h-px mb-4", (s === "CLEARED") ? "bg-green-500" : "bg-gray-200")} />
                         )}
                     </div>
                 );
