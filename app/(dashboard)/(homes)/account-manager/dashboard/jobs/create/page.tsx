@@ -178,15 +178,15 @@ export default function AccountManagerCreateJobPage() {
                             </div>
                             <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div>
-                                    <Label htmlFor="urgency" className="text-[#4b5563] dark:text-white mb-2">Urgency *</Label>
+                                    <Label htmlFor="urgency" className="text-[#4b5563] dark:text-white mb-2">Job Type *</Label>
                                     <Select name="urgency" required>
                                         <SelectTrigger className="border border-neutral-300 px-5 dark:border-slate-500 focus:border-primary dark:focus:border-primary focus-visible:border-primary !h-12 rounded-lg !shadow-none !ring-0 w-full bg-transparent text-left">
-                                            <SelectValue placeholder="Select Urgency" />
+                                            <SelectValue placeholder="Hot, Warm, Cold" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="HIGH">High</SelectItem>
-                                            <SelectItem value="MEDIUM">Medium</SelectItem>
-                                            <SelectItem value="LOW">Low</SelectItem>
+                                            <SelectItem className="hover:bg-red-500 hover:text-white" value="HOT">HOT</SelectItem>
+                                            <SelectItem className="hover:bg-yellow-500 hover:text-white" value="WARM">WARM</SelectItem>
+                                            <SelectItem className="hover:bg-green-500 hover:text-white" value="COLD">COLD</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>

@@ -30,7 +30,7 @@ import {
 import { cn, formatUsDate, formatUsTime } from "@/lib/utils";
 
 export interface CandidateSubmission {
-    id: string;
+    id: string | number;
     jobId: string;
     job?: {
         jobCode: string;
@@ -44,6 +44,7 @@ export interface CandidateSubmission {
     candidatePhone: string;
     candidateCurrentLocation: string;
     submissionDate: string;
+    createdAt?: string;
     l1Status: string;
     l1Date: string;
     l2Status: string;
@@ -53,6 +54,10 @@ export interface CandidateSubmission {
     finalStatus: string;
     remarks: string;
     recruiterComment: string;
+    recruiter?: {
+        fullName: string;
+        email: string;
+    };
 }
 
 interface SubmittedJobsTableProps {
@@ -125,7 +130,7 @@ const PipelineProgress = ({ sub }: { sub: CandidateSubmission }) => {
 
 export default function SubmittedJobsTable({
     submissions,
-    showExtendedDetails = false,
+    showExtendedDetails = true,
 }: SubmittedJobsTableProps) {
     const [currentPage, setCurrentPage] = useState(1);
     const [searchQuery, setSearchQuery] = useState("");
@@ -291,7 +296,15 @@ export default function SubmittedJobsTable({
                                     Job Reference
                                 </TableHead>
                                 <TableHead className="text-gray-600 font-medium text-sm px-6 py-4 text-start">
+                                    Submitted By
+                                </TableHead>
+
+
+                                <TableHead className="text-gray-600 font-medium text-sm px-6 py-4 text-start">
                                     Candidate Details
+                                </TableHead>
+                                <TableHead className="text-gray-600 font-medium text-sm px-6 py-4 text-start">
+                                    Created At
                                 </TableHead>
                                 <TableHead className="text-gray-600 font-medium text-sm px-6 py-4 text-start">
                                     Submission Date
@@ -320,7 +333,7 @@ export default function SubmittedJobsTable({
                             {currentSubmissions.length === 0 ? (
                                 <TableRow>
                                     <TableCell
-                                        colSpan={showExtendedDetails ? 7 : 5}
+                                        colSpan={showExtendedDetails ? 8 : 6}
                                         className="h-32 text-center text-gray-500"
                                     >
                                         <div className="flex flex-col items-center justify-center gap-2">
@@ -353,6 +366,16 @@ export default function SubmittedJobsTable({
                                                     </span>
                                                 </div>
                                             </TableCell>
+                                            <TableCell className="px-6 py-4 text-start">
+                                                <div className="flex flex-col gap-1">
+                                                    <span className="font-medium text-sm text-gray-900 capitalize">
+                                                        {sub.recruiter?.fullName || "-"}
+                                                    </span>
+                                                    <a href={`mailto:${sub.recruiter?.email}`} className="text-xs text-gray-500 hover:text-blue-600 hover:underline break-all">
+                                                        {sub.recruiter?.email || "-"}
+                                                    </a>
+                                                </div>
+                                            </TableCell>
 
                                             {/* Candidate Details */}
                                             <TableCell className="px-6 py-4 text-start">
@@ -360,18 +383,39 @@ export default function SubmittedJobsTable({
                                                     <span className="font-medium text-sm text-gray-900 capitalize">
                                                         {sub.candidateName}
                                                     </span>
-                                                    <a href={`mailto:${sub.candidateEmail}`} className="text-xs text-gray-500 hover:text-blue-600 hover:underline">
+                                                    <a href={`mailto:${sub.candidateEmail}`} className="text-xs text-gray-500 hover:text-blue-600 hover:underline break-all">
                                                         {sub.candidateEmail}
                                                     </a>
                                                     {sub.candidatePhone && (
-                                                        <span className="text-[10px] text-gray-400">{sub.candidatePhone}</span>
+                                                        <span className="text-[11px] text-gray-500">Phone: {sub.candidatePhone}</span>
+                                                    )}
+                                                    {sub.candidateCurrentLocation && (
+                                                        <span className="text-[11px] text-gray-500">Loc: {sub.candidateCurrentLocation}</span>
+                                                    )}
+                                                </div>
+                                            </TableCell>
+
+                                            {/* Created At Date */}
+                                            <TableCell className="px-6 py-4 text-start whitespace-nowrap">
+                                                <div className="flex flex-col gap-0.5">
+                                                    {sub.createdAt ? (
+                                                        <>
+                                                            <span className="text-sm text-gray-900 font-medium">
+                                                                {formatUsDate(sub.createdAt)}
+                                                            </span>
+                                                            <span className="text-xs text-gray-400">
+                                                                {formatUsTime(sub.createdAt)}
+                                                            </span>
+                                                        </>
+                                                    ) : (
+                                                        <span className="text-sm text-gray-400 italic">-</span>
                                                     )}
                                                 </div>
                                             </TableCell>
 
                                             {/* Submission Date */}
                                             <TableCell className="px-6 py-4 text-start whitespace-nowrap">
-                                                <div className="flex flex-col gap-0.5">
+                                                <div className="flex flex-col gap-0.5" title="Submission Date">
                                                     <span className="text-sm text-gray-900 font-medium">
                                                         {formatUsDate(sub.submissionDate)}
                                                     </span>
