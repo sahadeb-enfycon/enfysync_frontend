@@ -43,6 +43,7 @@ interface Job {
     id: string;
     jobTitle: string;
     clientName: string;
+    endClientName: string;
     jobCode: string;
     status: string;
     createdAt: string;
@@ -318,6 +319,9 @@ export default function RecruiterJobsTable({
                             <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-start">
                                 Client
                             </TableHead>
+                             <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-start">
+                                End Client
+                            </TableHead>
                             <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-start">
                                 Account Manager
                             </TableHead>
@@ -370,6 +374,9 @@ export default function RecruiterJobsTable({
                                         </TableCell>
                                         <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
                                             {job.clientName}
+                                        </TableCell>
+                                        <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
+                                            {job.endClientName}
                                         </TableCell>
                                         <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start whitespace-nowrap">
                                             <div className="flex flex-col">
