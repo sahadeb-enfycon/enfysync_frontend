@@ -266,6 +266,10 @@ export default function SubmittedJobsTable({
     const [currentPage, setCurrentPage] = useState(1);
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
+    const [l1Filter, setL1Filter] = useState("all");
+    const [l2Filter, setL2Filter] = useState("all");
+    const [l3Filter, setL3Filter] = useState("all");
+    const [dateFilter, setDateFilter] = useState("");
     const itemsPerPage = 10;
 
     // Derived Statistics
@@ -310,10 +314,14 @@ export default function SubmittedJobsTable({
                 sub.candidateEmail.toLowerCase().includes(searchQuery.toLowerCase());
 
             const matchesStatus = statusFilter === "all" || (sub.finalStatus && sub.finalStatus.toUpperCase() === statusFilter.toUpperCase());
+            const matchesL1 = l1Filter === "all" || (sub.l1Status && sub.l1Status.toUpperCase() === l1Filter.toUpperCase());
+            const matchesL2 = l2Filter === "all" || (sub.l2Status && sub.l2Status.toUpperCase() === l2Filter.toUpperCase());
+            const matchesL3 = l3Filter === "all" || (sub.l3Status && sub.l3Status.toUpperCase() === l3Filter.toUpperCase());
+            const matchesDate = !dateFilter || new Date(sub.submissionDate).toISOString().split('T')[0] === dateFilter;
 
-            return matchesSearch && matchesStatus;
+            return matchesSearch && matchesStatus && matchesL1 && matchesL2 && matchesL3 && matchesDate;
         });
-    }, [submissions, searchQuery, statusFilter]);
+    }, [submissions, searchQuery, statusFilter, l1Filter, l2Filter, l3Filter, dateFilter]);
 
     // Apply sorting (by newest submission date)
     const sortedSubmissions = useMemo(() => {
@@ -338,6 +346,10 @@ export default function SubmittedJobsTable({
     const clearFilters = () => {
         setSearchQuery("");
         setStatusFilter("all");
+        setL1Filter("all");
+        setL2Filter("all");
+        setL3Filter("all");
+        setDateFilter("");
         setCurrentPage(1);
     };
 
@@ -385,6 +397,75 @@ export default function SubmittedJobsTable({
                     </div>
                 </div>
 
+                <div className="flex flex-col gap-1.5 min-w-[120px]">
+                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1 flex items-center gap-1">
+                        <Filter className="h-3 w-3" /> L1
+                    </label>
+                    <Select value={l1Filter} onValueChange={(v) => { setL1Filter(v); setCurrentPage(1); }}>
+                        <SelectTrigger className="h-10 bg-white border-gray-200 rounded-lg">
+                            <SelectValue placeholder="All" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All</SelectItem>
+                            {STAGE_STATUSES.map(status => (
+                                <SelectItem key={status} value={status}>
+                                    <span className="capitalize">{status.toLowerCase()}</span>
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                <div className="flex flex-col gap-1.5 min-w-[120px]">
+                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1 flex items-center gap-1">
+                        <Filter className="h-3 w-3" /> L2
+                    </label>
+                    <Select value={l2Filter} onValueChange={(v) => { setL2Filter(v); setCurrentPage(1); }}>
+                        <SelectTrigger className="h-10 bg-white border-gray-200 rounded-lg">
+                            <SelectValue placeholder="All" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All</SelectItem>
+                            {STAGE_STATUSES.map(status => (
+                                <SelectItem key={status} value={status}>
+                                    <span className="capitalize">{status.toLowerCase()}</span>
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                <div className="flex flex-col gap-1.5 min-w-[120px]">
+                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1 flex items-center gap-1">
+                        <Filter className="h-3 w-3" /> L3
+                    </label>
+                    <Select value={l3Filter} onValueChange={(v) => { setL3Filter(v); setCurrentPage(1); }}>
+                        <SelectTrigger className="h-10 bg-white border-gray-200 rounded-lg">
+                            <SelectValue placeholder="All" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All</SelectItem>
+                            {STAGE_STATUSES.map(status => (
+                                <SelectItem key={status} value={status}>
+                                    <span className="capitalize">{status.toLowerCase()}</span>
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                <div className="flex flex-col gap-1.5 min-w-[120px]">
+                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1 flex items-center gap-1">
+                        <Filter className="h-3 w-3" /> Submission Date
+                    </label>
+                    <Input
+                        type="date"
+                        className="h-10 bg-white border-gray-200 rounded-lg"
+                        value={dateFilter}
+                        onChange={(e) => { setDateFilter(e.target.value); setCurrentPage(1); }}
+                    />
+                </div>
+
                 <div className="flex flex-col gap-1.5 min-w-[150px]">
                     <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1 flex items-center gap-1">
                         <Filter className="h-3 w-3" /> Status
@@ -395,7 +476,7 @@ export default function SubmittedJobsTable({
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">All Statuses</SelectItem>
-                            {uniqueStatuses.map(status => (
+                            {FINAL_STATUSES.map(status => (
                                 <SelectItem key={status} value={status}>
                                     <span className="capitalize">{status.toLowerCase()}</span>
                                 </SelectItem>
@@ -404,7 +485,7 @@ export default function SubmittedJobsTable({
                     </Select>
                 </div>
 
-                {(searchQuery || statusFilter !== "all") && (
+                {(searchQuery || statusFilter !== "all" || l1Filter !== "all" || l2Filter !== "all" || l3Filter !== "all" || dateFilter) && (
                     <Button
                         variant="ghost"
                         size="icon"
