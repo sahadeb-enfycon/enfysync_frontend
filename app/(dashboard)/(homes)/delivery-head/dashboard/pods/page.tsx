@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import { serverApiClient } from "@/lib/serverApiClient";
+import ResetPodsButton from "@/components/dashboard/delivery-head/ResetPodsButton";
 
 export const dynamic = 'force-dynamic';
 
@@ -37,12 +38,15 @@ export default async function DeliveryHeadPodsPage() {
                     <div>
                         <p className="text-muted-foreground italic text-sm">Managing recruitment pods and assigning team leaders.</p>
                     </div>
-                    <Button asChild className="h-10 px-4 bg-primary hover:bg-primary/90">
-                        <Link href="/delivery-head/dashboard/pods/create">
-                            <Plus className="h-4 w-4 mr-2" />
-                            Create New Pod
-                        </Link>
-                    </Button>
+                    <div className="flex items-center gap-3">
+                        <ResetPodsButton />
+                        <Button asChild className="h-10 px-4 bg-primary hover:bg-primary/90">
+                            <Link href="/delivery-head/dashboard/pods/create">
+                                <Plus className="h-4 w-4 mr-2" />
+                                Create New Pod
+                            </Link>
+                        </Button>
+                    </div>
                 </div>
 
                 <PodsTable pods={pods} />
