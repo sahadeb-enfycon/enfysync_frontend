@@ -50,7 +50,7 @@ export default function ResetPodsButton() {
             <AlertDialogTrigger asChild>
                 <Button
                     variant="outline"
-                    className="h-10 px-4 flex items-center gap-2 hover:bg-red-500 hover:text-white "
+                    className="h-10 px-4 flex items-center gap-2 hover:bg-red-500 hover:text-white cursor-pointer"
                     disabled={isLoading}
                 >
                     <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
