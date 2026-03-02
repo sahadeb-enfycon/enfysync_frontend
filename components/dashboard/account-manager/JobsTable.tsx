@@ -45,8 +45,10 @@ import { useSession } from "next-auth/react";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import PodAssignCell from "../delivery-head/PodAssignCell";
+import { Save, X as XIcon } from "lucide-react";
 
 import { apiClient } from "@/lib/apiClient";
+import { LocationSelect } from "@/components/shared/location-select";
 
 interface Job {
     id: string;
@@ -192,10 +194,7 @@ export default function JobsTable({
     const [searchQuery, setSearchQuery] = useState("");
     const [sortBy, setSortBy] = useState<string>("date-desc");
 
-    // Modal states
-    const [editJob, setEditJob] = useState<Job | null>(null);
-    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-
+    // Modal states (unused now - kept for safety, remove after verification)
     const [availablePods, setAvailablePods] = useState<{ id: string, name: string }[]>([]);
 
     useEffect(() => {
@@ -309,10 +308,60 @@ export default function JobsTable({
         setCurrentPage(1);
     };
 
-    const handleEdit = (job: any) => {
-        setEditJob(job);
-        setIsEditDialogOpen(true);
+    // Inline editing state
+    const [editingJobId, setEditingJobId] = useState<string | null>(null);
+    const [editForm, setEditForm] = useState<Partial<Job>>({});
+    const [isSaving, setIsSaving] = useState(false);
+
+    const startEdit = (job: Job) => {
+        setEditingJobId(job.id);
+        setEditForm({
+            jobTitle: job.jobTitle,
+            jobType: job.jobType,
+            jobLocation: job.jobLocation,
+            visaType: job.visaType,
+            clientName: job.clientName,
+            endClientName: job.endClientName,
+            clientBillRate: job.clientBillRate,
+            payRate: job.payRate,
+            noOfPositions: job.noOfPositions,
+            submissionRequired: job.submissionRequired,
+            urgency: job.urgency,
+        });
     };
+
+    const cancelEdit = () => {
+        setEditingJobId(null);
+        setEditForm({});
+    };
+
+    const saveEdit = async (jobId: string) => {
+        setIsSaving(true);
+        try {
+            const res = await apiClient(`/jobs/${jobId}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(editForm),
+            });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err?.message || "Failed to save");
+            }
+            toast.success("Job updated successfully");
+            setEditingJobId(null);
+            if (onRefresh) onRefresh();
+            else router.refresh();
+        } catch (error: any) {
+            toast.error(error.message || "Something went wrong");
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const ef = (field: keyof Job) => (e: React.ChangeEvent<HTMLInputElement>) =>
+        setEditForm(prev => ({ ...prev, [field]: e.target.value }));
+    const efSel = (field: keyof Job) => (val: string) =>
+        setEditForm(prev => ({ ...prev, [field]: val }));
 
 
 
@@ -516,68 +565,133 @@ export default function JobsTable({
                             </TableRow>
                         ) : (
                             currentJobs.map((job) => {
-                                const status = statusMap[job.status] || { label: job.status, variant: "secondary" };
+                                const isEditing = editingJobId === job.id;
+                                const inputCls = "h-7 px-1.5 text-xs border border-blue-300 rounded w-full focus:outline-none focus:ring-1 focus:ring-blue-400";
+                                const selCls = "h-7 text-xs border border-blue-300 rounded focus:ring-blue-400";
                                 return (
-                                    <TableRow key={job.id} className="hover:bg-neutral-50 dark:hover:bg-slate-800/50 transition-colors">
-                                        <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start font-medium capitalize">
-                                            {job.jobTitle.toLowerCase()}
+                                    <TableRow key={job.id} className={cn("transition-colors border-b border-neutral-100", isEditing ? "bg-blue-50 dark:bg-blue-950/30" : "hover:bg-neutral-50 dark:hover:bg-slate-800/50")}>
+                                        {/* Job Title */}
+                                        <TableCell className="py-2 px-4 border-b border-neutral-200 dark:border-slate-600 text-start font-medium capitalize">
+                                            {isEditing
+                                                ? <Input className={inputCls} value={editForm.jobTitle ?? ""} onChange={ef("jobTitle")} />
+                                                : job.jobTitle.toLowerCase()}
                                         </TableCell>
-                                        <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
-                                            <code className="bg-neutral-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-xs font-mono">
-                                                {job.jobCode}
-                                            </code>
+                                        {/* Job Code - never editable */}
+                                        <TableCell className="py-2 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
+                                            <code className="bg-neutral-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-xs font-mono">{job.jobCode}</code>
                                         </TableCell>
-                                        <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start whitespace-nowrap">
-                                            <div className="flex flex-col gap-0.5">
-                                                <span className="text-xs font-medium capitalize">{(job.jobType || "").replace("_", " ").toLowerCase()}</span>
-                                                <span className="text-[10px] text-muted-foreground capitalize">{job.jobLocation}</span>
-                                            </div>
+                                        {/* Type / Location */}
+                                        <TableCell className="py-2 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
+                                            {isEditing ? (
+                                                <div className="flex flex-col gap-1">
+                                                    <Select value={editForm.jobType ?? ""} onValueChange={efSel("jobType")}>
+                                                        <SelectTrigger className={selCls}><SelectValue /></SelectTrigger>
+                                                        <SelectContent>
+                                                            {["FULL_TIME", "PART_TIME", "CONTRACT", "CONTRACT_TO_HIRE", "TEMPORARY", "INTERNSHIP", "FREELANCE"].map(t => <SelectItem key={t} value={t} className="text-xs">{t.replace(/_/g, " ")}</SelectItem>)}
+                                                        </SelectContent>
+                                                    </Select>
+                                                    <LocationSelect
+                                                        value={editForm.jobLocation ?? ""}
+                                                        onChange={(val) => setEditForm(p => ({ ...p, jobLocation: val }))}
+                                                        placeholder="Select location"
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <div className="flex flex-col gap-0.5">
+                                                    <span className="text-xs font-medium capitalize">{(job.jobType || "").replace(/_/g, " ").toLowerCase()}</span>
+                                                    <span className="text-[10px] text-muted-foreground capitalize">{job.jobLocation}</span>
+                                                </div>
+                                            )}
                                         </TableCell>
-                                        <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
-                                            <Badge variant="outline" className="text-[10px] px-1.5 py-0">{job.visaType}</Badge>
+                                        {/* Visa */}
+                                        <TableCell className="py-2 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
+                                            {isEditing ? (
+                                                <Select value={editForm.visaType ?? ""} onValueChange={efSel("visaType")}>
+                                                    <SelectTrigger className={selCls}><SelectValue /></SelectTrigger>
+                                                    <SelectContent>
+                                                        {["H1B", "GC", "US_CITIZEN", "OPT", "EAD", "TN"].map(v => <SelectItem key={v} value={v} className="text-xs">{v}</SelectItem>)}
+                                                    </SelectContent>
+                                                </Select>
+                                            ) : (
+                                                <Badge variant="outline" className="text-[10px] px-1.5 py-0">{job.visaType}</Badge>
+                                            )}
                                         </TableCell>
-                                        <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
-                                            {job.clientName}
+                                        {/* Client */}
+                                        <TableCell className="py-2 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
+                                            {isEditing
+                                                ? <Input className={inputCls} value={editForm.clientName ?? ""} onChange={ef("clientName")} />
+                                                : job.clientName}
                                         </TableCell>
-                                        <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
-                                            {job.endClientName}
+                                        {/* End Client */}
+                                        <TableCell className="py-2 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
+                                            {isEditing
+                                                ? <Input className={inputCls} value={editForm.endClientName ?? ""} onChange={ef("endClientName")} />
+                                                : job.endClientName}
                                         </TableCell>
-                                        <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-center">
-                                            <span className="font-semibold text-sm">{job.noOfPositions ?? "-"}</span>
+                                        {/* Positions */}
+                                        <TableCell className="py-2 px-4 border-b border-neutral-200 dark:border-slate-600 text-center">
+                                            {isEditing
+                                                ? <Input type="number" min={1} className={inputCls} value={editForm.noOfPositions ?? ""} onChange={(e) => setEditForm(p => ({ ...p, noOfPositions: parseInt(e.target.value) }))} />
+                                                : <span className="font-semibold text-sm">{job.noOfPositions ?? "-"}</span>}
                                         </TableCell>
-                                        <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-center">
-                                            <div className="flex flex-col items-center gap-0.5">
-                                                <span className="font-medium text-sm">{job.submissionDone ?? 0} / {job.submissionRequired ?? 0}</span>
-                                                <span className="text-[10px] text-muted-foreground">done / req</span>
-                                            </div>
+                                        {/* Submissions */}
+                                        <TableCell className="py-2 px-4 border-b border-neutral-200 dark:border-slate-600 text-center">
+                                            {isEditing ? (
+                                                <Input type="number" min={0} className={inputCls} value={editForm.submissionRequired ?? ""} onChange={(e) => setEditForm(p => ({ ...p, submissionRequired: parseInt(e.target.value) }))} />
+                                            ) : (
+                                                <div className="flex flex-col items-center gap-0.5">
+                                                    <span className="font-medium text-sm">{job.submissionDone ?? 0} / {job.submissionRequired ?? 0}</span>
+                                                    <span className="text-[10px] text-muted-foreground">done / req</span>
+                                                </div>
+                                            )}
                                         </TableCell>
-                                        <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
-                                            {job.urgency && (
+                                        {/* Urgency */}
+                                        <TableCell className="py-2 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
+                                            {isEditing ? (
+                                                <Select value={editForm.urgency ?? ""} onValueChange={efSel("urgency")}>
+                                                    <SelectTrigger className={selCls}><SelectValue /></SelectTrigger>
+                                                    <SelectContent>
+                                                        {["HOT", "WARM", "COLD"].map(u => <SelectItem key={u} value={u} className="text-xs">{u}</SelectItem>)}
+                                                    </SelectContent>
+                                                </Select>
+                                            ) : job.urgency && (
                                                 <Badge variant={job.urgency === "HOT" ? "destructive" : "secondary"} className="text-[10px] px-1.5 py-0 w-fit">{job.urgency}</Badge>
                                             )}
                                         </TableCell>
-                                        <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
+                                        {/* Req Type */}
+                                        <TableCell className="py-2 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
                                             <span className="text-xs capitalize">{(job.requirementType || "").replace(/_/g, " ").toLowerCase()}</span>
                                         </TableCell>
-                                        <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-center">
+                                        {/* CFR Age */}
+                                        <TableCell className="py-2 px-4 border-b border-neutral-200 dark:border-slate-600 text-center">
                                             <span className="text-sm font-medium">{job.carryForwardAge ?? 0}</span>
                                         </TableCell>
-                                        <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start whitespace-nowrap">
-                                            <div className="flex flex-col gap-0.5 text-xs">
-                                                <span><span className="text-muted-foreground">Bill:</span> {job.clientBillRate || "-"}</span>
-                                                <span><span className="text-muted-foreground">Pay:</span> {job.payRate || "-"}</span>
-                                            </div>
+                                        {/* Rates */}
+                                        <TableCell className="py-2 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
+                                            {isEditing ? (
+                                                <div className="flex flex-col gap-1">
+                                                    <Input className={inputCls} value={editForm.clientBillRate ?? ""} onChange={ef("clientBillRate")} placeholder="Bill rate" />
+                                                    <Input className={inputCls} value={editForm.payRate ?? ""} onChange={ef("payRate")} placeholder="Pay rate" />
+                                                </div>
+                                            ) : (
+                                                <div className="flex flex-col gap-0.5 text-xs">
+                                                    <span><span className="text-muted-foreground">Bill:</span> {job.clientBillRate || "-"}</span>
+                                                    <span><span className="text-muted-foreground">Pay:</span> {job.payRate || "-"}</span>
+                                                </div>
+                                            )}
                                         </TableCell>
+                                        {/* Account Manager */}
                                         {showAccountManager && (
-                                            <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start whitespace-nowrap">
+                                            <TableCell className="py-2 px-4 border-b border-neutral-200 dark:border-slate-600 text-start whitespace-nowrap">
                                                 <div className="flex flex-col">
                                                     <span className="font-medium text-sm">{job.accountManager?.fullName || "N/A"}</span>
                                                     <span className="text-[10px] text-muted-foreground">{job.accountManager?.email}</span>
                                                 </div>
                                             </TableCell>
                                         )}
+                                        {/* Pod */}
                                         {showPod && (
-                                            <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
+                                            <TableCell className="py-2 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
                                                 <PodAssignCell
                                                     jobId={job.id}
                                                     assignedPods={
@@ -585,54 +699,57 @@ export default function JobsTable({
                                                             ? job.pods
                                                             : job.podIds && job.podIds.length > 0 && availablePods.length > 0
                                                                 ? (job.podIds.map(id => availablePods.find(p => p.id === id)).filter(Boolean) as { id: string; name: string }[])
-                                                                : job.pod
-                                                                    ? [job.pod]
-                                                                    : []
+                                                                : job.pod ? [job.pod] : []
                                                     }
                                                     availablePods={availablePods}
                                                     canEdit={(session as any)?.user?.roles?.includes("DELIVERY_HEAD") || (session as any)?.user?.roles?.includes("ADMIN")}
-                                                    onSuccess={() => {
-                                                        if (onRefresh) onRefresh();
-                                                        else router.refresh();
-                                                    }}
+                                                    onSuccess={() => { if (onRefresh) onRefresh(); else router.refresh(); }}
                                                 />
                                             </TableCell>
                                         )}
-                                        <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start whitespace-nowrap">
-                                            {showEstCreatedDateTime
-                                                ? (
-                                                    <div className="flex flex-col">
-                                                        <span className="text-sm">
-                                                            {estDateFormatter.format(new Date(job.createdAt))}
-                                                        </span>
-                                                        <span className="text-[10px] text-muted-foreground">
-                                                            {estTimeFormatter.format(new Date(job.createdAt))}
-                                                        </span>
-                                                    </div>
-                                                )
-                                                : new Date(job.createdAt).toLocaleDateString()}
+                                        {/* Created Date */}
+                                        <TableCell className="py-2 px-4 border-b border-neutral-200 dark:border-slate-600 text-start whitespace-nowrap">
+                                            {showEstCreatedDateTime ? (
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm">{estDateFormatter.format(new Date(job.createdAt))}</span>
+                                                    <span className="text-[10px] text-muted-foreground">{estTimeFormatter.format(new Date(job.createdAt))}</span>
+                                                </div>
+                                            ) : new Date(job.createdAt).toLocaleDateString()}
                                         </TableCell>
-                                        <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start whitespace-nowrap">
+                                        {/* Last Updated */}
+                                        <TableCell className="py-2 px-4 border-b border-neutral-200 dark:border-slate-600 text-start whitespace-nowrap">
                                             <div className="flex flex-col">
                                                 <span className="text-sm">{estDateFormatter.format(new Date(job.updatedAt))}</span>
                                                 <span className="text-[10px] text-muted-foreground">{estTimeFormatter.format(new Date(job.updatedAt))}</span>
                                             </div>
                                         </TableCell>
-                                        <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-center flex justify-center">
+                                        {/* Status */}
+                                        <TableCell className="py-2 px-4 border-b border-neutral-200 dark:border-slate-600 text-center flex justify-center">
                                             <JobStatusSelect job={job} onRefresh={onRefresh} />
                                         </TableCell>
+                                        {/* Actions */}
                                         {showActions && (
-                                            <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-end">
-                                                <div className="flex justify-end gap-2">
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20" asChild>
-                                                        <Link href={`${baseUrl}/${job.id}`}>
-                                                            <Eye className="h-4 w-4" />
-                                                        </Link>
-                                                    </Button>
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-amber-600 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-900/20" onClick={() => handleEdit(job)}>
-                                                        <Edit2 className="h-4 w-4" />
-                                                    </Button>
-
+                                            <TableCell className="py-2 px-4 border-b border-neutral-200 dark:border-slate-600 text-end">
+                                                <div className="flex justify-end gap-1">
+                                                    {isEditing ? (
+                                                        <>
+                                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50" onClick={() => saveEdit(job.id)} disabled={isSaving} title="Save">
+                                                                <Save className="h-4 w-4" />
+                                                            </Button>
+                                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50" onClick={cancelEdit} title="Cancel">
+                                                                <XIcon className="h-4 w-4" />
+                                                            </Button>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20" asChild>
+                                                                <Link href={`${baseUrl}/${job.id}`}><Eye className="h-4 w-4" /></Link>
+                                                            </Button>
+                                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-amber-600 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-900/20" onClick={() => startEdit(job)} title="Edit">
+                                                                <Edit2 className="h-4 w-4" />
+                                                            </Button>
+                                                        </>
+                                                    )}
                                                 </div>
                                             </TableCell>
                                         )}
@@ -643,21 +760,6 @@ export default function JobsTable({
                     </TableBody>
                 </Table>
             </div>
-
-            <JobEditDialog
-                job={editJob as any}
-                isOpen={isEditDialogOpen}
-                onClose={() => setIsEditDialogOpen(false)}
-                onSuccess={() => {
-                    if (onRefresh) {
-                        onRefresh();
-                    } else {
-                        router.refresh();
-                    }
-                }}
-            />
-
-
 
             {/* Pagination Controls */}
             {totalPages > 1 && (
