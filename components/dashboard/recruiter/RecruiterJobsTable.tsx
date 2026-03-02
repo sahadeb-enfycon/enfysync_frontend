@@ -383,7 +383,7 @@ export default function RecruiterJobsTable({
                                                 assignedRecruiters={job.assignedRecruiters ?? []}
                                                 teamMembers={teamMembers}
                                                 token={token}
-                                                canEdit={isPodLead}
+                                                canEdit={isPodLead && job.status !== "CLOSED"}
                                                 onSuccess={() => router.refresh()}
                                             />
                                         </TableCell>
@@ -410,6 +410,7 @@ export default function RecruiterJobsTable({
                                                     className="h-8 w-8 text-primary hover:text-primary/80 hover:bg-primary/10"
                                                     onClick={() => setSubmissionJob({ id: job.id, jobCode: job.jobCode })}
                                                     title="Submit Candidate"
+                                                    disabled={job.status === "CLOSED"}
                                                 >
                                                     <UserPlus className="h-4 w-4" />
                                                 </Button>

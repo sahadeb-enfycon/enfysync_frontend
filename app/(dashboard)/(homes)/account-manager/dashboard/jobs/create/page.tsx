@@ -121,8 +121,10 @@ export default function AccountManagerCreateJobPage() {
                                         <SelectItem value="FULL_TIME">Full Time</SelectItem>
                                         <SelectItem value="PART_TIME">Part Time</SelectItem>
                                         <SelectItem value="CONTRACT">Contract</SelectItem>
-                                        <SelectItem value="C2C">C2C</SelectItem>
-                                        <SelectItem value="W2">W2</SelectItem>
+                                        <SelectItem value="CONTRACT_TO_HIRE">Contract to Hire</SelectItem>
+                                        <SelectItem value="TEMPORARY">Temporary</SelectItem>
+                                         <SelectItem value="INTERNSHIP">Internship</SelectItem>
+                                         <SelectItem value="FREELANCE">Freelance</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -163,19 +165,8 @@ export default function AccountManagerCreateJobPage() {
                                 <input type="hidden" name="jobLocation" value={location} required />
                             </div>
 
-                            <div>
-                                <Label htmlFor="urgency" className="text-[#4b5563] dark:text-white mb-2">Urgency *</Label>
-                                <Select name="urgency" required>
-                                    <SelectTrigger className="border border-neutral-300 px-5 dark:border-slate-500 focus:border-primary dark:focus:border-primary focus-visible:border-primary !h-12 rounded-lg !shadow-none !ring-0 w-full bg-transparent text-left">
-                                        <SelectValue placeholder="Select Urgency" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="HIGH">High</SelectItem>
-                                        <SelectItem value="MEDIUM">Medium</SelectItem>
-                                        <SelectItem value="LOW">Low</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
+
+
 
                             <div>
                                 <Label htmlFor="clientBillRate" className="text-[#4b5563] dark:text-white mb-2">Client Bill Rate ($/hr) *</Label>
@@ -185,14 +176,28 @@ export default function AccountManagerCreateJobPage() {
                                 <Label htmlFor="payRate" className="text-[#4b5563] dark:text-white mb-2">Pay Rate ($/hr) *</Label>
                                 <Input type="text" id="payRate" name="payRate" className="border border-neutral-300 px-5 dark:border-slate-500 focus:border-primary dark:focus:border-primary focus-visible:border-primary h-12 rounded-lg !shadow-none !ring-0" placeholder="e.g. 50/hr" required />
                             </div>
-
-                            <div>
-                                <Label htmlFor="noOfPositions" className="text-[#4b5563] dark:text-white mb-2">Number of Positions *</Label>
-                                <Input type="number" id="noOfPositions" name="noOfPositions" min="1" className="border border-neutral-300 px-5 dark:border-slate-500 focus:border-primary dark:focus:border-primary focus-visible:border-primary h-12 rounded-lg !shadow-none !ring-0" placeholder="e.g. 2" required />
-                            </div>
-                            <div>
-                                <Label htmlFor="submissionRequired" className="text-[#4b5563] dark:text-white mb-2">Submission Required *</Label>
-                                <Input type="number" id="submissionRequired" name="submissionRequired" min="1" className="border border-neutral-300 px-5 dark:border-slate-500 focus:border-primary dark:focus:border-primary focus-visible:border-primary h-12 rounded-lg !shadow-none !ring-0" placeholder="e.g. 1" required />
+                            <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <Label htmlFor="urgency" className="text-[#4b5563] dark:text-white mb-2">Urgency *</Label>
+                                    <Select name="urgency" required>
+                                        <SelectTrigger className="border border-neutral-300 px-5 dark:border-slate-500 focus:border-primary dark:focus:border-primary focus-visible:border-primary !h-12 rounded-lg !shadow-none !ring-0 w-full bg-transparent text-left">
+                                            <SelectValue placeholder="Select Urgency" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="HIGH">High</SelectItem>
+                                            <SelectItem value="MEDIUM">Medium</SelectItem>
+                                            <SelectItem value="LOW">Low</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div>
+                                    <Label htmlFor="noOfPositions" className="text-[#4b5563] dark:text-white mb-2">Number of Positions *</Label>
+                                    <Input type="number" id="noOfPositions" name="noOfPositions" min="1" className="border border-neutral-300 px-5 dark:border-slate-500 focus:border-primary dark:focus:border-primary focus-visible:border-primary h-12 rounded-lg !shadow-none !ring-0" placeholder="e.g. 2" required />
+                                </div>
+                                <div>
+                                    <Label htmlFor="submissionRequired" className="text-[#4b5563] dark:text-white mb-2">Submission Required *</Label>
+                                    <Input type="number" id="submissionRequired" name="submissionRequired" min="1" className="border border-neutral-300 px-5 dark:border-slate-500 focus:border-primary dark:focus:border-primary focus-visible:border-primary h-12 rounded-lg !shadow-none !ring-0" placeholder="e.g. 1" required />
+                                </div>
                             </div>
                         </div>
 
