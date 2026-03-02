@@ -21,6 +21,7 @@ import {
     Pencil,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
     Select,
     SelectContent,
@@ -67,6 +68,7 @@ export interface CandidateSubmission {
 interface SubmittedJobsTableProps {
     submissions: CandidateSubmission[];
     showExtendedDetails?: boolean;
+    isRecruiter?: boolean;
     onUpdate?: () => void;
 }
 
@@ -119,7 +121,7 @@ function FeedbackPopover({ remarks, comment }: { remarks?: string; comment?: str
     );
 }
 
-function EditStatusPopover({ sub, onSaved }: { sub: CandidateSubmission; onSaved?: () => void }) {
+function EditStatusPopover({ sub, onSaved, isRecruiter = false }: { sub: CandidateSubmission; onSaved?: () => void; isRecruiter?: boolean }) {
     const [open, setOpen] = useState(false);
     const [saving, setSaving] = useState(false);
     const [form, setForm] = useState({
@@ -191,9 +193,11 @@ function EditStatusPopover({ sub, onSaved }: { sub: CandidateSubmission; onSaved
                 </Button>
             </PopoverTrigger>
             <PopoverContent className="w-72 p-4 space-y-3" align="end">
-                <p className="text-xs font-semibold text-neutral-700 border-b pb-2">Update Pipeline Status</p>
+                <p className="text-xs font-semibold text-neutral-700 border-b pb-2">
+                    {isRecruiter ? "Update Feedback" : "Update Pipeline Status"}
+                </p>
 
-                {stages.map((stage) => (
+                {!isRecruiter && stages.map((stage) => (
                     <div key={stage.key} className="flex items-center gap-2">
                         <span className="text-xs font-semibold w-6 text-neutral-500">{stage.label}</span>
                         <Select value={form[stage.key]} onValueChange={sf(stage.key)} disabled={stage.disabled}>
@@ -209,28 +213,39 @@ function EditStatusPopover({ sub, onSaved }: { sub: CandidateSubmission; onSaved
                     </div>
                 ))}
 
-                <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold w-6 text-neutral-500">Final</span>
-                    <Select value={displayFinalStatus} onValueChange={sf("finalStatus")} disabled={disableFinal}>
-                        <SelectTrigger className="h-7 text-xs flex-1">
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {FINAL_STATUSES.map(s => (
-                                <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
+                {!isRecruiter && (
+                    <div className="flex items-center gap-2">
+                        <span className="text-xs font-semibold w-6 text-neutral-500">Final</span>
+                        <Select value={displayFinalStatus} onValueChange={sf("finalStatus")} disabled={disableFinal}>
+                            <SelectTrigger className="h-7 text-xs flex-1">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {FINAL_STATUSES.map(s => (
+                                    <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                )}
 
                 <div>
                     <label className="text-xs font-semibold text-neutral-500 block mb-1">Feedback / Remarks</label>
-                    <Input
-                        value={form.remarks}
-                        onChange={e => setForm(p => ({ ...p, remarks: e.target.value }))}
-                        placeholder="Add feedback..."
-                        className="h-7 text-xs"
-                    />
+                    {isRecruiter ? (
+                        <Textarea
+                            value={form.remarks}
+                            onChange={e => setForm(p => ({ ...p, remarks: e.target.value }))}
+                            placeholder="Add your feedback here..."
+                            className="text-xs min-h-[160px] resize-none"
+                        />
+                    ) : (
+                        <Input
+                            value={form.remarks}
+                            onChange={e => setForm(p => ({ ...p, remarks: e.target.value }))}
+                            placeholder="Add feedback..."
+                            className="h-7 text-xs"
+                        />
+                    )}
                 </div>
 
                 <Button size="sm" className="w-full" onClick={handleSave} disabled={saving}>
@@ -303,6 +318,7 @@ const PipelineProgress = ({ sub }: { sub: CandidateSubmission }) => {
 export default function SubmittedJobsTable({
     submissions,
     showExtendedDetails = true,
+    isRecruiter = false,
     onUpdate,
 }: SubmittedJobsTableProps) {
     const [currentPage, setCurrentPage] = useState(1);
@@ -705,7 +721,7 @@ export default function SubmittedJobsTable({
                                             {/* Action Buttons */}
                                             <TableCell className="px-4 py-4 text-end whitespace-nowrap w-[80px]">
                                                 <div className="flex justify-end items-center">
-                                                    <EditStatusPopover sub={sub} onSaved={onUpdate} />
+                                                    <EditStatusPopover sub={sub} onSaved={onUpdate} isRecruiter={isRecruiter} />
                                                 </div>
                                             </TableCell>
                                         </TableRow>

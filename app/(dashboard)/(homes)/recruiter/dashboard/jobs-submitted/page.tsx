@@ -75,7 +75,7 @@ export default function SubmittedJobsPage() {
                     <p className="text-sm text-neutral-500 font-medium">Loading submissions...</p>
                 </div>
             ) : (
-                <SubmittedJobsTable submissions={submissions} />
+                <SubmittedJobsTable submissions={submissions} isRecruiter={true} onUpdate={fetchSubmissions} />
             )}
         </div>
     );

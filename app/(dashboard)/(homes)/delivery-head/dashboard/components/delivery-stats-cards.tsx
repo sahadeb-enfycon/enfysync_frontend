@@ -3,51 +3,60 @@
 import StatCard from "@/app/(dashboard)/(homes)/dashboard/components/stat-card";
 import { BriefcaseBusiness, FileText, CheckCircle2, TrendingUp, ArrowUp } from "lucide-react";
 
-const DeliveryStatsCards = () => {
+interface DeliveryStatsProps {
+    stats: {
+        activeHotJobs: number;
+        weeklySubmissions: number;
+        l1l2Conversion: number;
+        offerToJoin: number;
+    }
+}
+
+const DeliveryStatsCards = ({ stats }: DeliveryStatsProps) => {
     const deliveryStats = [
         {
-            title: "Active High-Priority Jobs",
-            value: "18",
+            title: "Active Hot Jobs",
+            value: String(stats.activeHotJobs),
             icon: BriefcaseBusiness,
             iconBg: "bg-red-600",
             gradientFrom: "from-red-600/10",
-            growth: "+3",
+            growth: `${stats.activeHotJobs}`,
             growthIcon: ArrowUp,
             growthColor: "text-red-600 dark:text-red-400",
-            description: "New critical roles this week",
+            description: "High priority active roles",
         },
         {
-            title: "Weekly Submission Velocity",
-            value: "142",
+            title: "Total Submissions",
+            value: String(stats.weeklySubmissions),
             icon: FileText,
             iconBg: "bg-blue-600",
             gradientFrom: "from-blue-600/10",
-            growth: "+14%",
+            growth: "Active",
             growthIcon: ArrowUp,
             growthColor: "text-green-600 dark:text-green-400",
-            description: "Increase vs last week",
+            description: "Total submissions so far",
         },
         {
-            title: "L1/L2 Conversion Rate",
-            value: "68%",
+            title: "L1/L2 Pipeline",
+            value: String(stats.l1l2Conversion),
             icon: TrendingUp,
             iconBg: "bg-purple-600",
             gradientFrom: "from-purple-600/10",
-            growth: "+5%",
+            growth: "Active",
             growthIcon: ArrowUp,
             growthColor: "text-green-600 dark:text-green-400",
-            description: "Quality of initial screenings",
+            description: "Candidates actively interviewing",
         },
         {
-            title: "Offer-to-Join Ratio",
-            value: "92%",
+            title: "Successful Placements",
+            value: String(stats.offerToJoin),
             icon: CheckCircle2,
             iconBg: "bg-green-600",
             gradientFrom: "from-green-600/10",
-            growth: "+2%",
+            growth: "Total",
             growthIcon: ArrowUp,
             growthColor: "text-green-600 dark:text-green-400",
-            description: "Successful delivery rate",
+            description: "Candidates Joined/Offered",
         },
     ];
 

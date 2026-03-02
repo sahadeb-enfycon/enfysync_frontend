@@ -14,49 +14,19 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Eye, AlertCircle, Clock } from "lucide-react";
 import Link from "next/link";
 
-const UrgentJobsTable = () => {
-    const urgentJobs = [
-        {
-            id: "1",
-            title: "Senior React Developer",
-            client: "TechCorp Solutions",
-            daysOpen: 24,
-            submissions: 2,
-            priority: "HIGH",
-            reason: "Low Pipeline",
-            pod: "Alpha Pod"
-        },
-        {
-            id: "2",
-            title: "Java Microservices Architect",
-            client: "Global Finance",
-            daysOpen: 32,
-            submissions: 12,
-            priority: "CRITICAL",
-            reason: "Approaching Deadline",
-            pod: "Beta Pod"
-        },
-        {
-            id: "3",
-            title: "DevOps Engineer (AWS)",
-            client: "SkyNet Systems",
-            daysOpen: 12,
-            submissions: 0,
-            priority: "HIGH",
-            reason: "No Submissions (48h)",
-            pod: "Gamma Pod"
-        },
-        {
-            id: "4",
-            title: "Full Stack Engineer",
-            client: "EduTech Inc",
-            daysOpen: 18,
-            submissions: 5,
-            priority: "MEDIUM",
-            reason: "Interview Dropout",
-            pod: "Delta Pod"
-        }
-    ];
+interface UrgentJob {
+    id: string;
+    title: string;
+    client: string;
+    daysOpen: number;
+    submissions: number;
+    priority: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW" | string;
+    reason: string;
+    pod: string;
+}
+
+const UrgentJobsTable = ({ jobs }: { jobs: UrgentJob[] }) => {
+    const urgentJobs = jobs;
 
     const getPriorityBadge = (priority: string) => {
         switch (priority) {
@@ -90,6 +60,13 @@ const UrgentJobsTable = () => {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
+                            {urgentJobs.length === 0 && (
+                                <TableRow>
+                                    <TableCell colSpan={5} className="text-center py-8 text-neutral-500">
+                                        No urgent jobs requiring attention right now.
+                                    </TableCell>
+                                </TableRow>
+                            )}
                             {urgentJobs.map((job) => (
                                 <TableRow key={job.id} className="hover:bg-neutral-50 dark:hover:bg-slate-900/30 transition-colors border-b border-gray-100 dark:border-neutral-700">
                                     <TableCell className="px-6 py-4">

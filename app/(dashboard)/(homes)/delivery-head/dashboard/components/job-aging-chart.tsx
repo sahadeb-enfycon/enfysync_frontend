@@ -6,7 +6,11 @@ import { ApexOptions } from "apexcharts";
 
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
-const JobAgingChart = () => {
+interface JobAgingProps {
+    stats: number[];
+}
+
+const JobAgingChart = ({ stats }: JobAgingProps) => {
     const chartOptions: ApexOptions = {
         chart: {
             type: 'donut',
@@ -74,7 +78,7 @@ const JobAgingChart = () => {
         }
     };
 
-    const chartSeries = [35, 25, 20, 15]; // Mock percentages or counts
+    const chartSeries = stats.some(v => v > 0) ? stats : [0, 0, 0, 0];
 
     return (
         <Card className="border border-gray-200 dark:border-neutral-700 bg-white dark:bg-slate-800 rounded-md shadow-none h-full">

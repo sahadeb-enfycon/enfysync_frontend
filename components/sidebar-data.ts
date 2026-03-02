@@ -100,8 +100,8 @@ export const getSidebarData = (role: string) => {
           circleColor: "bg-primary",
         },
         {
-          title: "Recurters",
-          url: "/delivery-head/dashboard/recurters",
+          title: "Recruiters",
+          url: "/delivery-head/dashboard/recruiters",
           circleColor: "bg-primary",
         },
         {
@@ -110,8 +110,7 @@ export const getSidebarData = (role: string) => {
           circleColor: "bg-primary",
         },
       ],
-    },
-    {
+    }, {
       label: "Job Management",
     },
     {
@@ -153,7 +152,7 @@ export const getSidebarData = (role: string) => {
         },
       ],
     },
-    
+
   ];
 
   const recruiterNav = [
