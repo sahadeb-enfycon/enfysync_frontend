@@ -299,14 +299,14 @@ const ProfileDropdown = () => {
                 <User className="w-5 h-5" /> My Profile
               </Link>
             </li>
-            <li>
+            {/* <li>
               <Link
                 href="/email"
                 className="text-black dark:text-white hover:text-primary dark:hover:text-primary flex items-center gap-3"
               >
                 <Mail className="w-5 h-5" /> Inbox
               </Link>
-            </li>
+            </li> */}
             <li>
               <Link
                 href="/company"

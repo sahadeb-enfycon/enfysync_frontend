@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import LoginForm from "@/components/auth/login-form";
 import ThemeLogo from "@/components/shared/theme-logo";
 import SocialLogin from "@/components/auth/social-login";
@@ -12,16 +13,47 @@ const forgotPassImage: StaticImg = {
 };
 
 const Login = () => {
+  const [mediaUrl, setMediaUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchMedia = async () => {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://api.enfycon.com";
+        const url = `${apiUrl.replace(/\/+$/, "")}/login-media/current`;
+        const res = await fetch(url);
+        if (res.ok) {
+          const data = await res.json();
+          // Check that dataUrl actually contains base64 data, not just the prefix.
+          // e.g., "data:image/jpeg;base64," has 23 characters.
+          if (data && !data.default && data.dataUrl && data.dataUrl.length > 30) {
+            setMediaUrl(data.dataUrl);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch login media:", error);
+      }
+    };
+    fetchMedia();
+  }, []);
+
   return (
     <section className="bg-white dark:bg-slate-900 flex flex-wrap min-h-screen">
       {/* Left Image */}
       <div className="lg:w-1/2 hidden lg:block">
         <div className="flex items-center justify-center h-screen flex-col">
-          <Image
-            src={forgotPassImage.image}
-            alt="Auth Illustration"
-            className="object-cover w-full h-full"
-          />
+          {mediaUrl ? (
+            <img
+              src={mediaUrl}
+              alt="Custom Auth Illustration"
+              className="object-contain w-full h-full p-12"
+            />
+          ) : (
+            <Image
+              src={forgotPassImage.image}
+              alt="Auth Illustration"
+              className="object-cover w-full h-full"
+            />
+          )}
         </div>
       </div>
 

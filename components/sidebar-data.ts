@@ -43,7 +43,11 @@ export const getSidebarData = (role: string) => {
           url: "/admin/dashboard/account-manager",
           circleColor: "bg-yellow-500",
         },
-
+        {
+          title: "Login Media",
+          url: "/admin/login-media",
+          circleColor: "bg-blue-500",
+        },
       ],
     },
 
