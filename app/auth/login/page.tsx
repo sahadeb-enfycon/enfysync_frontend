@@ -14,6 +14,7 @@ const forgotPassImage: StaticImg = {
 
 const Login = () => {
   const [mediaUrl, setMediaUrl] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchMedia = async () => {
@@ -31,6 +32,8 @@ const Login = () => {
         }
       } catch (error) {
         console.error("Failed to fetch login media:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchMedia();
@@ -41,7 +44,9 @@ const Login = () => {
       {/* Left Image */}
       <div className="lg:w-1/2 hidden lg:block">
         <div className="flex items-center justify-center h-screen flex-col">
-          {mediaUrl ? (
+          {isLoading ? (
+            <div className="w-full h-full bg-neutral-50 dark:bg-slate-800 animate-pulse"></div>
+          ) : mediaUrl ? (
             <img
               src={mediaUrl}
               alt="Custom Auth Illustration"
