@@ -55,10 +55,10 @@ function getNextScheduledLogout(): number {
 }
 
 // Base URL for API calls. Standardizing this prevents double-slash issues.
-const API_URL = (process.env.NEXT_PUBLIC_API_URL || "https://api.enfycon.com").replace(/\/+$/, "");
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || "https://backend.enfycon.com").replace(/\/+$/, "");
 
-// Global variable to store the refresh promise and avoid multiple simultaneous refresh calls
-let refreshPromise: Promise<any> | null = null;
+// Global variable to store the refresh promises and avoid multiple simultaneous refresh calls for the same token
+const refreshPromises: Map<string, Promise<any>> = new Map();
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -226,8 +226,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         diffMs: token.expiresAt - Date.now(),
         isExpired
       });
-      if (refreshPromise) {
-        return await refreshPromise;
+      const refreshTokenStr = token.refreshToken as string | undefined;
+
+      if (refreshTokenStr && refreshPromises.has(refreshTokenStr)) {
+        return await refreshPromises.get(refreshTokenStr);
       }
 
       console.log("Refresh required. Token state:", {
@@ -237,7 +239,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         id: token.id
       });
 
-      refreshPromise = (async () => {
+      const promise = (async () => {
         try {
           const refreshUrl = `${API_URL}/auth/refresh`;
 
@@ -314,12 +316,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return { ...token, error: "RefreshTokenError" }
         } finally {
           setTimeout(() => {
-            refreshPromise = null;
+            if (refreshTokenStr) {
+              refreshPromises.delete(refreshTokenStr);
+            }
           }, 10000);
         }
       })();
 
-      return await refreshPromise;
+      if (refreshTokenStr) {
+        refreshPromises.set(refreshTokenStr, promise);
+      }
+      return await promise;
+
+
     },
     async session({ session, token }) {
       if (token) {

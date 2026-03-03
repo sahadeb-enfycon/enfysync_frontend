@@ -15,7 +15,7 @@ const forgotPassImage: StaticImg = {
 const Login = () => {
   const [mediaUrl, setMediaUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
+12345678
   useEffect(() => {
     const fetchMedia = async () => {
       try {
