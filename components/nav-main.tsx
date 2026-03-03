@@ -48,13 +48,29 @@ export function NavMain({ items }: { items: SidebarItem[] }) {
     }
   };
 
+  // Find the best matching URL
+  let bestMatchUrl = "";
+  items.forEach((item) => {
+    if (item.url && (pathname === item.url || pathname.startsWith(item.url + "/"))) {
+      if (item.url.length > bestMatchUrl.length) {
+        bestMatchUrl = item.url;
+      }
+    }
+    item.items?.forEach((subItem) => {
+      if (pathname === subItem.url || pathname.startsWith(subItem.url + "/")) {
+        if (subItem.url.length > bestMatchUrl.length) {
+          bestMatchUrl = subItem.url;
+        }
+      }
+    });
+  });
+
   return (
     <SidebarGroup className={`${isCollapsed ? "px-1.5" : ""}`}>
       <SidebarMenu>
         {items.map((item) => {
           const isGroupActive = item.items?.some(
-            (subItem) =>
-              pathname === subItem.url || pathname.startsWith(subItem.url)
+            (subItem) => subItem.url === bestMatchUrl
           );
 
           if (item.items && item.items.length > 0) {
@@ -100,9 +116,7 @@ export function NavMain({ items }: { items: SidebarItem[] }) {
                   <CollapsibleContent>
                     <SidebarMenuSub className="gap-0 mt-2 space-y-1">
                       {item.items.map((subItem) => {
-                        const isSubActive =
-                          pathname === subItem.url ||
-                          pathname.startsWith(subItem.url);
+                        const isSubActive = subItem.url === bestMatchUrl;
                         return (
                           <SidebarMenuSubItem key={subItem.title}>
                             <SidebarMenuSubButton
@@ -110,7 +124,7 @@ export function NavMain({ items }: { items: SidebarItem[] }) {
                               className={cn(
                                 "py-5.5 px-3 text-base text-[#4b5563] dark:text-white hover:bg-primary/10 active:bg-primary/10 dark:hover:bg-slate-700",
                                 isSubActive
-                                  ? "bg-primary/10 font-bold dark:bg-slate-600"
+                                  ? "bg-primary/15 text-primary font-bold dark:bg-primary/30 dark:text-white"
                                   : ""
                               )}
                             >
@@ -143,8 +157,7 @@ export function NavMain({ items }: { items: SidebarItem[] }) {
           }
 
           if (item.url && item.title) {
-            const isMenuActive =
-              pathname === item.url || pathname.startsWith(item.url);
+            const isMenuActive = item.url === bestMatchUrl;
 
             return (
               <SidebarMenuItem key={item.title}>
