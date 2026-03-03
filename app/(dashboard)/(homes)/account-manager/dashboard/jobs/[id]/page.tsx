@@ -253,6 +253,54 @@ export default function AccountManagerJobDetailPage() {
                             </div>
                         )}
 
+                        {job.pods && job.pods.length > 0 && (
+                            <div className="pt-2">
+                                <p className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-2">Assigned Pods</p>
+                                <div className="space-y-2">
+                                    {job.pods
+                                        .map((pod: any) => {
+                                            // Use pod.members if available, otherwise filter from assignedRecruiters
+                                            const podMembers = ((pod as any).members?.length > 0)
+                                                ? (pod as any).members
+                                                : (job.assignedRecruiters && job.assignedRecruiters.length > 0)
+                                                    ? job.assignedRecruiters.filter((r: any) => r.podId === pod.id).map((r: any) => ({
+                                                        id: r.id,
+                                                        role: r.roles?.includes("POD_LEADER") ? "POD_LEADER" : "MEMBER",
+                                                        admin: { email: r.email, fullName: r.fullName }
+                                                    }))
+                                                    : [];
+
+                                            return (
+                                                <div key={pod.id} className="p-3 rounded-lg bg-purple-50 dark:bg-purple-900/20 border border-purple-100 dark:border-purple-800/30">
+                                                    <p className="text-sm font-semibold text-purple-700 dark:text-purple-300 mb-1">{pod.name}</p>
+                                                    {podMembers && podMembers.length > 0 ? (
+                                                        <div className="space-y-1.5 mt-2">
+                                                            {podMembers.map((member: any) => (
+                                                                <div key={member.id} className="flex flex-col gap-0.5 border-t border-purple-100 dark:border-purple-800/30 pt-1.5">
+                                                                    <div className="flex items-center justify-between">
+                                                                        <span className="text-xs font-medium text-neutral-800 dark:text-neutral-200 truncate">
+                                                                            {member.admin?.fullName || "Unknown"}
+                                                                        </span>
+                                                                        <span className="text-[9px] font-semibold uppercase tracking-wider text-purple-600 dark:text-purple-400">
+                                                                            {member.role === "POD_LEADER" ? "Leader" : "Member"}
+                                                                        </span>
+                                                                    </div>
+                                                                    <span className="text-[10px] text-muted-foreground truncate">
+                                                                        {member.admin?.email}
+                                                                    </span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    ) : (
+                                                        <p className="text-xs text-muted-foreground italic mt-1">No members listed</p>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                </div>
+                            </div>
+                        )}
+
                         <div className="pt-2">
                             <p className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-2">Timeline</p>
                             <div className="space-y-1">

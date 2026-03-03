@@ -719,6 +719,7 @@ export default function JobsTable({
                                                                 ? (job.podIds.map(id => availablePods.find(p => p.id === id)).filter(Boolean) as { id: string; name: string }[])
                                                                 : job.pod ? [job.pod] : []
                                                     }
+                                                    assignedRecruiters={job.assignedRecruiters}
                                                     availablePods={availablePods}
                                                     canEdit={(session as any)?.user?.roles?.includes("DELIVERY_HEAD") || (session as any)?.user?.roles?.includes("ADMIN")}
                                                     onSuccess={() => { if (onRefresh) onRefresh(); else router.refresh(); }}

@@ -11,7 +11,13 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+    HoverCard,
+    HoverCardContent,
+    HoverCardTrigger,
+} from "@/components/ui/hover-card";
 import { apiClient } from "@/lib/apiClient";
+import { PodHoverCard } from "@/components/shared/pod-hover-card";
 
 export interface PodData {
     id: string;
@@ -22,6 +28,7 @@ interface PodAssignCellProps {
     jobId: string;
     assignedPods: PodData[];
     availablePods: PodData[];
+    assignedRecruiters?: any[];
     canEdit?: boolean;
     onSuccess?: () => void;
 }
@@ -30,6 +37,7 @@ export default function PodAssignCell({
     jobId,
     assignedPods,
     availablePods,
+    assignedRecruiters = [],
     canEdit = false,
     onSuccess,
 }: PodAssignCellProps) {
@@ -128,16 +136,60 @@ export default function PodAssignCell({
                     }`}
                 type="button"
                 disabled={!canEdit}
-                title={canEdit ? "Edit Assigned Pods" : "Only Delivery Heads and Admins can assign pods"}
+                title={canEdit ? "Edit Assigned Pods" : "View Assigned Pod Members"}
             >
-                <Badge variant="secondary" className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 border-none font-medium flex gap-1 items-center">
-                    {assignedPods[0]?.name || "Assigned"}
+                <div className="flex items-center gap-1">
+                    {assignedPods.slice(0, 1).map(pod => {
+                        // Extract members from assignedRecruiters if available
+                        const podMembers = ((pod as any).members?.length > 0)
+                            ? (pod as any).members
+                            : (assignedRecruiters && assignedRecruiters.length > 0)
+                                ? assignedRecruiters.filter(r => r.podId === pod.id).map(r => ({
+                                    id: r.id,
+                                    role: r.roles?.includes("POD_LEADER") ? "POD_LEADER" : "MEMBER",
+                                    admin: {
+                                        email: r.email,
+                                        fullName: r.fullName
+                                    }
+                                }))
+                                : undefined;
+
+                        return (
+                            <div key={pod.id}>
+                                {/* @ts-ignore */}
+                                <PodHoverCard podId={pod.id} podName={pod.name} initialMembers={podMembers}>
+                                    <Badge variant="secondary" className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 border-none font-medium flex gap-1 items-center cursor-help">
+                                        {pod.name}
+                                    </Badge>
+                                </PodHoverCard>
+                            </div>
+                        );
+                    })}
                     {assignedPods.length > 1 && (
-                        <span className="text-[10px] bg-purple-200 dark:bg-purple-800 px-1 py-0.5 rounded-md ml-1">
-                            +{assignedPods.length - 1}
-                        </span>
+                        <HoverCard openDelay={200} closeDelay={200}>
+                            <HoverCardTrigger asChild>
+                                <span className="text-[10px] bg-purple-200 dark:bg-purple-800 text-purple-700 dark:text-purple-400 font-medium px-1.5 py-0.5 rounded-md ml-0.5 cursor-help">
+                                    +{assignedPods.length - 1} pod{assignedPods.length > 2 ? 's' : ''}
+                                </span>
+                            </HoverCardTrigger>
+                            <HoverCardContent className="w-48 p-3" side="top" align="start">
+                                <div className="flex flex-col gap-2">
+                                    <h4 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1">Assigned Pods</h4>
+                                    <div className="flex flex-col gap-2 max-h-48 overflow-y-auto pr-1">
+                                        {assignedPods.slice(1).map(pod => (
+                                            <div key={pod.id} className="flex items-center gap-2">
+                                                <div className="h-1.5 w-1.5 rounded-full bg-purple-500 shrink-0" />
+                                                <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
+                                                    {pod.name}
+                                                </p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </HoverCardContent>
+                        </HoverCard>
                     )}
-                </Badge>
+                </div>
                 {canEdit && <ChevronDown className="h-3 w-3 text-neutral-400 ml-0.5" />}
             </button>
         );
