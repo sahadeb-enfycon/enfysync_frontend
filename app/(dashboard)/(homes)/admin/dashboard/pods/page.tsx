@@ -238,7 +238,7 @@ export default async function AdminPodsDashboardPage() {
 
   return (
     <>
-      <DashboardBreadcrumb title={welcomeMessage} text="Admin Pods Dashboard" />
+      <DashboardBreadcrumb title={welcomeMessage} text="Pods " />
       <div className="p-6 space-y-6">
         <Suspense fallback={<LoadingSkeleton />}>
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">

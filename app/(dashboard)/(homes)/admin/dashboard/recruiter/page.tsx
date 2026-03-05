@@ -1,14 +1,14 @@
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import { auth } from "@/auth";
 import { getGreeting } from "@/lib/utils";
-import RecentJobsTable from "@/app/(dashboard)/(homes)/recruiter/dashboard/components/recent-jobs-table";
 import { Suspense } from "react";
 import LoadingSkeleton from "@/components/loading-skeleton";
 import { serverApiClient } from "@/lib/serverApiClient";
 import StatCard from "@/app/(dashboard)/(homes)/dashboard/components/stat-card";
 import { Card, CardContent } from "@/components/ui/card";
-import AudienceStatsChart from "@/components/charts/audience-stats-chart";
 import AnalysisDonutChart from "@/components/dashboard/admin/AnalysisDonutChart";
+import RecruiterProductivityTable from "@/components/dashboard/admin/RecruiterProductivityTable";
+import AudienceStatsChart from "@/components/charts/audience-stats-chart";
 
 export const dynamic = "force-dynamic";
 
@@ -47,7 +47,8 @@ async function getRecruiterJobs(): Promise<JobRow[]> {
     }
 
     const data = await response.json();
-    return Array.isArray(data) ? data : [];
+    const jobs = Array.isArray(data) ? data : (data?.data ?? data?.content ?? data?.jobs ?? []);
+    return Array.isArray(jobs) ? jobs : [];
   } catch (error) {
     console.error("Error fetching recruiter jobs:", error);
     return [];
@@ -73,13 +74,6 @@ export default async function AdminRecruiterDashboardPage() {
   const session = await auth();
   const userName = session?.user?.name || "Admin";
   const [jobs, submissions] = await Promise.all([getRecruiterJobs(), getSubmissions()]);
-  const recentJobs = jobs.map((job) => ({
-    id: job.id,
-    jobTitle: job.jobTitle || "Untitled Job",
-    clientName: job.clientName || "Unknown Client",
-    status: job.status || "ACTIVE",
-    createdAt: job.createdAt || new Date(0).toISOString(),
-  }));
 
   const welcomeMessage = `${getGreeting()}, ${userName}!`;
   const totalJobs = jobs.length;
@@ -94,7 +88,7 @@ export default async function AdminRecruiterDashboardPage() {
 
   const recruiterMap = new Map<
     string,
-    { name: string; submissions: number; selected: number; rejected: number }
+    { name: string; email: string; submissions: number; selected: number; rejected: number; inProgress: number }
   >();
 
   submissions.forEach((submission) => {
@@ -103,15 +97,21 @@ export default async function AdminRecruiterDashboardPage() {
       submission.recruiter?.fullName ||
       submission.recruiter?.email ||
       key;
+    const email = submission.recruiter?.email || key;
     const current = recruiterMap.get(key) || {
       name: displayName,
+      email,
       submissions: 0,
       selected: 0,
       rejected: 0,
+      inProgress: 0,
     };
     current.submissions += 1;
     if (["SELECTED", "FILLED"].includes(norm(submission.finalStatus))) current.selected += 1;
     if (norm(submission.finalStatus) === "REJECTED") current.rejected += 1;
+    if (!["SELECTED", "REJECTED", "FILLED", "CLOSED"].includes(norm(submission.finalStatus))) {
+      current.inProgress += 1;
+    }
     recruiterMap.set(key, current);
   });
 
@@ -119,33 +119,6 @@ export default async function AdminRecruiterDashboardPage() {
     (a, b) => b.submissions - a.submissions
   );
   const activeRecruiters = recruiterRows.length;
-
-  const recentMonths: string[] = [];
-  const monthlySubmissions: number[] = [];
-  const monthlySelections: number[] = [];
-  for (let i = 5; i >= 0; i -= 1) {
-    const d = new Date();
-    d.setMonth(d.getMonth() - i);
-    const month = d.getMonth();
-    const year = d.getFullYear();
-    recentMonths.push(d.toLocaleString("en-US", { month: "short" }));
-
-    monthlySubmissions.push(
-      submissions.filter((s) => {
-        if (!s.submissionDate) return false;
-        const date = new Date(s.submissionDate);
-        return date.getMonth() === month && date.getFullYear() === year;
-      }).length
-    );
-
-    monthlySelections.push(
-      submissions.filter((s) => {
-        if (!s.submissionDate || !["SELECTED", "FILLED"].includes(norm(s.finalStatus))) return false;
-        const date = new Date(s.submissionDate);
-        return date.getMonth() === month && date.getFullYear() === year;
-      }).length
-    );
-  }
 
   const statusDistribution = [
     l1Count,
@@ -202,6 +175,28 @@ export default async function AdminRecruiterDashboardPage() {
     },
   ];
 
+  const recruiterTableRows = recruiterRows.map((row, index) => {
+    const conversion = row.submissions > 0 ? Math.round((row.selected / row.submissions) * 100) : 0;
+    return {
+      id: `${row.email}-${index}`,
+      name: row.name,
+      email: row.email,
+      submissions: row.submissions,
+      selected: row.selected,
+      rejected: row.rejected,
+      inProgress: row.inProgress,
+      conversion,
+    };
+  });
+
+  const topRecruiters = recruiterTableRows.slice(0, 6);
+  const recruiterChartCategories = topRecruiters.map((row) => row.name);
+  const recruiterChartSeries = [
+    { name: "Submissions", data: topRecruiters.map((row) => row.submissions) },
+    { name: "Selected", data: topRecruiters.map((row) => row.selected) },
+    { name: "Rejected", data: topRecruiters.map((row) => row.rejected) },
+  ];
+
   return (
     <>
       <DashboardBreadcrumb title={welcomeMessage} text="Admin Recruiter Dashboard" />
@@ -212,26 +207,34 @@ export default async function AdminRecruiterDashboardPage() {
           </div>
         </Suspense>
 
+        <Card className="border border-gray-200 dark:border-neutral-700 bg-white dark:bg-slate-800 rounded-md shadow-none">
+          <CardContent className="p-6">
+            <h6 className="font-semibold text-lg text-neutral-900 dark:text-white mb-4">
+              Recruiter Productivity Analysis
+            </h6>
+            <RecruiterProductivityTable rows={recruiterTableRows} />
+          </CardContent>
+        </Card>
+
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
           <div className="xl:col-span-8">
             <Card className="border border-gray-200 dark:border-neutral-700 bg-white dark:bg-slate-800 rounded-md shadow-none h-full">
               <CardContent className="p-6">
                 <h6 className="font-semibold text-lg text-neutral-900 dark:text-white mb-4">
-                  Recruiter Throughput Trend (6 Months)
+                  Recruiter Performance Overview
                 </h6>
-                <AudienceStatsChart
-                  series={[
-                    { name: "Submissions", data: monthlySubmissions },
-                    { name: "Selections", data: monthlySelections },
-                  ]}
-                  categories={recentMonths}
-                  colors={["#487FFF", "#10B981"]}
-                  height={350}
-                />
+                <div className="apexcharts-tooltip-z-none">
+                  <AudienceStatsChart
+                    series={recruiterChartSeries}
+                    categories={recruiterChartCategories.length ? recruiterChartCategories : ["No Recruiter Data"]}
+                    colors={["#487FFF", "#10B981", "#EF4444"]}
+                    height={350}
+                  />
+                </div>
               </CardContent>
             </Card>
           </div>
-          <div className="xl:col-span-4">
+          <div className="xl:col-span-4 xl:col-start-9">
             <AnalysisDonutChart
               title="Recruitment Pipeline Mix"
               labels={["L1", "L2", "Final Round", "Selected", "Rejected"]}
@@ -239,53 +242,6 @@ export default async function AdminRecruiterDashboardPage() {
               colors={["#06B6D4", "#487FFF", "#F59E0B", "#10B981", "#EF4444"]}
               totalLabel="Candidates"
             />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
-          <div className="xl:col-span-8">
-            <Suspense fallback={<LoadingSkeleton />}>
-              <RecentJobsTable jobs={recentJobs} />
-            </Suspense>
-          </div>
-          <div className="xl:col-span-4">
-            <Card className="border border-gray-200 dark:border-neutral-700 bg-white dark:bg-slate-800 rounded-md shadow-none h-full">
-              <CardContent className="p-6">
-                <h6 className="font-semibold text-lg text-neutral-900 dark:text-white mb-4">
-                  Recruiter Productivity
-                </h6>
-                <div className="space-y-3">
-                  {(recruiterRows.slice(0, 6).length > 0
-                    ? recruiterRows.slice(0, 6)
-                    : [{ name: "No recruiter activity", submissions: 0, selected: 0, rejected: 0 }]
-                  ).map((row) => {
-                    const conversion =
-                      row.submissions > 0
-                        ? Math.round((row.selected / row.submissions) * 100)
-                        : 0;
-                    return (
-                      <div
-                        key={row.name}
-                        className="rounded-lg border border-neutral-200 dark:border-slate-700 p-3"
-                      >
-                        <div className="flex items-center justify-between gap-3">
-                          <p className="text-sm font-medium text-neutral-900 dark:text-white truncate">
-                            {row.name}
-                          </p>
-                          <span className="text-xs text-primary font-semibold">
-                            {row.submissions} subs
-                          </span>
-                        </div>
-                        <div className="mt-2 flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-300">
-                          <span>{row.selected} selected</span>
-                          <span>{conversion}% conversion</span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </div>

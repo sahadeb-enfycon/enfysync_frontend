@@ -491,3 +491,19 @@ html[layout="boron"] .dashboard-sidebar-container {
 }
 
 /* ======================================= Layout Css End ================================== */
+
+/* Jobs table vertical column separators */
+.jobs-table-grid th,
+.jobs-table-grid td {
+  border-right: 1px solid rgb(229 229 229);
+}
+
+.jobs-table-grid th:last-child,
+.jobs-table-grid td:last-child {
+  border-right: 0;
+}
+
+.dark .jobs-table-grid th,
+.dark .jobs-table-grid td {
+  border-right-color: rgb(71 85 105);
+}

@@ -5,7 +5,6 @@ import { auth } from "@/auth";
 import { Suspense } from "react";
 import { serverApiClient } from "@/lib/serverApiClient";
 import StatCard from "@/app/(dashboard)/(homes)/dashboard/components/stat-card";
-import AnalysisDonutChart from "@/components/dashboard/admin/AnalysisDonutChart";
 import { Card, CardContent } from "@/components/ui/card";
 import AccountManagerProductivityTable from "@/components/dashboard/admin/AccountManagerProductivityTable";
 
@@ -111,27 +110,66 @@ export default async function AdminAccountManagerDashboardPage() {
     },
   ];
 
+  const now = new Date();
+  const isWithinRange = (dateValue: string | undefined, range: "day" | "week" | "month" | "quarter" | "year") => {
+    if (!dateValue) return false;
+    const date = new Date(dateValue);
+    if (Number.isNaN(date.getTime())) return false;
+    const diffMs = now.getTime() - date.getTime();
+    if (diffMs < 0) return false;
+
+    switch (range) {
+      case "day":
+        return diffMs <= 24 * 60 * 60 * 1000;
+      case "week":
+        return diffMs <= 7 * 24 * 60 * 60 * 1000;
+      case "month":
+        return date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth();
+      case "quarter": {
+        const nowQuarter = Math.floor(now.getMonth() / 3);
+        const dateQuarter = Math.floor(date.getMonth() / 3);
+        return date.getFullYear() === now.getFullYear() && dateQuarter === nowQuarter;
+      }
+      case "year":
+        return date.getFullYear() === now.getFullYear();
+      default:
+        return true;
+    }
+  };
+
+  const getMetrics = (rows: JobRow[]) => {
+    const jobsCount = rows.length;
+    const active = rows.filter((j) => norm(j.status) === "ACTIVE").length;
+    const filled = rows.filter((j) => norm(j.status) === "FILLED").length;
+    const blocked = rows.filter((j) => norm(j.status) === "ON_HOLD" || norm(j.status) === "HOLD_BY_CLIENT").length;
+    const fillRate = jobsCount > 0 ? Math.round((filled / jobsCount) * 100) : 0;
+    return { jobs: jobsCount, active, filled, blocked, fillRate };
+  };
+
+  const jobsByAM = new Map<string, JobRow[]>();
+  for (const job of jobs) {
+    const key = job.accountManager?.email || "unassigned";
+    if (!jobsByAM.has(key)) jobsByAM.set(key, []);
+    jobsByAM.get(key)?.push(job);
+  }
+
   const amTableRows = amRows
     .filter(([email]) => email.toLowerCase() !== "sambit@enfycon.com")
     .map(([email, v]) => {
-    const fillRate = v.jobs > 0 ? Math.round((v.filled / v.jobs) * 100) : 0;
-    return {
-      email,
-      name: v.name,
-      jobs: v.jobs,
-      active: v.active,
-      filled: v.filled,
-      blocked: v.blocked,
-      fillRate,
-    };
-  });
-
-  const statusSeries = [
-    jobs.filter((j) => norm(j.status) === "ACTIVE").length,
-    jobs.filter((j) => norm(j.status) === "ON_HOLD" || norm(j.status) === "HOLD_BY_CLIENT").length,
-    jobs.filter((j) => norm(j.status) === "FILLED").length,
-    jobs.filter((j) => norm(j.status) === "CLOSED").length,
-  ];
+      const amJobs = jobsByAM.get(email) || [];
+      return {
+        email,
+        name: v.name,
+        metrics: {
+          all: getMetrics(amJobs),
+          day: getMetrics(amJobs.filter((j) => isWithinRange(j.createdAt, "day"))),
+          week: getMetrics(amJobs.filter((j) => isWithinRange(j.createdAt, "week"))),
+          month: getMetrics(amJobs.filter((j) => isWithinRange(j.createdAt, "month"))),
+          quarter: getMetrics(amJobs.filter((j) => isWithinRange(j.createdAt, "quarter"))),
+          year: getMetrics(amJobs.filter((j) => isWithinRange(j.createdAt, "year"))),
+        },
+      };
+    });
 
   return (
     <>
@@ -152,7 +190,7 @@ export default async function AdminAccountManagerDashboardPage() {
           </CardContent>
         </Card>
 
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+        {/* <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
           <div className="xl:col-span-4 xl:col-start-9">
             <AnalysisDonutChart
               title="Requisition Status Distribution"
@@ -162,7 +200,7 @@ export default async function AdminAccountManagerDashboardPage() {
               totalLabel="Jobs"
             />
           </div>
-        </div>
+        </div> */}
       </div>
     </>
   );

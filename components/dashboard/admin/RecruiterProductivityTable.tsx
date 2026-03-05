@@ -21,37 +21,26 @@ import {
 } from "@/components/ui/table";
 import { Search, X } from "lucide-react";
 
-export interface AccountManagerTableRow {
-  email: string;
+export interface RecruiterTableRow {
+  id: string;
   name: string;
-  metrics: {
-    all: AccountManagerMetrics;
-    day: AccountManagerMetrics;
-    week: AccountManagerMetrics;
-    month: AccountManagerMetrics;
-    quarter: AccountManagerMetrics;
-    year: AccountManagerMetrics;
-  };
+  email: string;
+  submissions: number;
+  selected: number;
+  rejected: number;
+  inProgress: number;
+  conversion: number;
 }
 
-interface AccountManagerMetrics {
-  jobs: number;
-  active: number;
-  filled: number;
-  blocked: number;
-  fillRate: number;
+interface RecruiterProductivityTableProps {
+  rows: RecruiterTableRow[];
 }
 
-interface AccountManagerProductivityTableProps {
-  rows: AccountManagerTableRow[];
-}
-
-export default function AccountManagerProductivityTable({
+export default function RecruiterProductivityTable({
   rows,
-}: AccountManagerProductivityTableProps) {
+}: RecruiterProductivityTableProps) {
   const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [timeFilter, setTimeFilter] = useState<"all" | "day" | "week" | "month" | "quarter" | "year">("all");
+  const [pipelineFilter, setPipelineFilter] = useState("all");
 
   const filteredRows = useMemo(() => {
     return rows.filter((row) => {
@@ -61,21 +50,18 @@ export default function AccountManagerProductivityTable({
         row.name.toLowerCase().includes(q) ||
         row.email.toLowerCase().includes(q);
 
-      const current = row.metrics[timeFilter];
-      let matchesStatus = true;
-      if (statusFilter === "active") matchesStatus = current.active > 0;
-      if (statusFilter === "filled") matchesStatus = current.filled > 0;
-      if (statusFilter === "on-hold") matchesStatus = current.blocked > 0;
-      if (statusFilter === "no-open") matchesStatus = current.active === 0;
+      let matchesPipeline = true;
+      if (pipelineFilter === "selected") matchesPipeline = row.selected > 0;
+      if (pipelineFilter === "rejected") matchesPipeline = row.rejected > 0;
+      if (pipelineFilter === "in-progress") matchesPipeline = row.inProgress > 0;
 
-      return matchesQuery && matchesStatus;
+      return matchesQuery && matchesPipeline;
     });
-  }, [rows, query, statusFilter, timeFilter]);
+  }, [rows, query, pipelineFilter]);
 
   const clearFilters = () => {
     setQuery("");
-    setStatusFilter("all");
-    setTimeFilter("all");
+    setPipelineFilter("all");
   };
 
   return (
@@ -88,7 +74,7 @@ export default function AccountManagerProductivityTable({
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
             <Input
-              placeholder="Name or email..."
+              placeholder="Recruiter name or email..."
               className="pl-9 h-10 bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-600 rounded-lg"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -98,42 +84,22 @@ export default function AccountManagerProductivityTable({
 
         <div className="flex flex-col gap-1.5">
           <label className="text-xs font-semibold text-neutral-500 uppercase tracking-wider ml-1">
-            Status
+            Pipeline
           </label>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[170px] h-10 bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-600 rounded-lg">
+          <Select value={pipelineFilter} onValueChange={setPipelineFilter}>
+            <SelectTrigger className="w-[190px] h-10 bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-600 rounded-lg">
               <SelectValue placeholder="All" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All</SelectItem>
-              <SelectItem value="active">Has Active Jobs</SelectItem>
-              <SelectItem value="filled">Has Filled Jobs</SelectItem>
-              <SelectItem value="on-hold">Has On Hold Jobs</SelectItem>
-              <SelectItem value="no-open">No Open Jobs</SelectItem>
+              <SelectItem value="selected">Has Selected</SelectItem>
+              <SelectItem value="rejected">Has Rejected</SelectItem>
+              <SelectItem value="in-progress">Has In Progress</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
-        <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-semibold text-neutral-500 uppercase tracking-wider ml-1">
-            Time Range
-          </label>
-          <Select value={timeFilter} onValueChange={(v) => setTimeFilter(v as typeof timeFilter)}>
-            <SelectTrigger className="w-[170px] h-10 bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-600 rounded-lg">
-              <SelectValue placeholder="All Time" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Time</SelectItem>
-              <SelectItem value="day">Daily</SelectItem>
-              <SelectItem value="week">Weekly</SelectItem>
-              <SelectItem value="month">Monthly</SelectItem>
-              <SelectItem value="quarter">Quarterly</SelectItem>
-              <SelectItem value="year">Yearly</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {(query || statusFilter !== "all" || timeFilter !== "all") && (
+        {(query || pipelineFilter !== "all") && (
           <Button
             variant="ghost"
             size="icon"
@@ -147,26 +113,26 @@ export default function AccountManagerProductivityTable({
       </div>
 
       <div className="rounded-lg border border-neutral-200 dark:border-slate-600 overflow-hidden">
-        <Table className="table-grid-lines table-auto border-spacing-0 border-separate min-w-full">
+        <Table className="table-auto border-spacing-0 border-separate min-w-full">
           <TableHeader>
             <TableRow className="border-0">
               <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-start">
-                Account Manager
+                Recruiter
               </TableHead>
               <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-center">
-                Posted Jobs
+                Submissions
               </TableHead>
               <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-center">
-                Active
+                In Progress
               </TableHead>
               <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-center">
-                Filled
+                Selected
               </TableHead>
               <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-center">
-                On Hold
+                Rejected
               </TableHead>
               <TableHead className="bg-neutral-100 dark:bg-slate-700 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-center">
-                Fill Rate
+                Conversion
               </TableHead>
             </TableRow>
           </TableHeader>
@@ -174,16 +140,13 @@ export default function AccountManagerProductivityTable({
             {filteredRows.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="h-24 text-center text-muted-foreground italic">
-                  No account manager data matches current filters.
+                  No recruiter data matches current filters.
                 </TableCell>
               </TableRow>
             ) : (
               filteredRows.map((row) => (
-                (() => {
-                  const current = row.metrics[timeFilter];
-                  return (
                 <TableRow
-                  key={row.email}
+                  key={row.id}
                   className="hover:bg-neutral-50 dark:hover:bg-slate-800/50 transition-colors"
                 >
                   <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
@@ -193,23 +156,21 @@ export default function AccountManagerProductivityTable({
                     </div>
                   </TableCell>
                   <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-center">
-                    <Badge variant="secondary">{current.jobs}</Badge>
+                    <Badge variant="secondary">{row.submissions}</Badge>
                   </TableCell>
                   <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-center">
-                    {current.active}
+                    {row.inProgress}
                   </TableCell>
                   <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-center">
-                    {current.filled}
+                    {row.selected}
                   </TableCell>
                   <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-center">
-                    {current.blocked}
+                    {row.rejected}
                   </TableCell>
                   <TableCell className="py-3 px-4 border-b border-neutral-200 dark:border-slate-600 text-center">
-                    {current.fillRate}%
+                    {row.conversion}%
                   </TableCell>
                 </TableRow>
-                  );
-                })()
               ))
             )}
           </TableBody>
@@ -218,3 +179,4 @@ export default function AccountManagerProductivityTable({
     </div>
   );
 }
+
