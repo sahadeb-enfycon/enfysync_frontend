@@ -57,6 +57,18 @@ export default function AccountManagerCreateJobPage() {
         const data = Object.fromEntries(formData.entries());
         const cleanedDescription = sanitizeRichHtml(descriptionHtml);
 
+        // Fire-and-forget: upsert client names in the background (won't block job creation)
+        const upsertClient = (name: string, type: "CLIENT" | "END_CLIENT") => {
+            if (!name?.trim()) return;
+            apiClient("/clients", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name: name.trim(), type }),
+            }).catch((err) => console.error(`Failed to upsert ${type}:`, err));
+        };
+        upsertClient(data.clientName as string, "CLIENT");
+        upsertClient(data.endClientName as string, "END_CLIENT");
+
         // Prepare the payload according to the requested JSON body
         const payload = {
             jobTitle: data.jobTitle,
