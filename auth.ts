@@ -10,6 +10,7 @@ declare module "next-auth" {
       id: string
       roles: string[]
       accessToken: string
+      refreshToken: string
       podName?: string | null
       email: string
       name: string
@@ -335,6 +336,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.id = token.id
         session.user.roles = token.roles
         session.user.accessToken = token.accessToken
+        session.user.refreshToken = token.refreshToken
         session.user.podName = token.podName || null
         session.user.image = token.image
         session.user.name = token.name as string
