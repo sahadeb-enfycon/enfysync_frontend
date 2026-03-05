@@ -38,7 +38,7 @@ async function getJobs(): Promise<JobRow[]> {
         }
 
         const data = await response.json();
-        return Array.isArray(data) ? data : [];
+        return Array.isArray(data?.data) ? data.data : [];
     } catch (error) {
         console.error("Error fetching jobs:", error);
         return [];

@@ -30,7 +30,7 @@ async function getMyJobs(): Promise<JobRow[]> {
         });
         if (!response.ok) return [];
         const data = await response.json();
-        return Array.isArray(data) ? data : [];
+        return Array.isArray(data?.data) ? data.data : [];
     } catch {
         return [];
     }

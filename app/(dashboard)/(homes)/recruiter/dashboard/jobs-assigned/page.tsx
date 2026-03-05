@@ -18,7 +18,7 @@ async function getAssignedJobs() {
         }
 
         const assignedJobs = await response.json();
-        return Array.isArray(assignedJobs) ? assignedJobs : [];
+        return Array.isArray(assignedJobs?.data) ? assignedJobs.data : [];
 
     } catch (error) {
         console.error("Error fetching assigned jobs:", error);
