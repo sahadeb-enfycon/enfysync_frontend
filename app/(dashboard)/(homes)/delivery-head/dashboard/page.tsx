@@ -20,7 +20,8 @@ async function getDeliveryHeadData() {
             serverApiClient("/recruiter-submissions", { cache: "no-store" })
         ]);
 
-        const jobs = jobsRes.ok ? await jobsRes.json() : [];
+        const jobsRaw = jobsRes.ok ? await jobsRes.json() : [];
+        const jobs = Array.isArray(jobsRaw) ? jobsRaw : (jobsRaw?.data ?? jobsRaw?.content ?? jobsRaw?.jobs ?? []);
         const subsData = subsRes.ok ? await subsRes.json() : [];
         const submissions = Array.isArray(subsData) ? subsData : subsData?.submissions || [];
 

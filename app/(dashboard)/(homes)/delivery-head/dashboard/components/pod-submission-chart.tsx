@@ -61,7 +61,7 @@ const PodSubmissionChart = () => {
                 const subsData = subsRes.ok ? await subsRes.json() : [];
 
                 const pods: PodRow[] = Array.isArray(podsData) ? podsData : [];
-                const jobs: JobRow[] = Array.isArray(jobsData) ? jobsData : [];
+                const jobs: JobRow[] = Array.isArray(jobsData) ? jobsData : (jobsData?.data ?? jobsData?.content ?? []);
                 const submissions: SubmissionRow[] = Array.isArray(subsData)
                     ? subsData
                     : Array.isArray(subsData?.submissions)

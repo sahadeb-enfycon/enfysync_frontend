@@ -14,6 +14,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { LocationSelect } from "@/components/shared/location-select";
+import { ClientAutocomplete } from "@/components/shared/client-autocomplete";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
@@ -24,6 +25,8 @@ export default function AccountManagerCreateJobPage() {
     const { data: session } = useSession();
     const router = useRouter();
     const [location, setLocation] = useState("remote"); // Default to Remote as per user request example
+    const [clientName, setClientName] = useState("");
+    const [endClientName, setEndClientName] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [descriptionHtml, setDescriptionHtml] = useState("");
 
@@ -123,8 +126,8 @@ export default function AccountManagerCreateJobPage() {
                                         <SelectItem value="CONTRACT">Contract</SelectItem>
                                         <SelectItem value="CONTRACT_TO_HIRE">Contract to Hire</SelectItem>
                                         <SelectItem value="TEMPORARY">Temporary</SelectItem>
-                                         <SelectItem value="INTERNSHIP">Internship</SelectItem>
-                                         <SelectItem value="FREELANCE">Freelance</SelectItem>
+                                        <SelectItem value="INTERNSHIP">Internship</SelectItem>
+                                        <SelectItem value="FREELANCE">Freelance</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -147,12 +150,21 @@ export default function AccountManagerCreateJobPage() {
                             </div>
 
                             <div>
-                                <Label htmlFor="clientName" className="text-[#4b5563] dark:text-white mb-2">Client Name *</Label>
-                                <Input type="text" id="clientName" name="clientName" className="border border-neutral-300 px-5 dark:border-slate-500 focus:border-primary dark:focus:border-primary focus-visible:border-primary h-12 rounded-lg !shadow-none !ring-0" placeholder="e.g. Tech Corp" required />
+                                <Label className="text-[#4b5563] dark:text-white mb-2">Client Name *</Label>
+                                <ClientAutocomplete
+                                    type="CLIENT"
+                                    value={clientName}
+                                    onChange={setClientName}
+                                    required
+                                />
                             </div>
                             <div>
-                                <Label htmlFor="endClientName" className="text-[#4b5563] dark:text-white mb-2">End Client Name</Label>
-                                <Input type="text" id="endClientName" name="endClientName" className="border border-neutral-300 px-5 dark:border-slate-500 focus:border-primary dark:focus:border-primary focus-visible:border-primary h-12 rounded-lg !shadow-none !ring-0" placeholder="e.g. FinTrust Bank" />
+                                <Label className="text-[#4b5563] dark:text-white mb-2">End Client Name</Label>
+                                <ClientAutocomplete
+                                    type="END_CLIENT"
+                                    value={endClientName}
+                                    onChange={setEndClientName}
+                                />
                             </div>
 
                             <div>

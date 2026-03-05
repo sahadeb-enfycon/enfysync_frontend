@@ -178,7 +178,7 @@ function JobStatusSelect({ job, onRefresh }: { job: Job; onRefresh?: () => void 
 }
 
 export default function JobsTable({
-    jobs,
+    jobs: jobsProp,
     baseUrl = "/account-manager/dashboard/jobs",
     showActions = true,
     showAccountManager = false,
@@ -188,6 +188,7 @@ export default function JobsTable({
     showCfrExtend = false,
     onRefresh
 }: JobsTableProps) {
+    const jobs: Job[] = Array.isArray(jobsProp) ? jobsProp : [];
     const { data: session } = useSession();
     const router = useRouter();
     const [currentPage, setCurrentPage] = useState(1);

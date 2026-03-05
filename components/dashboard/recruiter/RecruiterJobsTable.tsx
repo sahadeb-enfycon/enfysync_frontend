@@ -78,11 +78,12 @@ const statusMap: Record<string, { label: string; variant: "default" | "secondary
 };
 
 export default function RecruiterJobsTable({
-    jobs,
+    jobs: jobsProp,
     baseUrl = "/recruiter/dashboard/jobs",
     onRefresh,
     hideRecruiterFilter = false
 }: RecruiterJobsTableProps) {
+    const jobs: Job[] = Array.isArray(jobsProp) ? jobsProp : [];
     const { data: session } = useSession();
     const router = useRouter();
     const [currentPage, setCurrentPage] = useState(1);

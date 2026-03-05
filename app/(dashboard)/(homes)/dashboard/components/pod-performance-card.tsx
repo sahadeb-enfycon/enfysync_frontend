@@ -51,7 +51,7 @@ const PodPerformanceCard = () => {
                 const jobsData = jobsRes.ok ? await jobsRes.json() : [];
                 const submissionsData = submissionsRes.ok ? await submissionsRes.json() : [];
 
-                const jobs: JobRow[] = Array.isArray(jobsData) ? jobsData : [];
+                const jobs: JobRow[] = Array.isArray(jobsData) ? jobsData : (jobsData?.data ?? jobsData?.content ?? []);
                 const submissions: SubmissionRow[] = Array.isArray(submissionsData)
                     ? submissionsData
                     : Array.isArray(submissionsData?.submissions)

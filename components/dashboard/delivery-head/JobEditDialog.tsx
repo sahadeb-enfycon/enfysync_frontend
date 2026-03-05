@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ClientAutocomplete } from "@/components/shared/client-autocomplete";
 import { Label } from "@/components/ui/label";
 import {
     Select,
@@ -221,21 +222,20 @@ export default function JobEditDialog({ job, isOpen, onClose, onSuccess }: JobEd
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label htmlFor="clientName">Client Name</Label>
-                            <Input
-                                id="clientName"
+                            <Label>Client Name</Label>
+                            <ClientAutocomplete
+                                type="CLIENT"
                                 value={formData.clientName || ""}
-                                onChange={(e) => setFormData({ ...formData, clientName: e.target.value })}
+                                onChange={(value) => setFormData({ ...formData, clientName: value })}
                                 required
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="endClientName">End Client</Label>
-                            <Input
-                                id="endClientName"
+                            <Label>End Client</Label>
+                            <ClientAutocomplete
+                                type="END_CLIENT"
                                 value={formData.endClientName || ""}
-                                onChange={(e) => setFormData({ ...formData, endClientName: e.target.value })}
-                                required
+                                onChange={(value) => setFormData({ ...formData, endClientName: value })}
                             />
                         </div>
                     </div>
