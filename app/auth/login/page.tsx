@@ -57,23 +57,29 @@ const Login = () => {
     <section className="bg-white dark:bg-slate-900 flex flex-wrap min-h-screen">
       {/* Left Image */}
       <div className="lg:w-1/2 hidden lg:block">
-        <div className="flex items-center justify-center h-screen flex-col">
-          {isLoading ? (
-            <div className="w-full h-full bg-neutral-50 dark:bg-slate-800 animate-pulse"></div>
-          ) : mediaUrl ? (
-            <img
-              src={mediaUrl}
-              alt="Custom Auth Illustration"
-              className="object-contain w-full h-full p-12"
-            />
-          ) : (
+        {isLoading ? (
+          <div className="h-screen w-full bg-neutral-50 dark:bg-slate-800 animate-pulse" />
+        ) : mediaUrl ? (
+          /* Dynamic uploaded image — fixed centered box */
+          <div className="flex items-center justify-center h-screen w-full p-16">
+            <div className="relative w-full h-full max-h-[65vh] overflow-hidden">
+              <img
+                src={mediaUrl}
+                alt="Custom Auth Illustration"
+                className="w-full h-full object-contain"
+              />
+            </div>
+          </div>
+        ) : (
+          /* Default image — original full-panel style */
+          <div className="flex items-center justify-center h-screen flex-col">
             <Image
               src={forgotPassImage.image}
               alt="Auth Illustration"
               className="object-cover w-full h-full"
             />
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Right Form */}
