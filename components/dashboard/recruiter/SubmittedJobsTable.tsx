@@ -91,6 +91,30 @@ const getBadgeStyles = (status: string) => {
 
 const STAGE_STATUSES = ["PENDING", "CLEARED", "REJECTED"];
 const FINAL_STATUSES = ["SUBMITTED", "REJECTED", "OFFER", "JOIN"];
+const DATE_ONLY_RE = /^\d{4}-\d{2}-\d{2}$/;
+const UTC_MIDNIGHT_RE = /^\d{4}-\d{2}-\d{2}T00:00:00(?:\.000)?Z$/;
+
+function isDateOnly(value?: string): boolean {
+    if (!value) return false;
+    return DATE_ONLY_RE.test(value) || UTC_MIDNIGHT_RE.test(value);
+}
+
+function formatSubmissionDate(value: string): string {
+    if (!isDateOnly(value)) return formatUsDate(value);
+    return new Intl.DateTimeFormat("en-US", {
+        timeZone: "UTC",
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+    }).format(new Date(value));
+}
+
+function formatSubmissionTime(value: string, createdAt?: string): string {
+    if (!isDateOnly(value)) return formatUsTime(value);
+    // Backend stores many submission dates at 00:00:00Z; use createdAt as the real submission time when available.
+    if (createdAt) return formatUsTime(createdAt);
+    return formatUsTime(value);
+}
 
 function FeedbackPopover({ remarks, comment }: { remarks?: string; comment?: string }) {
     const hasContent = !!(remarks || comment);
@@ -687,10 +711,10 @@ export default function SubmittedJobsTable({
                                             <TableCell className="px-6 py-4 text-start whitespace-nowrap">
                                                 <div className="flex flex-col gap-0.5" title="Submission Date">
                                                     <span className="text-sm text-gray-900 font-medium">
-                                                        {formatUsDate(sub.submissionDate)}
+                                                        {formatSubmissionDate(sub.submissionDate)}
                                                     </span>
                                                     <span className="text-xs text-gray-400">
-                                                        {formatUsTime(sub.submissionDate)}
+                                                        {formatSubmissionTime(sub.submissionDate, sub.createdAt)}
                                                     </span>
                                                 </div>
                                             </TableCell>
