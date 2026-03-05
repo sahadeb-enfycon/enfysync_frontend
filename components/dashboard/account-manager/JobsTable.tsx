@@ -191,6 +191,10 @@ export default function JobsTable({
     const jobs: Job[] = Array.isArray(jobsProp) ? jobsProp : [];
     const { data: session } = useSession();
     const router = useRouter();
+    const sessionRoles: string[] = ((session as any)?.user?.roles || []).map((r: string) => r?.toUpperCase?.());
+    const isAdmin = sessionRoles.includes("ADMIN");
+    const isDeliveryHead = sessionRoles.includes("DELIVERY_HEAD") || sessionRoles.includes("DELIVERY-HEAD");
+    const canEditByRole = isAdmin || isDeliveryHead;
     const [currentPage, setCurrentPage] = useState(1);
     const [podFilter, setPodFilter] = useState<string>("all");
     const [amFilter, setAmFilter] = useState<string>("all");
@@ -204,8 +208,12 @@ export default function JobsTable({
 
     useEffect(() => {
         if (showPod) {
-            apiClient("/pods/my-pods")
-                .then(res => res.ok ? res.json() : [])
+            apiClient("/pods/all")
+                .then(async (res) => {
+                    if (res.ok) return res.json();
+                    const fallback = await apiClient("/pods/my-pods");
+                    return fallback.ok ? fallback.json() : [];
+                })
                 .then(data => {
                     if (Array.isArray(data)) {
                         setAvailablePods(data.map((p: any) => ({ id: p.id, name: p.name })));
@@ -726,20 +734,29 @@ export default function JobsTable({
                                         {/* Pod */}
                                         {showPod && (
                                             <TableCell className="py-2 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
-                                                <PodAssignCell
-                                                    jobId={job.id}
-                                                    assignedPods={
+                                                {(() => {
+                                                    const resolvedAssignedPods =
                                                         job.pods && job.pods.length > 0
                                                             ? job.pods
                                                             : job.podIds && job.podIds.length > 0 && availablePods.length > 0
                                                                 ? (job.podIds.map(id => availablePods.find(p => p.id === id)).filter(Boolean) as { id: string; name: string }[])
-                                                                : job.pod ? [job.pod] : []
-                                                    }
-                                                    assignedRecruiters={job.assignedRecruiters}
-                                                    availablePods={availablePods}
-                                                    canEdit={(session as any)?.user?.roles?.includes("DELIVERY_HEAD") || (session as any)?.user?.roles?.includes("ADMIN")}
-                                                    onSuccess={() => { if (onRefresh) onRefresh(); else router.refresh(); }}
-                                                />
+                                                                : job.pod ? [job.pod] : [];
+
+                                                    const myPodIds = new Set(availablePods.map(p => p.id));
+                                                    const ownsAllAssignedPods = resolvedAssignedPods.every((p) => myPodIds.has(p.id));
+                                                    const canEdit = isAdmin || (canEditByRole && ownsAllAssignedPods);
+
+                                                    return (
+                                                        <PodAssignCell
+                                                            jobId={job.id}
+                                                            assignedPods={resolvedAssignedPods}
+                                                            assignedRecruiters={job.assignedRecruiters}
+                                                            availablePods={availablePods}
+                                                            canEdit={canEdit}
+                                                            onSuccess={() => { if (onRefresh) onRefresh(); else router.refresh(); }}
+                                                        />
+                                                    );
+                                                })()}
                                             </TableCell>
                                         )}
                                         {/* Created Date */}

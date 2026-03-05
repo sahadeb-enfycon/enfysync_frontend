@@ -110,9 +110,15 @@ export default function JobEditDialog({ job, isOpen, onClose, onSuccess }: JobEd
     React.useEffect(() => {
         const fetchPods = async () => {
             try {
-                const response = await apiClient("/pods/my-pods");
+                const response = await apiClient("/pods/all");
                 if (response.ok) {
                     const data = await response.json();
+                    setPods(data);
+                    return;
+                }
+                const fallback = await apiClient("/pods/my-pods");
+                if (fallback.ok) {
+                    const data = await fallback.json();
                     setPods(data);
                 }
             } catch (error) {

@@ -11,13 +11,17 @@ export const dynamic = 'force-dynamic';
 
 async function getPods() {
     try {
-        const response = await serverApiClient("/pods/my-pods", {
+        const response = await serverApiClient("/pods/all", {
             cache: 'no-store',
         });
 
         if (!response.ok) {
-            console.error("Failed to fetch pods. Status:", response.status);
-            return [];
+            const fallback = await serverApiClient("/pods/my-pods", { cache: 'no-store' });
+            if (!fallback.ok) {
+                console.error("Failed to fetch pods. Status:", response.status);
+                return [];
+            }
+            return fallback.json();
         }
 
         return response.json();
