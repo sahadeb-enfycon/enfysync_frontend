@@ -356,23 +356,29 @@ export default function SubmittedJobsTable({
 
     // Derived Statistics
     const stats = useMemo(() => {
-        let total = submissions.length;
-        let pendingL1 = 0;
-        let inInterview = 0;
-        let finalized = 0;
+        const total = submissions.length;
+        let l1 = 0;
+        let l2 = 0;
+        let l3 = 0;
+        let selected = 0;
+        let rejected = 0;
 
         submissions.forEach(sub => {
+            const l1Status = (sub.l1Status || "PENDING").toUpperCase();
+            const l2Status = (sub.l2Status || "PENDING").toUpperCase();
+            const l3Status = (sub.l3Status || "PENDING").toUpperCase();
             const final = (sub.finalStatus || "").toUpperCase();
-            if (final === "JOIN") {
-                finalized++;
-            } else if (!sub.l1Status || sub.l1Status.toUpperCase() === "PENDING") {
-                pendingL1++;
-            } else {
-                inInterview++;
+
+            if (final === "SELECTED") selected++;
+            if (final === "REJECTED" || l1Status === "REJECTED" || l2Status === "REJECTED" || l3Status === "REJECTED") {
+                rejected++;
             }
+            if (l1Status === "PENDING") l1++;
+            if (l1Status === "CLEARED" && l2Status === "PENDING") l2++;
+            if (l1Status === "CLEARED" && l2Status === "CLEARED" && l3Status === "PENDING") l3++;
         });
 
-        return { total, pendingL1, inInterview, finalized };
+        return { total, l1, l2, l3, selected, rejected };
     }, [submissions]);
 
     // Calculate submission counts per job
@@ -442,22 +448,30 @@ export default function SubmittedJobsTable({
         <div className="space-y-6">
 
             {/* 1. Top Summary Stats Section */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
                 <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex flex-col gap-1">
                     <span className="text-sm font-medium text-gray-500">Total Submissions</span>
                     <span className="text-3xl font-semibold text-gray-900">{stats.total}</span>
                 </div>
                 <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex flex-col gap-1">
-                    <span className="text-sm font-medium text-gray-500">Pending L1</span>
-                    <span className="text-3xl font-semibold text-amber-600">{stats.pendingL1}</span>
+                    <span className="text-sm font-medium text-gray-500">Rejected</span>
+                    <span className="text-3xl font-semibold text-red-600">{stats.rejected}</span>
                 </div>
                 <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex flex-col gap-1">
-                    <span className="text-sm font-medium text-gray-500">In Interview</span>
-                    <span className="text-3xl font-semibold text-blue-600">{stats.inInterview}</span>
+                    <span className="text-sm font-medium text-gray-500">L1</span>
+                    <span className="text-3xl font-semibold text-amber-600">{stats.l1}</span>
                 </div>
                 <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex flex-col gap-1">
-                    <span className="text-sm font-medium text-gray-500">Finalized</span>
-                    <span className="text-3xl font-semibold text-green-600">{stats.finalized}</span>
+                    <span className="text-sm font-medium text-gray-500">L2</span>
+                    <span className="text-3xl font-semibold text-blue-600">{stats.l2}</span>
+                </div>
+                <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex flex-col gap-1">
+                    <span className="text-sm font-medium text-gray-500">L3</span>
+                    <span className="text-3xl font-semibold text-indigo-600">{stats.l3}</span>
+                </div>
+                <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex flex-col gap-1">
+                    <span className="text-sm font-medium text-gray-500">Selected</span>
+                    <span className="text-3xl font-semibold text-green-600">{stats.selected}</span>
                 </div>
             </div>
 
