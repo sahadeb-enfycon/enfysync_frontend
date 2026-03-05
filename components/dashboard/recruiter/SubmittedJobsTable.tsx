@@ -583,10 +583,10 @@ export default function SubmittedJobsTable({
             {/* Table wrapper inside clean card container */}
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">
-                    <Table className="table-auto border-spacing-0 w-full min-w-max">
+                    <Table className="table-grid-lines table-auto border-spacing-0 w-full min-w-max">
                         <TableHeader className="bg-gray-50 border-b border-gray-200">
                             <TableRow className="border-0 hover:bg-transparent">
-                                <TableHead className="text-gray-600 font-medium text-sm px-6 py-4 text-start">
+                                <TableHead className="sticky left-0 z-30 bg-gray-50 text-gray-600 font-medium text-sm px-6 py-4 text-start shadow-[1px_0_0_0_rgba(226,232,240,1)]">
                                     Job Reference
                                 </TableHead>
                                 <TableHead className="text-gray-600 font-medium text-sm px-6 py-4 text-start">
@@ -637,11 +637,25 @@ export default function SubmittedJobsTable({
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                currentSubmissions.map((sub) => {
+                                currentSubmissions.map((sub, index) => {
+                                    const stickyBgClass = index % 2 === 0
+                                        ? "bg-white dark:bg-slate-900/20"
+                                        : "bg-slate-50/70 dark:bg-slate-800/35";
                                     return (
-                                        <TableRow key={sub.id} className="hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-0 group">
+                                        <TableRow
+                                            key={sub.id}
+                                            className={cn(
+                                                "transition-colors border-b border-gray-100 last:border-0 group",
+                                                index % 2 === 0
+                                                    ? "bg-white dark:bg-slate-900/20 hover:bg-slate-50 dark:hover:bg-slate-800/60"
+                                                    : "bg-slate-50/70 dark:bg-slate-800/35 hover:bg-slate-100/70 dark:hover:bg-slate-800/75"
+                                            )}
+                                        >
                                             {/* Job Reference */}
-                                            <TableCell className="px-6 py-4 text-start">
+                                            <TableCell className={cn(
+                                                "sticky left-0 z-20 px-6 py-4 text-start shadow-[1px_0_0_0_rgba(226,232,240,1)] dark:shadow-[1px_0_0_0_rgba(71,85,105,1)]",
+                                                stickyBgClass
+                                            )}>
                                                 <div className="flex flex-col gap-1.5">
                                                     <div className="flex items-center gap-2">
                                                         <span className="font-semibold text-gray-900 text-sm">

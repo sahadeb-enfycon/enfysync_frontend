@@ -54,7 +54,7 @@ export default function DeliveryHeadSubmittedJobsPage() {
         <>
             <DashboardBreadcrumb title="Submitted Candidates" text="Job Management" />
             <div className="p-6 bg-gray-50 min-h-[calc(100vh-4rem)]">
-                <div className="max-w-7xl mx-auto space-y-6">
+                <div className="max-w-[96rem] mx-auto space-y-6">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div>
                             <h1 className="text-2xl font-bold tracking-tight text-gray-900">

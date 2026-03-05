@@ -159,7 +159,7 @@ export default function DeliveryHeadJobDetailPage() {
                             </h2>
                             {job.jobDescription ? (
                                 <div
-                                    className="jd-content text-neutral-700 dark:text-neutral-300 leading-relaxed text-sm"
+                                    className="jd-prose text-neutral-700 dark:text-neutral-300"
                                     dangerouslySetInnerHTML={{ __html: job.jobDescription }}
                                 />
                             ) : (

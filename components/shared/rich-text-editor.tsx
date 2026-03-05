@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { Bold, Italic, Link2, List, ListOrdered, Underline } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
+import { plainTextToSemanticHtml, sanitizeJobDescriptionHtml } from "@/lib/jd-html";
 
 interface RichTextEditorProps {
   value: string;
@@ -20,140 +21,18 @@ export default function RichTextEditor({
 }: RichTextEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
   const MIN_HEIGHT = 180;
-  const allowedTags = new Set([
-    "p",
-    "br",
-    "ul",
-    "ol",
-    "li",
-    "h1",
-    "h2",
-    "h3",
-    "h4",
-    "h5",
-    "h6",
-    "blockquote",
-    "span",
-    "strong",
-    "b",
-    "em",
-    "i",
-    "u",
-    "a",
-  ]);
-
-  const escapeHtml = (text: string) =>
-    text
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
 
   const normalizeHtml = (html: string) => {
+    const sanitized = sanitizeJobDescriptionHtml(html);
     const container = document.createElement("div");
-    container.innerHTML = html;
+    container.innerHTML = sanitized;
     const plain = (container.textContent || "")
       .replace(/\u00a0/g, " ")
       .replace(/\u200B/g, "")
       .trim();
     // Treat empty editor artifacts (<div><br></div>, <p><br></p>, &nbsp;) as empty content.
     if (!plain) return "";
-    return container.innerHTML;
-  };
-
-  const sanitizePastedHtml = (html: string) => {
-    const doc = document.implementation.createHTMLDocument("");
-    doc.body.innerHTML = html;
-    const allowedStyleProps = new Set([
-      "font-weight",
-      "font-style",
-      "text-decoration",
-      "color",
-      "background-color",
-      "text-align",
-    ]);
-
-    const isSafeStyleValue = (value: string) => {
-      // Block expression/url/javascript injections in inline style values.
-      return !/(expression|url\s*\(|javascript:)/i.test(value);
-    };
-
-    const sanitizeInlineStyle = (style: string) => {
-      const safeParts: string[] = [];
-      style.split(";").forEach((part) => {
-        const [rawProp, ...rawValueParts] = part.split(":");
-        if (!rawProp || rawValueParts.length === 0) return;
-        const prop = rawProp.trim().toLowerCase();
-        const value = rawValueParts.join(":").trim();
-        if (!allowedStyleProps.has(prop)) return;
-        if (!value || !isSafeStyleValue(value)) return;
-        safeParts.push(`${prop}:${value}`);
-      });
-      return safeParts.join(";");
-    };
-
-    const cleanNode = (node: Node): Node | null => {
-      if (node.nodeType === Node.TEXT_NODE) {
-        return doc.createTextNode(node.textContent || "");
-      }
-
-      if (node.nodeType !== Node.ELEMENT_NODE) return null;
-      const element = node as HTMLElement;
-      const tagName = element.tagName.toLowerCase();
-
-      if (tagName === "div") {
-        const paragraph = doc.createElement("p");
-        Array.from(element.childNodes).forEach((child) => {
-          const cleaned = cleanNode(child);
-          if (cleaned) paragraph.appendChild(cleaned);
-        });
-        return paragraph;
-      }
-
-      if (!allowedTags.has(tagName)) {
-        const fragment = doc.createDocumentFragment();
-        Array.from(element.childNodes).forEach((child) => {
-          const cleaned = cleanNode(child);
-          if (cleaned) fragment.appendChild(cleaned);
-        });
-        return fragment;
-      }
-
-      const cleanElement = doc.createElement(tagName);
-      if (tagName === "a") {
-        const href = element.getAttribute("href") || "";
-        if (/^(https?:|mailto:|tel:|\/|#)/i.test(href)) {
-          cleanElement.setAttribute("href", href);
-          cleanElement.setAttribute("target", "_blank");
-          cleanElement.setAttribute("rel", "noopener noreferrer");
-        }
-      }
-      if (tagName !== "a") {
-        const style = element.getAttribute("style");
-        if (style) {
-          const sanitizedStyle = sanitizeInlineStyle(style);
-          if (sanitizedStyle) {
-            cleanElement.setAttribute("style", sanitizedStyle);
-          }
-        }
-      }
-
-      Array.from(element.childNodes).forEach((child) => {
-        const cleaned = cleanNode(child);
-        if (cleaned) cleanElement.appendChild(cleaned);
-      });
-
-      return cleanElement;
-    };
-
-    const output = doc.createElement("div");
-    Array.from(doc.body.childNodes).forEach((child) => {
-      const cleaned = cleanNode(child);
-      if (cleaned) output.appendChild(cleaned);
-    });
-
-    return normalizeHtml(output.innerHTML);
+    return sanitized;
   };
 
   useEffect(() => {
@@ -223,14 +102,8 @@ export default function RichTextEditor({
           const html = e.clipboardData.getData("text/html");
           const text = e.clipboardData.getData("text/plain");
           const sanitized = html
-            ? sanitizePastedHtml(html)
-            : normalizeHtml(
-                escapeHtml(text)
-                  .replace(/\n{2,}/g, "</p><p>")
-                  .replace(/\n/g, "<br>")
-                  .replace(/^/, "<p>")
-                  .replace(/$/, "</p>")
-              );
+            ? normalizeHtml(html)
+            : plainTextToSemanticHtml(text);
 
           editorRef.current?.focus();
           if (sanitized) {

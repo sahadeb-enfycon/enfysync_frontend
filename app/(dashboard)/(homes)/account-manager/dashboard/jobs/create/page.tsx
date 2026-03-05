@@ -20,6 +20,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import { apiClient } from "@/lib/apiClient";
 import RichTextEditor from "@/components/shared/rich-text-editor";
+import { sanitizeJobDescriptionHtml } from "@/lib/jd-html";
 
 export default function AccountManagerCreateJobPage() {
     const { data: session } = useSession();
@@ -30,32 +31,13 @@ export default function AccountManagerCreateJobPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [descriptionHtml, setDescriptionHtml] = useState("");
 
-    const sanitizeRichHtml = (html: string) => {
-        const container = document.createElement("div");
-        container.innerHTML = html;
-        container.querySelectorAll("script,style,iframe,object,embed").forEach((el) => el.remove());
-
-        container.querySelectorAll("*").forEach((el) => {
-            Array.from(el.attributes).forEach((attr) => {
-                const name = attr.name.toLowerCase();
-                const value = attr.value.trim().toLowerCase();
-                if (name.startsWith("on")) el.removeAttribute(attr.name);
-                if ((name === "href" || name === "src") && value.startsWith("javascript:")) {
-                    el.removeAttribute(attr.name);
-                }
-            });
-        });
-
-        return container.innerHTML.trim();
-    };
-
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsSubmitting(true);
 
         const formData = new FormData(e.currentTarget);
         const data = Object.fromEntries(formData.entries());
-        const cleanedDescription = sanitizeRichHtml(descriptionHtml);
+        const cleanedDescription = sanitizeJobDescriptionHtml(descriptionHtml);
 
         // Fire-and-forget: upsert client names in the background (won't block job creation)
         const upsertClient = (name: string, type: "CLIENT" | "END_CLIENT") => {
