@@ -208,6 +208,59 @@ export const getSidebarData = (role: string) => {
 
   ];
 
+  const podLeadNav = [
+    {
+      title: "Dashboard",
+      url: "#",
+      icon: House,
+      isActive: true,
+      items: [
+        {
+          title: "Home",
+          url: "/recruiter/dashboard",
+          circleColor: "bg-primary",
+        },
+        {
+          title: "Assigned Jobs",
+          url: "/recruiter/dashboard/jobs-assigned",
+          circleColor: "bg-cyan-500",
+        },
+        {
+          title: "Submitted Jobs",
+          url: "/recruiter/dashboard/jobs-submitted",
+          circleColor: "bg-purple-500",
+        },
+        {
+          title: "Jobs in my Pods",
+          url: "/recruiter/dashboard/jobs",
+          circleColor: "bg-blue-500",
+        },
+      ],
+    },
+    {
+      label: "POD Management",
+    },
+    {
+      title: "My Pods",
+      url: "#",
+      icon: UsersRound,
+      isActive: true,
+      items: [
+        {
+          title: "Assigned Jobs",
+          url: "/pod-lead/dashboard/pod-jobs",
+          circleColor: "bg-amber-500",
+        },
+        {
+          title: "Submitted Jobs",
+          url: "/pod-lead/dashboard/pod-submissions",
+          circleColor: "bg-emerald-500",
+        },
+        
+      ],
+    },
+  ];
+
   // Map roles to their specific navigation
   const roleUpper = role ? role.toUpperCase() : "";
 
@@ -219,6 +272,8 @@ export const getSidebarData = (role: string) => {
     return { navMain: deliveryHeadNav };
   } else if (roleUpper === "RECRUITER") {
     return { navMain: recruiterNav };
+  } else if (roleUpper === "POD_LEAD" || roleUpper === "POD-LEAD") {
+    return { navMain: podLeadNav };
   }
 
   return { navMain: [] };

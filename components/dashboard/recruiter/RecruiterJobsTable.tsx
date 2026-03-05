@@ -94,7 +94,6 @@ export default function RecruiterJobsTable({
     const [sortBy, setSortBy] = useState<string>("date-desc");
     const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
     const [submissionJob, setSubmissionJob] = useState<{ id: string; jobCode: string } | null>(null);
-    const [isPodHeadUser, setIsPodHeadUser] = useState(false);
 
     const token = (session as any)?.user?.accessToken;
     const roles: string[] = (session?.user as any)?.roles || [];
@@ -102,20 +101,11 @@ export default function RecruiterJobsTable({
         const normalizedRole = role?.toUpperCase?.();
         return normalizedRole === "POD_LEAD" || normalizedRole === "POD-LEAD";
     });
-    const isPodLead = hasPodLeadRole || isPodHeadUser;
+    const isPodLead = hasPodLeadRole;
     const itemsPerPage = 10;
 
     // Fetch team members from /pods/my-team once
     useEffect(() => {
-        apiClient("/auth/me")
-            .then((res) => (res.ok ? res.json() : {}))
-            .then((data: any) => {
-                if (data?.isPodHead) {
-                    setIsPodHeadUser(true);
-                }
-            })
-            .catch(console.error);
-
         apiClient("/pods/my-team")
             .then((res) => res.ok ? res.json() : [])
             .then((data) => {
@@ -130,15 +120,6 @@ export default function RecruiterJobsTable({
     const filterOptions = useMemo(() => {
         const ams = new Map<string, string>();
         const clients = new Set<string>();
-
-        jobs.forEach(job => {
-            if (job.accountManager) {
-                const name = job.accountManager.fullName || job.accountManager.email;
-                ams.set(job.accountManager.email, name);
-            }
-            if (job.clientName) clients.add(job.clientName);
-        });
-
         // Use teamMembers (scoped to the current pod via /pods/my-team) instead of
         // deriving recruiters from job.assignedRecruiters, which would include
         // recruiters from other pods when a job is assigned to multiple pods.

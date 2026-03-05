@@ -20,10 +20,10 @@ export default async function DashboardRedirect() {
         redirect("/admin/dashboard");
     } else if (normalizedRoles.includes("ACCOUNT_MANAGER") || normalizedRoles.includes("ACCOUNT-MANAGER")) {
         redirect("/account-manager/dashboard");
-    } else if (normalizedRoles.includes("RECRUITER")) {
-        redirect("/recruiter/dashboard");
     } else if (normalizedRoles.includes("POD_LEAD") || normalizedRoles.includes("POD-LEAD")) {
         redirect("/pod-lead/dashboard");
+    } else if (normalizedRoles.includes("RECRUITER")) {
+        redirect("/recruiter/dashboard");
     } else {
         // Default fallback if no specific role matched
         return (

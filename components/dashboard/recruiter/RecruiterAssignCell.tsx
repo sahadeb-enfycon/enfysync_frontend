@@ -140,26 +140,47 @@ export default function RecruiterAssignCell({
     const visibleRecruiters = assignedRecruiters.slice(0, MAX_VISIBLE);
     const overflow = assignedRecruiters.length - MAX_VISIBLE;
 
+    if (!canEdit) {
+        if (assignedRecruiters.length === 0) {
+            return <div className="text-xs text-neutral-400 italic px-2 py-1">Unassigned</div>;
+        }
+        return (
+            <div className="flex items-center gap-1 rounded-lg px-1.5 py-1" title="Assigned Recruiters">
+                <div className="flex -space-x-1.5">
+                    {visibleRecruiters.map((r) => (
+                        <span
+                            key={r.id}
+                            title={r.fullName || r.email}
+                            className={`inline-flex items-center justify-center h-7 w-7 rounded-full text-[10px] font-bold border-2 border-white dark:border-slate-800 ${getAvatarColor(r.id)}`}
+                        >
+                            {getInitials(r.fullName, r.email)}
+                        </span>
+                    ))}
+                    {overflow > 0 && (
+                        <span className="inline-flex items-center justify-center h-7 w-7 rounded-full text-[10px] font-bold border-2 border-white dark:border-slate-800 bg-neutral-200 dark:bg-slate-600 text-neutral-600 dark:text-slate-300">
+                            +{overflow}
+                        </span>
+                    )}
+                </div>
+            </div>
+        );
+    }
+
     const trigger =
         assignedRecruiters.length === 0 ? (
             <button
                 className="flex items-center gap-1.5 text-xs text-neutral-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 px-2.5 py-1.5 rounded-lg border border-dashed border-neutral-300 dark:border-slate-600 transition-colors group"
                 type="button"
-                disabled={!canEdit}
-                title={canEdit ? "Assign Recruiters" : "Only pod lead can edit assigned recruiters"}
+                title="Assign Recruiters"
             >
                 <UserPlus className="h-3.5 w-3.5" />
                 <span className="font-medium group-hover:text-blue-600">Assign</span>
             </button>
         ) : (
             <button
-                className={`flex items-center gap-1 rounded-lg px-1.5 py-1 transition-colors ${canEdit
-                    ? "hover:bg-neutral-100 dark:hover:bg-slate-700"
-                    : "cursor-default"
-                    }`}
+                className="flex items-center gap-1 rounded-lg px-1.5 py-1 transition-colors hover:bg-neutral-100 dark:hover:bg-slate-700"
                 type="button"
-                disabled={!canEdit}
-                title={canEdit ? "Edit Assigned Recruiters" : "Only pod lead can edit assigned recruiters"}
+                title="Edit Assigned Recruiters"
             >
                 <div className="flex -space-x-1.5">
                     {visibleRecruiters.map((r) => (
@@ -182,13 +203,7 @@ export default function RecruiterAssignCell({
         );
 
     return (
-        <Popover
-            open={open}
-            onOpenChange={(nextOpen) => {
-                if (!canEdit && nextOpen) return;
-                setOpen(nextOpen);
-            }}
-        >
+        <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>{trigger}</PopoverTrigger>
             <PopoverContent
                 className="w-72 p-0 shadow-xl border border-neutral-200 dark:border-slate-600 rounded-xl overflow-hidden"

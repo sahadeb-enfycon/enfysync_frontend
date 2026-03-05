@@ -82,12 +82,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           // SSO callback path: backend has already validated code and returned user + token.
           if (ssoAccessToken && userString) {
             const parsedUser = JSON.parse(userString);
+            const ssoRoles: string[] = parsedUser.roles || [];
+            // Backend doesn't emit a POD_LEAD role — it uses isPodHead flag instead.
+            const hasPodLead = ssoRoles.some((r: string) => r.toUpperCase() === 'POD_LEAD' || r.toUpperCase() === 'POD-LEAD');
+            const finalSsoRoles = (parsedUser.isPodHead && !hasPodLead) ? [...ssoRoles, 'POD_LEAD'] : ssoRoles;
             return {
               ...parsedUser,
               id: parsedUser.id,
               email: parsedUser.email,
               name: parsedUser.fullName || parsedUser.name || parsedUser.email,
-              roles: parsedUser.roles || [],
+              roles: finalSsoRoles,
               accessToken: ssoAccessToken,
               refreshToken: ssoRefreshToken,
               expiresIn: ssoExpiresIn,
@@ -137,12 +141,22 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             expiresIn: finalExpiresIn
           });
 
+          // Backend uses isPodHead flag instead of a POD_LEAD role — inject it so
+          // all downstream role checks (redirect, sidebar) work correctly.
+          const baseRoles: string[] = userData.roles || [];
+          const hasPodLeadRole = baseRoles.some((r: string) =>
+            r.toUpperCase() === 'POD_LEAD' || r.toUpperCase() === 'POD-LEAD'
+          );
+          const finalRoles = (userData.isPodHead && !hasPodLeadRole)
+            ? [...baseRoles, 'POD_LEAD']
+            : baseRoles;
+
           return {
             ...userData,
             id: userData.id,
             email: userData.email,
             name: userData.fullName || userData.email,
-            roles: userData.roles,
+            roles: finalRoles,
             accessToken: finalAccessToken,
             refreshToken: finalRefreshToken,
             expiresIn: finalExpiresIn,
