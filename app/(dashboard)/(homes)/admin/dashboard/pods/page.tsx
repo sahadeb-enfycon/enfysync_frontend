@@ -8,6 +8,7 @@ import StatCard from "@/app/(dashboard)/(homes)/dashboard/components/stat-card";
 import AudienceStatsChart from "@/components/charts/audience-stats-chart";
 import AnalysisDonutChart from "@/components/dashboard/admin/AnalysisDonutChart";
 import { Card, CardContent } from "@/components/ui/card";
+import PodsTable from "@/components/dashboard/delivery-head/PodsTable";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,26 @@ interface JobRow {
   status?: string;
   createdAt?: string;
   pod?: { id: string; name: string } | null;
+  pods?: Array<{ id: string; name: string }>;
+  podIds?: string[];
+}
+
+interface PodMember {
+  id?: string;
+  fullName?: string | null;
+  email?: string;
+}
+
+interface PodRow {
+  id: string;
+  name: string;
+  podHead?: PodMember | null;
+  recruiters?: PodMember[];
+  jobs?: Array<{ id?: string }>;
+  _count?: {
+    jobs?: number;
+  };
+  updatedAt?: string;
 }
 
 async function getJobs(): Promise<JobRow[]> {
@@ -23,7 +44,29 @@ async function getJobs(): Promise<JobRow[]> {
     const response = await serverApiClient("/jobs", { cache: "no-store" });
     if (!response.ok) return [];
     const data = await response.json();
-    return Array.isArray(data) ? data : [];
+    const jobs = Array.isArray(data) ? data : (data?.data ?? data?.content ?? data?.jobs ?? []);
+    return Array.isArray(jobs) ? jobs : [];
+  } catch {
+    return [];
+  }
+}
+
+async function getPods(): Promise<PodRow[]> {
+  try {
+    const response = await serverApiClient("/pods/all", { cache: "no-store" });
+    if (!response.ok) {
+      const fallbackResponse = await serverApiClient("/pods", { cache: "no-store" });
+      if (!fallbackResponse.ok) return [];
+      const fallbackData = await fallbackResponse.json();
+      const fallbackPods = Array.isArray(fallbackData)
+        ? fallbackData
+        : (fallbackData?.data ?? fallbackData?.content ?? fallbackData?.pods ?? []);
+      return Array.isArray(fallbackPods) ? fallbackPods : [];
+    }
+
+    const data = await response.json();
+    const pods = Array.isArray(data) ? data : (data?.data ?? data?.content ?? data?.pods ?? []);
+    return Array.isArray(pods) ? pods : [];
   } catch {
     return [];
   }
@@ -32,31 +75,65 @@ async function getJobs(): Promise<JobRow[]> {
 export default async function AdminPodsDashboardPage() {
   const session = await auth();
   const userName = session?.user?.name || "Admin";
-  const jobs = await getJobs();
+  const [jobs, pods] = await Promise.all([getJobs(), getPods()]);
 
   const welcomeMessage = `${getGreeting()}, ${userName}!`;
 
+  const norm = (value?: string) => (value || "").trim().toUpperCase();
+  const podIdSet = new Set(pods.map((pod) => pod.id));
   const podBuckets = new Map<string, { total: number; active: number; filled: number }>();
 
   for (const job of jobs) {
-    const podName = job.pod?.name || "Unassigned";
-    const current = podBuckets.get(podName) || { total: 0, active: 0, filled: 0 };
-    current.total += 1;
-    if (job.status === "ACTIVE") current.active += 1;
-    if (job.status === "FILLED") current.filled += 1;
-    podBuckets.set(podName, current);
+    const linkedPods = new Map<string, string>();
+    if (job.pod?.id && job.pod?.name) linkedPods.set(job.pod.id, job.pod.name);
+    (job.pods || []).forEach((p) => linkedPods.set(p.id, p.name));
+
+    const linkedPodIds = new Set([
+      ...Array.from(linkedPods.keys()),
+      ...(job.podIds || []),
+    ]);
+
+    if (linkedPods.size === 0 && linkedPodIds.size > 0) {
+      linkedPodIds.forEach((id) => {
+        const pod = pods.find((p) => p.id === id);
+        if (pod) linkedPods.set(pod.id, pod.name);
+      });
+    }
+
+    if (linkedPods.size === 0) continue;
+
+    linkedPods.forEach((podName, podId) => {
+      if (!podIdSet.has(podId)) return;
+      const current = podBuckets.get(podName) || { total: 0, active: 0, filled: 0 };
+      current.total += 1;
+      if (norm(job.status) === "ACTIVE") current.active += 1;
+      if (norm(job.status) === "FILLED") current.filled += 1;
+      podBuckets.set(podName, current);
+    });
   }
 
-  const podRows = Array.from(podBuckets.entries())
-    .filter(([name]) => name !== "Unassigned")
-    .sort((a, b) => b[1].total - a[1].total);
+  const podsWithJobs = pods.filter((pod) => (pod._count?.jobs ?? pod.jobs?.length ?? 0) > 0);
+  const totalPods = podsWithJobs.length;
+  const jobsAssignedToPods = pods.reduce(
+    (sum, pod) => sum + (pod._count?.jobs ?? pod.jobs?.length ?? 0),
+    0
+  );
 
-  const totalPods = podRows.length;
-  const activeJobs = jobs.filter((j) => j.status === "ACTIVE").length;
-  const blockedJobs = jobs.filter(
-    (j) => j.status === "ON_HOLD" || j.status === "HOLD_BY_CLIENT"
-  ).length;
-  const avgJobsPerPod = totalPods ? (jobs.length / totalPods).toFixed(1) : "0";
+  const blockedJobs = jobs.filter((job) => {
+    const hasPodLink =
+      !!job.pod?.id ||
+      (job.pods && job.pods.length > 0) ||
+      (job.podIds && job.podIds.length > 0);
+    return hasPodLink && (norm(job.status) === "ON_HOLD" || norm(job.status) === "HOLD_BY_CLIENT");
+  }).length;
+  const activeJobs = jobs.filter((job) => {
+    const hasPodLink =
+      !!job.pod?.id ||
+      (job.pods && job.pods.length > 0) ||
+      (job.podIds && job.podIds.length > 0);
+    return hasPodLink && norm(job.status) === "ACTIVE";
+  }).length;
+  const avgJobsPerPod = totalPods ? (jobsAssignedToPods / totalPods).toFixed(1) : "0";
 
   const podStats = [
     {
@@ -65,14 +142,14 @@ export default async function AdminPodsDashboardPage() {
       icon: "UsersRound",
       iconBg: "bg-cyan-600",
       gradientFrom: "from-cyan-600/10",
-      growth: `+${Math.max(totalPods - 1, 0)}`,
+      growth: `${totalPods}`,
       growthIcon: "ArrowUp",
       growthColor: "text-green-600 dark:text-green-400",
       description: "Pods with active requisitions",
     },
     {
       title: "Jobs Assigned To Pods",
-      value: String(jobs.filter((j) => j.pod?.id).length),
+      value: String(jobsAssignedToPods),
       icon: "BriefcaseBusiness",
       iconBg: "bg-blue-600",
       gradientFrom: "from-blue-600/10",
@@ -87,7 +164,7 @@ export default async function AdminPodsDashboardPage() {
       icon: "Timer",
       iconBg: "bg-red-600",
       gradientFrom: "from-red-600/10",
-      growth: blockedJobs > 0 ? "+1" : "0",
+      growth: `${blockedJobs}`,
       growthIcon: "ArrowUp",
       growthColor: blockedJobs > 0 ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400",
       description: "On hold by pod/client",
@@ -98,26 +175,65 @@ export default async function AdminPodsDashboardPage() {
       icon: "FileText",
       iconBg: "bg-purple-600",
       gradientFrom: "from-purple-600/10",
-      growth: "+0.3",
+      growth: `${jobsAssignedToPods}`,
       growthIcon: "ArrowUp",
       growthColor: "text-green-600 dark:text-green-400",
       description: "Load balancing indicator",
     },
   ];
 
-  const topPods = podRows.slice(0, 6);
-  const categories = topPods.map(([name]) => name);
+  const podsForTable = pods
+    .map((pod) => ({
+      id: pod.id,
+      name: pod.name || "Unnamed Pod",
+      podHead: {
+        id: pod.podHead?.id || "",
+        fullName: pod.podHead?.fullName || null,
+        email: pod.podHead?.email || "",
+      },
+      recruiters: (pod.recruiters || []).map((recruiter) => ({
+        id: recruiter.id || "",
+        fullName: recruiter.fullName || null,
+        email: recruiter.email || "",
+      })),
+      jobs:
+        typeof pod._count?.jobs === "number"
+          ? Array.from({ length: pod._count.jobs }, (_, i) => ({ id: `${pod.id}-${i}` }))
+          : (pod.jobs || []),
+      _count: {
+        recruiters: (pod.recruiters || []).length,
+        jobs: pod._count?.jobs ?? pod.jobs?.length ?? 0,
+      },
+      createdAt: "",
+      updatedAt: pod.updatedAt || new Date(0).toISOString(),
+    }))
+    .sort((a, b) => (b.jobs?.length || 0) - (a.jobs?.length || 0) || a.name.localeCompare(b.name));
+
+  const topPods = podsForTable.slice(0, 6);
+  const categories = topPods.map((pod) => pod.name);
   const podSeries = [
-    { name: "Total Jobs", data: topPods.map(([, v]) => v.total) },
-    { name: "Active", data: topPods.map(([, v]) => v.active) },
-    { name: "Filled", data: topPods.map(([, v]) => v.filled) },
+    { name: "Total Jobs", data: topPods.map((pod) => pod._count.jobs ?? 0) },
+    {
+      name: "Active",
+      data: topPods.map((pod) => {
+        const bucket = podBuckets.get(pod.name);
+        return bucket?.active ?? 0;
+      }),
+    },
+    {
+      name: "Filled",
+      data: topPods.map((pod) => {
+        const bucket = podBuckets.get(pod.name);
+        return bucket?.filled ?? 0;
+      }),
+    },
   ];
 
   const statusSeries = [
-    jobs.filter((j) => j.status === "ACTIVE").length,
-    jobs.filter((j) => j.status === "ON_HOLD" || j.status === "HOLD_BY_CLIENT").length,
-    jobs.filter((j) => j.status === "FILLED").length,
-    jobs.filter((j) => j.status === "CLOSED").length,
+    jobs.filter((j) => norm(j.status) === "ACTIVE").length,
+    jobs.filter((j) => norm(j.status) === "ON_HOLD" || norm(j.status) === "HOLD_BY_CLIENT").length,
+    jobs.filter((j) => norm(j.status) === "FILLED").length,
+    jobs.filter((j) => norm(j.status) === "CLOSED").length,
   ];
 
   return (
@@ -129,6 +245,18 @@ export default async function AdminPodsDashboardPage() {
             <StatCard data={podStats} />
           </div>
         </Suspense>
+
+        <Card className="border border-gray-200 dark:border-neutral-700 bg-white dark:bg-slate-800 rounded-md shadow-none">
+          <CardContent className="p-6">
+            <h6 className="font-semibold text-lg text-neutral-900 dark:text-white mb-4">All Pods</h6>
+           <PodsTable
+              pods={podsForTable}
+              showActions={false}
+              basePath="/admin/dashboard/pods"
+              showSorting={true}
+            />
+              </CardContent>
+        </Card>
 
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
           <div className="xl:col-span-8">

@@ -7,7 +7,7 @@ function getRoleDashboard(roles: string[]): string {
   const normalized = roles.map((r) => r.toUpperCase())
   if (normalized.includes("DELIVERY_HEAD") || normalized.includes("DELIVERY-HEAD"))
     return "/delivery-head/dashboard"
-  if (normalized.includes("ADMIN")) return "/admin/dashboard"
+  if (normalized.includes("ADMIN")) return "/admin/dashboard/jobs"
   if (normalized.includes("ACCOUNT_MANAGER") || normalized.includes("ACCOUNT-MANAGER"))
     return "/account-manager/dashboard"
   if (normalized.includes("POD_LEAD") || normalized.includes("POD-LEAD"))

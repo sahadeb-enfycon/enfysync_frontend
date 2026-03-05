@@ -17,7 +17,7 @@ export default async function DashboardRedirect() {
     if (normalizedRoles.includes("DELIVERY_HEAD") || normalizedRoles.includes("DELIVERY-HEAD")) {
         redirect("/delivery-head/dashboard");
     } else if (normalizedRoles.includes("ADMIN")) {
-        redirect("/admin/dashboard");
+        redirect("/admin/dashboard/jobs");
     } else if (normalizedRoles.includes("ACCOUNT_MANAGER") || normalizedRoles.includes("ACCOUNT-MANAGER")) {
         redirect("/account-manager/dashboard");
     } else if (normalizedRoles.includes("POD_LEAD") || normalizedRoles.includes("POD-LEAD")) {

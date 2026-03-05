@@ -24,25 +24,26 @@ export const getSidebarData = (role: string) => {
       isActive: true,
       items: [
         {
-          title: "Home",
-          url: "/dashboard",
+          title: "All Jobs",
+          url: "/admin/dashboard/jobs",
           circleColor: "bg-primary",
+        },
+         {
+          title: "Pods",
+          url: "/admin/dashboard/pods",
+          circleColor: "bg-emerald-500",
+        },
+         {
+          title: "Account Manager",
+          url: "/admin/dashboard/account-manager",
+          circleColor: "bg-yellow-500",
         },
         {
           title: "Recruiter",
           url: "/admin/dashboard/recruiter",
           circleColor: "bg-cyan-500",
         },
-        {
-          title: "Pods",
-          url: "/admin/dashboard/pods",
-          circleColor: "bg-emerald-500",
-        },
-        {
-          title: "Account Manager",
-          url: "/admin/dashboard/account-manager",
-          circleColor: "bg-yellow-500",
-        },
+       
         {
           title: "Login Media",
           url: "/admin/login-media",
