@@ -20,6 +20,9 @@ interface JobRow {
   pod?: { id: string; name: string } | null;
   pods?: Array<{ id: string; name: string }>;
   podIds?: string[];
+  positions?: number;
+  submissionRequired?: number;
+  submissionDone?: number;
 }
 
 interface PodMember {
@@ -37,7 +40,12 @@ interface PodRow {
   _count?: {
     jobs?: number;
   };
+  createdAt?: string;
   updatedAt?: string;
+  totalPositions?: number;
+  submissionRequired?: number;
+  submissionDone?: number;
+  submissionRate?: number;
 }
 
 async function getJobs(): Promise<JobRow[]> {
@@ -82,7 +90,7 @@ export default async function AdminPodsDashboardPage() {
 
   const norm = (value?: string) => (value || "").trim().toUpperCase();
   const podIdSet = new Set(pods.map((pod) => pod.id));
-  const podBuckets = new Map<string, { total: number; active: number; filled: number }>();
+  const podBuckets = new Map<string, { total: number; active: number; filled: number; positions: number; subReq: number; subDone: number }>();
 
   for (const job of jobs) {
     const linkedPods = new Map<string, string>();
@@ -105,10 +113,13 @@ export default async function AdminPodsDashboardPage() {
 
     linkedPods.forEach((podName, podId) => {
       if (!podIdSet.has(podId)) return;
-      const current = podBuckets.get(podName) || { total: 0, active: 0, filled: 0 };
+      const current = podBuckets.get(podName) || { total: 0, active: 0, filled: 0, positions: 0, subReq: 0, subDone: 0 };
       current.total += 1;
       if (norm(job.status) === "ACTIVE") current.active += 1;
       if (norm(job.status) === "FILLED") current.filled += 1;
+      current.positions += (job.positions || 1);
+      current.subReq += (job.submissionRequired || 0);
+      current.subDone += (job.submissionDone || 0);
       podBuckets.set(podName, current);
     });
   }
@@ -209,8 +220,15 @@ export default async function AdminPodsDashboardPage() {
       },
       createdAt: "",
       updatedAt: pod.updatedAt || new Date(0).toISOString(),
+      totalPositions: podBuckets.get(pod.name || "Unnamed Pod")?.positions || 0,
+      submissionRequired: podBuckets.get(pod.name || "Unnamed Pod")?.subReq || 0,
+      submissionDone: podBuckets.get(pod.name || "Unnamed Pod")?.subDone || 0,
+      submissionRate: Math.round(
+        ((podBuckets.get(pod.name || "Unnamed Pod")?.subDone || 0) /
+          (podBuckets.get(pod.name || "Unnamed Pod")?.subReq || 1)) * 100
+      ),
     }))
-    .sort((a, b) => (b.jobs?.length || 0) - (a.jobs?.length || 0) || a.name.localeCompare(b.name));
+    .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
 
   const topPods = podsForTable.slice(0, 6);
   const categories = topPods.map((pod) => pod.name);
@@ -254,6 +272,7 @@ export default async function AdminPodsDashboardPage() {
             <h6 className="font-semibold text-lg text-neutral-900 dark:text-white mb-4">All Pods</h6>
             <PodsTable
               pods={podsForTable}
+              jobs={jobs}
               showActions={false}
               basePath="/admin/dashboard/pods"
               showSorting={true}
