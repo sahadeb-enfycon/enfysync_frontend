@@ -4,6 +4,7 @@ import ProfileDropdown from '../shared/profile-dropdown';
 import { SidebarTrigger } from '../ui/sidebar';
 import NotificationDropdown from './../shared/notification-dropdown';
 import EstOfficeClock from '../shared/est-office-clock';
+import ChatDrawer from '../chat/ChatDrawer';
 
 const Header = () => {
     return (
@@ -14,7 +15,9 @@ const Header = () => {
             <div className="flex items-center gap-3">
                 <EstOfficeClock />
                 <ModeToggle />
-                {/* <MessageDropdown /> */}
+                <ChatDrawer />
+                <MessageDropdown />
+                <NotificationDropdown />
 
                 <ProfileDropdown />
             </div>

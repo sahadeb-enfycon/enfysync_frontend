@@ -8,6 +8,10 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { ReactNode } from "react";
 import { Toaster } from "react-hot-toast";
+import { SocketProvider } from "@/contexts/SocketContext";
+import { NotificationProvider } from "@/contexts/NotificationContext";
+import { ChatProvider } from "@/contexts/ChatContext";
+import NotificationListener from "@/components/realtime/NotificationListener";
 
 export function ClientRoot({
   defaultOpen,
@@ -23,20 +27,27 @@ export function ClientRoot({
       enableSystem
       disableTransitionOnChange
     >
-      <SidebarProvider defaultOpen={defaultOpen}>
-        <AppSidebar />
-        <main className="dashboard-body-wrapper grow-[1] min-w-0 overflow-x-clip flex flex-col">
-          <SidebarInset>
-            <Header />
-          </SidebarInset>
-          <div className="dashboard-body bg-neutral-100 dark:bg-[#1e2734] md:p-6 p-4 flex-1 min-w-0 overflow-x-clip">
-            {children}
-          </div>
-          <Footer />
-        </main>
-        <ThemeCustomizer />
-        <Toaster position="top-center" reverseOrder={false} />
-      </SidebarProvider>
+      <SocketProvider>
+        <NotificationProvider>
+          <ChatProvider>
+            <SidebarProvider defaultOpen={defaultOpen}>
+              <NotificationListener />
+              <AppSidebar />
+              <main className="dashboard-body-wrapper grow-[1] min-w-0 overflow-x-clip flex flex-col">
+                <SidebarInset>
+                  <Header />
+                </SidebarInset>
+                <div className="dashboard-body bg-neutral-100 dark:bg-[#1e2734] md:p-6 p-4 flex-1 min-w-0 overflow-x-clip">
+                  {children}
+                </div>
+                <Footer />
+              </main>
+              <ThemeCustomizer />
+              <Toaster position="top-center" reverseOrder={false} />
+            </SidebarProvider>
+          </ChatProvider>
+        </NotificationProvider>
+      </SocketProvider>
     </ThemeProvider>
   );
 }

@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 
 async function getJobs() {
   try {
-    const response = await serverApiClient("/jobs", {
+    const response = await serverApiClient(`/jobs?_t=${Date.now()}`, {
       cache: "no-store",
     });
 

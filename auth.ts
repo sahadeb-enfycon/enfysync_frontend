@@ -8,6 +8,7 @@ declare module "next-auth" {
   interface Session {
     user: {
       id: string
+      keycloakId: string
       roles: string[]
       accessToken: string
       refreshToken: string
@@ -28,6 +29,7 @@ declare module "next-auth/jwt" {
     roles: string[]
     podName?: string | null
     id: string
+    keycloakId: string
     name?: string | null
     email?: string | null
     image?: string | null
@@ -218,6 +220,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           roles: (user as any).roles || [],
           podName: (user as any).podName || (user as any).pod?.name || null,
           id: user.id as string,
+          keycloakId: (user as any).keycloakId as string,
           name: user.name || (user as any).fullName,
           email: user.email,
           image: user.image || (user as any).picture,
@@ -348,6 +351,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async session({ session, token }) {
       if (token) {
         session.user.id = token.id
+        session.user.keycloakId = token.keycloakId
         session.user.roles = token.roles
         session.user.accessToken = token.accessToken
         session.user.refreshToken = token.refreshToken

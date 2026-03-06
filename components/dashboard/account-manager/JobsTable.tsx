@@ -212,6 +212,7 @@ export default function JobsTable({
     showCfrExtend = false,
     onRefresh
 }: JobsTableProps) {
+    console.log("[JobsTable] Rendered with", jobsProp?.length, "jobs");
     const jobs: Job[] = Array.isArray(jobsProp) ? jobsProp : [];
     const { data: session } = useSession();
     const router = useRouter();
