@@ -180,7 +180,7 @@ function JobStatusSelect({ job, onRefresh }: { job: Job; onRefresh?: () => void 
             <SelectTrigger className="h-7 w-[100px] px-2 py-0 border-0 focus:ring-0 bg-transparent flex justify-center shadow-none hover:bg-neutral-100 dark:hover:bg-slate-800 transition-colors rounded-full relative group">
                 <Badge
                     variant={currentConfig.variant as any}
-                    className="font-semibold px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wider absolute "
+                    className="font-semibold px-2 py-0.5 rounded-full text-[11px] uppercase tracking-wider absolute "
                 >
                     {currentConfig.label}
                 </Badge>
@@ -190,7 +190,7 @@ function JobStatusSelect({ job, onRefresh }: { job: Job; onRefresh?: () => void 
                     <SelectItem key={key} value={key} className="text-xs">
                         <Badge
                             variant={config.variant as any}
-                            className="font-semibold px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wider"
+                            className="font-semibold px-2 py-0.5 rounded-full text-[11px] uppercase tracking-wider"
                         >
                             {config.label}
                         </Badge>
@@ -830,18 +830,18 @@ export default function JobsTable({
                                                             <div className="flex items-center gap-1 flex-wrap">
                                                                 <span className="font-medium capitalize">{job.jobTitle.toLowerCase()}</span>
                                                                 {job.requirementType === "NEW" && (
-                                                                    <span className="text-[6px] font-bold uppercase tracking-widest px-1 py-0.5 rounded border bg-emerald-50 text-emerald-600 border-emerald-200">New</span>
+                                                                    <span className="text-[8px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded border bg-emerald-50 text-emerald-600 border-emerald-200">New</span>
                                                                 )}
                                                                 {job.requirementType === "CFR" && (
-                                                                    <span className="text-[6px] font-bold uppercase tracking-widest px-1 py-0.5 rounded border bg-rose-50 text-rose-600 border-rose-200">CFR</span>
+                                                                    <span className="text-[8px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded border bg-rose-50 text-rose-600 border-rose-200">CFR</span>
                                                                 )}
                                                                 {job.requirementType === "CFR_EXTENDED" && (
-                                                                    <span className="text-[6px] font-bold uppercase tracking-widest px-1 py-0.5 rounded border bg-amber-50 text-amber-600 border-amber-200">
+                                                                    <span className="text-[8px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded border bg-amber-50 text-amber-600 border-amber-200">
                                                                         CFR Ext {job.cfrDaysRemaining !== undefined ? `· ${job.cfrDaysRemaining}d left` : ""}
                                                                     </span>
                                                                 )}
                                                                 {job.urgency && (
-                                                                    <span className={`text-[6px] font-bold uppercase tracking-widest px-1 py-0.5 rounded border ${job.urgency === "HOT" ? "bg-red-50 text-red-600 border-red-200" :
+                                                                    <span className={`text-[8px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded border ${job.urgency === "HOT" ? "bg-red-50 text-red-600 border-red-200" :
                                                                         job.urgency === "WARM" ? "bg-amber-50 text-amber-600 border-amber-200" :
                                                                             "bg-blue-50 text-blue-600 border-blue-200"
                                                                         }`}>{job.urgency}</span>
@@ -923,7 +923,7 @@ export default function JobsTable({
                                                             placeholder="Select visa type(s)"
                                                         />
                                                     ) : (
-                                                        <Badge variant="outline" className="text-[7px] px-1.5 py-0">{formatVisaType(job.visaType)}</Badge>
+                                                        <Badge variant="outline" className="text-[8px] px-1.5 py-0">{formatVisaType(job.visaType)}</Badge>
                                                     )}
                                                 </TableCell>
                                                 {/* Client */}
@@ -951,7 +951,7 @@ export default function JobsTable({
                                                     ) : (
                                                         <div className="flex flex-col items-center gap-0.5">
                                                             <span className="font-medium text-sm">{job.submissionDone ?? 0} / {job.submissionRequired ?? 0}</span>
-                                                            <span className="text-[8px] text-muted-foreground">done / req</span>
+                                                            <span className="text-[9px] text-muted-foreground">done / req</span>
                                                         </div>
                                                     )}
                                                 </TableCell>
@@ -960,16 +960,16 @@ export default function JobsTable({
                                                 <TableCell className="py-2 px-4 border-b border-r border-neutral-200 dark:border-slate-600 text-start">
                                                     <div className="flex flex-col gap-1">
                                                         {job.requirementType === "NEW" && (
-                                                            <span className="text-[6px] font-bold uppercase tracking-widest px-1 py-0.5 rounded border w-fit bg-emerald-50 text-emerald-700 border-emerald-200">New</span>
+                                                            <span className="text-[8px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded border w-fit bg-emerald-50 text-emerald-700 border-emerald-200">New</span>
                                                         )}
                                                         {job.requirementType === "CFR" && (
                                                             <div className="flex flex-col gap-1">
-                                                                <span className="text-[6px] font-bold uppercase tracking-widest px-1 py-0.5 rounded border w-fit bg-red-50 text-red-700 border-red-200">Carry Forward</span>
+                                                                <span className="text-[8px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded border w-fit bg-red-50 text-red-700 border-red-200">Carry Forward</span>
                                                                 {showCfrExtend && <CfrExtendButton jobId={job.id} onSuccess={onRefresh} />}
                                                             </div>
                                                         )}
                                                         {job.requirementType === "CFR_EXTENDED" && (
-                                                            <span className="text-[6px] font-bold uppercase tracking-widest px-1 py-0.5 rounded border w-fit bg-amber-50 text-amber-700 border-amber-200 whitespace-nowrap">
+                                                            <span className="text-[8px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded border w-fit bg-amber-50 text-amber-700 border-amber-200 whitespace-nowrap">
                                                                 CFR Ext · {job.cfrDaysRemaining ?? 0}d left
                                                             </span>
                                                         )}

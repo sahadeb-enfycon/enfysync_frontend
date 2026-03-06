@@ -536,7 +536,7 @@ export default function RecruiterJobsTable({
                                                 <TableRow className="bg-emerald-100/10 dark:bg-emerald-900/5 hover:bg-emerald-100/10 dark:hover:bg-emerald-900/5 border-0">
                                                     <TableCell colSpan={8} className="py-1 px-0 border-b border-emerald-50 dark:border-emerald-900/20 text-start">
                                                         <div className="sticky left-0 px-6 w-max">
-                                                            <span className="text-[10px] font-bold text-emerald-600/80 dark:text-emerald-500/80 uppercase tracking-widest italic">New Requirements</span>
+                                                            <span className="text-[11px] font-bold text-emerald-600/80 dark:text-emerald-500/80 uppercase tracking-widest italic">New Requirements</span>
                                                         </div>
                                                     </TableCell>
                                                 </TableRow>
@@ -545,7 +545,7 @@ export default function RecruiterJobsTable({
                                                 <TableRow className="bg-amber-100/10 dark:bg-amber-900/5 hover:bg-amber-100/10 dark:hover:bg-amber-900/5 border-0">
                                                     <TableCell colSpan={8} className="py-1 px-0 border-b border-amber-50 dark:border-amber-900/20 text-start">
                                                         <div className="sticky left-0 px-6 w-max">
-                                                            <span className="text-[10px] font-bold text-amber-600/80 dark:text-amber-500/80 uppercase tracking-widest italic">Requirement Extensions (CFR)</span>
+                                                            <span className="text-[11px] font-bold text-amber-600/80 dark:text-amber-500/80 uppercase tracking-widest italic">Requirement Extensions (CFR)</span>
                                                         </div>
                                                     </TableCell>
                                                 </TableRow>
@@ -570,7 +570,7 @@ export default function RecruiterJobsTable({
                                                     <code className="inline-block bg-neutral-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-xs font-mono whitespace-nowrap">{job.jobCode}</code>
                                                     {job.submissionRequired !== undefined && (
                                                         <div className="mt-1">
-                                                            <Badge variant="outline" className="text-[7px] h-4 px-1 bg-neutral-50 dark:bg-slate-800 text-neutral-500 whitespace-nowrap">
+                                                            <Badge variant="outline" className="text-[8px] h-4 px-1.5 bg-neutral-50 dark:bg-slate-800 text-neutral-500 whitespace-nowrap">
                                                                 {job.submissionDone || 0} / {job.submissionRequired} done
                                                             </Badge>
                                                         </div>
@@ -582,17 +582,17 @@ export default function RecruiterJobsTable({
                                                         <span className="font-medium capitalize">{job.jobTitle.toLowerCase()}</span>
                                                         <div className="flex items-center gap-1 flex-wrap mt-0.5">
                                                             {job.requirementType === "NEW" && (
-                                                                <span className="text-[6px] font-bold uppercase tracking-widest px-1 py-0.5 rounded border bg-emerald-50 text-emerald-600 border-emerald-200">New</span>
+                                                                <span className="text-[8px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded border bg-emerald-50 text-emerald-600 border-emerald-200">New</span>
                                                             )}
                                                             {job.requirementType === "CFR" && (
-                                                                <span className="text-[6px] font-bold uppercase tracking-widest px-1 py-0.5 rounded border bg-rose-50 text-rose-600 border-rose-200">CFR</span>
+                                                                <span className="text-[8px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded border bg-rose-50 text-rose-600 border-rose-200">CFR</span>
                                                             )}
                                                             {job.requirementType === "CFR_EXTENDED" && (
-                                                                <span className="text-[6px] font-bold uppercase tracking-widest px-1 py-0.5 rounded border bg-amber-50 text-amber-600 border-amber-200">
+                                                                <span className="text-[8px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded border bg-amber-50 text-amber-600 border-amber-200">
                                                                     CFR Ext {job.cfrDaysRemaining !== undefined ? `· ${job.cfrDaysRemaining}d left` : ""}
                                                                 </span>
                                                             )}
-                                                            <Badge variant={status.variant as any} className="font-semibold px-1 py-0 rounded text-[6px] uppercase tracking-widest h-auto min-h-0">
+                                                            <Badge variant={status.variant as any} className="font-semibold px-2 py-0.5 rounded text-[9px] uppercase tracking-widest h-auto min-h-0">
                                                                 {status.label}
                                                             </Badge>
                                                         </div>

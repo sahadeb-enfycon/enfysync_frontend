@@ -216,13 +216,13 @@ const RecruiterPerformanceTable = ({ jobs }: RecruiterPerformanceTableProps) => 
                                     <TableCell className="px-6 py-4 border-r border-neutral-100 dark:border-slate-700/50">
                                         <div className="flex items-center gap-4">
                                             <Avatar className="h-10 w-10 ring-2 ring-primary/10 transition-transform hover:scale-105">
-                                                <AvatarFallback className="bg-gradient-to-br from-amber-500/20 to-orange-500/20 text-orange-600 text-sm font-black border border-orange-500/20">
+                                                <AvatarFallback className="bg-gradient-to-br from-amber-500/20 to-orange-500/20 text-orange-600 dark:text-orange-400 text-sm font-black border border-orange-500/20">
                                                     {getInitials(recruiter.name)}
                                                 </AvatarFallback>
                                             </Avatar>
                                             <div className="flex flex-col">
                                                 <span className="font-semibold text-neutral-800 dark:text-neutral-100 text-[15px]">{recruiter.name}</span>
-                                                <span className="text-[11px] font-medium text-neutral-400 uppercase tracking-tighter">Assigned Recruiter</span>
+                                                <span className="text-[11px] font-medium text-neutral-400 uppercase tracking-tight">Assigned Recruiter</span>
                                             </div>
                                         </div>
                                     </TableCell>

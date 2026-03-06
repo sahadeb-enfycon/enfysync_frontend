@@ -328,7 +328,7 @@ const PipelineProgress = ({ sub }: { sub: CandidateSubmission }) => {
                     <div key={idx} className="flex items-center">
                         <div className="flex flex-col items-center gap-1 group relative">
                             <div className={cn("w-3 h-3 rounded-full border", circleColor)} title={`${stage.label}: ${stage.status || 'Pending'}`} />
-                            <span className={cn("text-[10px]", textColor)}>{stage.label}</span>
+                            <span className={cn("text-[11px]", textColor)}>{stage.label}</span>
                         </div>
                         {idx < stages.length - 1 && (
                             <div className={cn("w-6 h-px mb-4", (s === "CLEARED") ? "bg-green-500" : "bg-gray-200")} />
@@ -766,7 +766,7 @@ export default function SubmittedJobsTable({
                                                                     {sub.job?.jobCode || "N/A"}
                                                                 </span>
                                                                 {(sub.job?.submissionRequired !== undefined || submissionCountsByJob[sub.jobId]) && (
-                                                                    <span className="bg-gray-100 text-gray-600 text-[10px] font-medium px-2 py-0.5 rounded-full whitespace-nowrap">
+                                                                    <span className="bg-gray-100 text-gray-600 text-[11px] font-medium px-2 py-0.5 rounded-full whitespace-nowrap">
                                                                         {sub.job?.submissionRequired !== undefined
                                                                             ? `${sub.job?.submissionDone || 0}/${sub.job.submissionRequired}`
                                                                             : `${submissionCountsByJob[sub.jobId]}`}
