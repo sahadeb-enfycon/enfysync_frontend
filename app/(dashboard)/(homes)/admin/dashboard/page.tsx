@@ -15,6 +15,8 @@ import { auth } from "@/auth";
 import { getGreeting } from "@/lib/utils";
 import { serverApiClient } from "@/lib/serverApiClient";
 import ManagerPerformanceTable from "./components/manager-performance-table";
+import PodPerformanceTable from "./components/pod-performance-table";
+import RecruiterPerformanceTable from "./components/recruiter-performance-table";
 
 export const metadata: Metadata = {
   title: "Admin Dashboard | enfySync",
@@ -39,6 +41,7 @@ interface JobRow {
   createdAt: string;
   updatedAt: string;
   noOfPositions?: number;
+  positions?: number;
 }
 
 interface SubmissionRow {
@@ -189,6 +192,18 @@ export default async function DashboardPage() {
         <div className="xl:col-span-12">
           <Suspense fallback={<LoadingSkeleton />}>
             <ManagerPerformanceTable jobs={jobs} />
+          </Suspense>
+        </div>
+
+        <div className="xl:col-span-12">
+          <Suspense fallback={<LoadingSkeleton />}>
+            <PodPerformanceTable jobs={jobs} />
+          </Suspense>
+        </div>
+
+        <div className="xl:col-span-12">
+          <Suspense fallback={<LoadingSkeleton />}>
+            <RecruiterPerformanceTable jobs={jobs} />
           </Suspense>
         </div>
 
