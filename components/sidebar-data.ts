@@ -19,6 +19,11 @@ export const getSidebarData = (role: string) => {
       isActive: true,
       items: [
         {
+          title: "Home",
+          url: "/admin/dashboard",
+          icon: House,
+        },
+        {
           title: "All Jobs",
           url: "/admin/dashboard/jobs",
           icon: BriefcaseBusiness,
@@ -180,22 +185,6 @@ export const getSidebarData = (role: string) => {
         },
       ],
     },
-    // {
-    //   label: "Job Management",
-    // },
-    // {
-    //   title: "Jobs",
-    //   url: "#",
-    //   icon: BriefcaseBusiness,
-    //   isActive: true,
-    //   items: [
-    //     {
-    //       title: "Available Jobs",
-    //       url: "/recruiter/dashboard/jobs",
-    //       circleColor: "bg-cyan-500",
-    //     },
-    //   ],
-    // },
   ];
 
   const podLeadNav = [
@@ -250,7 +239,6 @@ export const getSidebarData = (role: string) => {
     },
   ];
 
-  // Map roles to their specific navigation
   const roleUpper = role ? role.toUpperCase() : "";
 
   if (roleUpper === "ADMIN") {

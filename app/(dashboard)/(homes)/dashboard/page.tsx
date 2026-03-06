@@ -15,7 +15,7 @@ export default async function DashboardRedirect() {
     const normalizedRoles = roles.map((r: string) => r.toUpperCase());
 
     if (normalizedRoles.includes("ADMIN")) {
-        redirect("/admin/dashboard/jobs");
+        redirect("/admin/dashboard");
     } else if (normalizedRoles.includes("DELIVERY_HEAD") || normalizedRoles.includes("DELIVERY-HEAD")) {
         redirect("/delivery-head/dashboard");
     } else if (normalizedRoles.includes("POD_LEAD") || normalizedRoles.includes("POD-LEAD")) {
