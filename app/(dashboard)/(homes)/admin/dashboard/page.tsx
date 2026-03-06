@@ -15,7 +15,6 @@ import { auth } from "@/auth";
 import { getGreeting } from "@/lib/utils";
 import { serverApiClient } from "@/lib/serverApiClient";
 import ManagerPerformanceTable from "./components/manager-performance-table";
-import PodPerformanceTable from "./components/pod-performance-table";
 
 export const metadata: Metadata = {
   title: "Admin Dashboard | enfySync",
@@ -192,12 +191,6 @@ export default async function DashboardPage() {
             <ManagerPerformanceTable jobs={jobs} />
           </Suspense>
         </div>
-
-        {/* <div className="xl:col-span-12">
-          <Suspense fallback={<LoadingSkeleton />}>
-            <PodPerformanceTable jobs={jobs} />
-          </Suspense>
-        </div> */}
 
         <div className="xl:col-span-12 2xl:col-span-6">
           <Suspense fallback={<LoadingSkeleton />}>
