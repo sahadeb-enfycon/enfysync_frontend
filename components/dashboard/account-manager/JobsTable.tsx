@@ -515,6 +515,16 @@ export default function JobsTable({
                             <TableHead className="bg-slate-100/80 dark:bg-slate-700/90 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-start min-w-[220px]">
                                 Job Title
                             </TableHead>
+                            {showPod && (
+                                <TableHead className="bg-slate-100/80 dark:bg-slate-700/90 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-start">
+                                    Assigned Pods
+                                </TableHead>
+                            )}
+                            {showAccountManager && (
+                                <TableHead className="bg-slate-100/80 dark:bg-slate-700/90 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-start">
+                                    Account Manager
+                                </TableHead>
+                            )}
                             <TableHead className="bg-slate-100/80 dark:bg-slate-700/90 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-start">
                                 Type / Location
                             </TableHead>
@@ -543,16 +553,6 @@ export default function JobsTable({
                             <TableHead className="bg-slate-100/80 dark:bg-slate-700/90 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-start">
                                 Rates
                             </TableHead>
-                            {showAccountManager && (
-                                <TableHead className="bg-slate-100/80 dark:bg-slate-700/90 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-start">
-                                    Account Manager
-                                </TableHead>
-                            )}
-                            {showPod && (
-                                <TableHead className="bg-slate-100/80 dark:bg-slate-700/90 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-start">
-                                    Assigned Pod
-                                </TableHead>
-                            )}
                             <TableHead className="bg-slate-100/80 dark:bg-slate-700/90 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-start">
                                 Created Date
                             </TableHead>
@@ -626,6 +626,43 @@ export default function JobsTable({
                                                     </div>
                                                 )}
                                         </TableCell>
+                                        {/* Pod */}
+                                        {showPod && (
+                                            <TableCell className="py-2 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
+                                                {(() => {
+                                                    const resolvedAssignedPods =
+                                                        job.pods && job.pods.length > 0
+                                                            ? job.pods
+                                                            : job.podIds && job.podIds.length > 0 && availablePods.length > 0
+                                                                ? (job.podIds.map(id => availablePods.find(p => p.id === id)).filter(Boolean) as { id: string; name: string }[])
+                                                                : job.pod ? [job.pod] : [];
+
+                                                    const myPodIds = new Set(availablePods.map(p => p.id));
+                                                    const ownsAllAssignedPods = resolvedAssignedPods.every((p) => myPodIds.has(p.id));
+                                                    const canEdit = isAdmin || (canEditByRole && ownsAllAssignedPods);
+
+                                                    return (
+                                                        <PodAssignCell
+                                                            jobId={job.id}
+                                                            assignedPods={resolvedAssignedPods}
+                                                            assignedRecruiters={job.assignedRecruiters}
+                                                            availablePods={availablePods}
+                                                            canEdit={canEdit}
+                                                            onSuccess={() => { if (onRefresh) onRefresh(); else router.refresh(); }}
+                                                        />
+                                                    );
+                                                })()}
+                                            </TableCell>
+                                        )}
+                                        {/* Account Manager */}
+                                        {showAccountManager && (
+                                            <TableCell className="py-2 px-4 border-b border-neutral-200 dark:border-slate-600 text-start whitespace-nowrap">
+                                                <div className="flex flex-col">
+                                                    <span className="font-medium text-sm">{job.accountManager?.fullName || "N/A"}</span>
+                                                    <span className="text-[10px] text-muted-foreground">{job.accountManager?.email}</span>
+                                                </div>
+                                            </TableCell>
+                                        )}
                                         {/* Type / Location */}
                                         <TableCell className="py-2 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
                                             {isEditing ? (
@@ -732,43 +769,6 @@ export default function JobsTable({
                                                 </div>
                                             )}
                                         </TableCell>
-                                        {/* Account Manager */}
-                                        {showAccountManager && (
-                                            <TableCell className="py-2 px-4 border-b border-neutral-200 dark:border-slate-600 text-start whitespace-nowrap">
-                                                <div className="flex flex-col">
-                                                    <span className="font-medium text-sm">{job.accountManager?.fullName || "N/A"}</span>
-                                                    <span className="text-[10px] text-muted-foreground">{job.accountManager?.email}</span>
-                                                </div>
-                                            </TableCell>
-                                        )}
-                                        {/* Pod */}
-                                        {showPod && (
-                                            <TableCell className="py-2 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
-                                                {(() => {
-                                                    const resolvedAssignedPods =
-                                                        job.pods && job.pods.length > 0
-                                                            ? job.pods
-                                                            : job.podIds && job.podIds.length > 0 && availablePods.length > 0
-                                                                ? (job.podIds.map(id => availablePods.find(p => p.id === id)).filter(Boolean) as { id: string; name: string }[])
-                                                                : job.pod ? [job.pod] : [];
-
-                                                    const myPodIds = new Set(availablePods.map(p => p.id));
-                                                    const ownsAllAssignedPods = resolvedAssignedPods.every((p) => myPodIds.has(p.id));
-                                                    const canEdit = isAdmin || (canEditByRole && ownsAllAssignedPods);
-
-                                                    return (
-                                                        <PodAssignCell
-                                                            jobId={job.id}
-                                                            assignedPods={resolvedAssignedPods}
-                                                            assignedRecruiters={job.assignedRecruiters}
-                                                            availablePods={availablePods}
-                                                            canEdit={canEdit}
-                                                            onSuccess={() => { if (onRefresh) onRefresh(); else router.refresh(); }}
-                                                        />
-                                                    );
-                                                })()}
-                                            </TableCell>
-                                        )}
                                         {/* Created Date */}
                                         <TableCell className="py-2 px-4 border-b border-neutral-200 dark:border-slate-600 text-start whitespace-nowrap">
                                             {showEstCreatedDateTime ? (
