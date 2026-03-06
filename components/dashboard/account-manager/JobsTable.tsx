@@ -929,8 +929,10 @@ export default function JobsTable({
                                                     </div>
                                                 </TableCell>
                                                 {/* Status */}
-                                                <TableCell className="py-2 px-4 border-b border-neutral-200 dark:border-slate-600 text-center flex justify-center">
-                                                    <JobStatusSelect job={job} onRefresh={onRefresh} />
+                                                <TableCell className="py-2 px-4 border-b border-neutral-200 dark:border-slate-600 text-center">
+                                                    <div className="flex justify-center">
+                                                        <JobStatusSelect job={job} onRefresh={onRefresh} />
+                                                    </div>
                                                 </TableCell>
                                                 {/* Actions */}
                                                 {showActions && (

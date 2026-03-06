@@ -99,6 +99,7 @@ const ManagerPerformanceTable = ({ jobs }: ManagerPerformanceTableProps) => {
                     newReq: 0,
                     cfr: 0,
                     totalJobs: 0,
+                    totalPositions: 0,
                     submissionDone: 0,
                     submissionRequired: 0,
                     totalSubmissions: 0,
@@ -111,6 +112,7 @@ const ManagerPerformanceTable = ({ jobs }: ManagerPerformanceTableProps) => {
             if (isInRange) {
                 m.newReq += 1;
                 m.totalJobs += 1;
+                m.totalPositions += job.positions || 1; // Default to 1 if not specified
                 if (job.requirementType === "CFR" || job.requirementType === "CFR_EXTENDED") {
                     m.cfr += 1;
                 }
@@ -146,6 +148,7 @@ const ManagerPerformanceTable = ({ jobs }: ManagerPerformanceTableProps) => {
             acc.newReq += current.newReq;
             acc.cfr += current.cfr;
             acc.totalJobs += current.totalJobs;
+            acc.totalPositions += current.totalPositions;
             acc.submissionDone += current.submissionDone;
             acc.submissionRequired += current.submissionRequired;
             acc.totalSubmissions += current.totalSubmissions;
@@ -155,6 +158,7 @@ const ManagerPerformanceTable = ({ jobs }: ManagerPerformanceTableProps) => {
             newReq: 0,
             cfr: 0,
             totalJobs: 0,
+            totalPositions: 0,
             submissionDone: 0,
             submissionRequired: 0,
             totalSubmissions: 0,
@@ -193,21 +197,22 @@ const ManagerPerformanceTable = ({ jobs }: ManagerPerformanceTableProps) => {
                     <Table>
                         <TableHeader>
                             <TableRow className="bg-neutral-100/50 dark:bg-slate-700/50 border-y border-neutral-200 dark:border-slate-600">
-                                <TableHead className="px-6 py-4 font-bold text-neutral-700 dark:text-neutral-200 uppercase text-xs tracking-wider">Sales Manager</TableHead>
-                                <TableHead className="px-4 py-4 font-bold text-neutral-700 dark:text-neutral-200 uppercase text-xs tracking-wider text-center">New Req</TableHead>
-                                <TableHead className="px-4 py-4 font-bold text-neutral-700 dark:text-neutral-200 uppercase text-xs tracking-wider text-center">CFR</TableHead>
-                                <TableHead className="px-4 py-4 font-bold text-neutral-700 dark:text-neutral-200 uppercase text-xs tracking-wider text-center">Total Jobs</TableHead>
-                                  <TableHead className="px-4 py-4 font-bold text-neutral-700 dark:text-neutral-200 uppercase text-xs tracking-wider text-center">Sub Required</TableHead>
-                                <TableHead className="px-4 py-4 font-bold text-neutral-700 dark:text-neutral-200 uppercase text-xs tracking-wider text-center"> Submissions Done</TableHead>
-                              
-                                <TableHead className="px-4 py-4 font-bold text-neutral-700 dark:text-neutral-200 uppercase text-xs tracking-wider text-center">Submission Rate</TableHead>
+                                <TableHead className="px-6 py-4 font-bold text-neutral-700 dark:text-neutral-200 uppercase text-xs tracking-wider border-r border-neutral-200 dark:border-slate-600">Sales Manager</TableHead>
+                                <TableHead className="px-4 py-4 font-bold text-neutral-700 dark:text-neutral-200 uppercase text-xs tracking-wider text-center border-r border-neutral-200 dark:border-slate-600">New Req</TableHead>
+                                <TableHead className="px-4 py-4 font-bold text-neutral-700 dark:text-neutral-200 uppercase text-xs tracking-wider text-center border-r border-neutral-200 dark:border-slate-600">CFR</TableHead>
+                                <TableHead className="px-4 py-4 font-bold text-neutral-700 dark:text-neutral-200 uppercase text-xs tracking-wider text-center border-r border-neutral-200 dark:border-slate-600">Total Jobs</TableHead>
+                                <TableHead className="px-4 py-4 font-bold text-neutral-700 dark:text-neutral-200 uppercase text-xs tracking-wider text-center border-r border-neutral-200 dark:border-slate-600">Total Positions</TableHead>
+                                <TableHead className="px-4 py-4 font-bold text-neutral-700 dark:text-neutral-200 uppercase text-xs tracking-wider text-center border-r border-neutral-200 dark:border-slate-600">Sub Required</TableHead>
+                                <TableHead className="px-4 py-4 font-bold text-neutral-700 dark:text-neutral-200 uppercase text-xs tracking-wider text-center border-r border-neutral-200 dark:border-slate-600"> Submissions Done</TableHead>
+
+                                <TableHead className="px-4 py-4 font-bold text-neutral-700 dark:text-neutral-200 uppercase text-xs tracking-wider text-center border-r border-neutral-200 dark:border-slate-600">Submission Rate</TableHead>
                                 <TableHead className="px-6 py-4 font-bold text-neutral-700 dark:text-neutral-200 uppercase text-xs tracking-wider text-center">Closure</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {filteredData.length > 0 ? filteredData.map((manager, index) => (
-                                <TableRow key={index} className="hover:bg-primary/[0.02] dark:hover:bg-primary/[0.05] transition-all duration-200 border-b border-neutral-100 dark:border-slate-700 last:border-0">
-                                    <TableCell className="px-6 py-4">
+                                <TableRow key={index} className="hover:bg-primary/[0.02] dark:hover:bg-primary/[0.05] transition-all duration-200 border-b border-neutral-100 dark:border-slate-700 last:border-0 even:bg-neutral-50/50 dark:even:bg-slate-800/20">
+                                    <TableCell className="px-6 py-4 border-r border-neutral-100 dark:border-slate-700/50">
                                         <div className="flex items-center gap-4">
                                             <Avatar className="h-10 w-10 ring-2 ring-primary/10 transition-transform hover:scale-105">
                                                 <AvatarFallback className="bg-gradient-to-br from-primary/20 to-blue-500/20 text-primary text-sm font-black border border-primary/20">
@@ -220,30 +225,31 @@ const ManagerPerformanceTable = ({ jobs }: ManagerPerformanceTableProps) => {
                                             </div>
                                         </div>
                                     </TableCell>
-                                    <TableCell className="px-4 py-4 text-center">
+                                    <TableCell className="px-4 py-4 text-center border-r border-neutral-100 dark:border-slate-700/50">
                                         <span className="inline-flex items-center justify-center min-w-[32px] h-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-bold text-sm border border-blue-100 dark:border-blue-800/30">
                                             {manager.newReq}
                                         </span>
                                     </TableCell>
-                                    <TableCell className="px-4 py-4 text-center">
+                                    <TableCell className="px-4 py-4 text-center border-r border-neutral-100 dark:border-slate-700/50">
                                         <span className="inline-flex items-center justify-center min-w-[32px] h-8 rounded-lg bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 font-bold text-sm border border-purple-100 dark:border-purple-800/30">
                                             {manager.cfr}
                                         </span>
                                     </TableCell>
-                                    <TableCell className="px-4 py-4 text-center font-bold text-neutral-600 dark:text-neutral-300 text-sm">{manager.totalJobs}</TableCell>
-                                     <TableCell className="px-4 py-4 text-center font-bold text-neutral-600 dark:text-neutral-300 text-sm">
+                                    <TableCell className="px-4 py-4 text-center font-bold text-neutral-600 dark:text-neutral-300 text-sm border-r border-neutral-100 dark:border-slate-700/50">{manager.totalJobs}</TableCell>
+                                    <TableCell className="px-4 py-4 text-center font-bold text-neutral-600 dark:text-neutral-300 text-sm border-r border-neutral-100 dark:border-slate-700/50">{manager.totalPositions}</TableCell>
+                                    <TableCell className="px-4 py-4 text-center font-bold text-neutral-600 dark:text-neutral-300 text-sm border-r border-neutral-100 dark:border-slate-700/50">
                                         <span className="inline-flex items-center justify-center min-w-[32px] h-8 rounded-lg bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 font-bold text-sm border border-amber-100 dark:border-amber-800/30">
                                             {manager.submissionRequired}
                                         </span>
                                     </TableCell>
-                                   
-                                    <TableCell className="px-4 py-4 text-center font-bold text-neutral-600 dark:text-neutral-300 text-sm">
+
+                                    <TableCell className="px-4 py-4 text-center font-bold text-neutral-600 dark:text-neutral-300 text-sm border-r border-neutral-100 dark:border-slate-700/50">
                                         <span className="inline-flex items-center justify-center min-w-[32px] h-8 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 font-bold text-sm border border-emerald-100 dark:border-emerald-800/30">
                                             {manager.totalSubmissions}
                                         </span>
                                     </TableCell>
-                                  
-                                    <TableCell className="px-4 py-4 text-center">
+
+                                    <TableCell className="px-4 py-4 text-center border-r border-neutral-100 dark:border-slate-700/50">
                                         <div className="flex flex-col items-center gap-2">
                                             <span className={`text-sm font-black ${manager.submissionRate >= 70 ? 'text-emerald-500' : manager.submissionRate >= 40 ? 'text-amber-500' : 'text-rose-500'}`}>
                                                 {manager.submissionRate}%
@@ -264,7 +270,7 @@ const ManagerPerformanceTable = ({ jobs }: ManagerPerformanceTableProps) => {
                                 </TableRow>
                             )) : (
                                 <TableRow>
-                                    <TableCell colSpan={8} className="h-40 text-center">
+                                    <TableCell colSpan={9} className="h-40 text-center">
                                         <div className="flex flex-col items-center justify-center gap-2 text-neutral-400">
                                             <div className="p-3 rounded-full bg-neutral-50 dark:bg-slate-800/50">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
@@ -276,7 +282,7 @@ const ManagerPerformanceTable = ({ jobs }: ManagerPerformanceTableProps) => {
                             )}
                             {filteredData.length > 0 && (
                                 <TableRow className="bg-neutral-50 dark:bg-slate-800/80 font-black border-t-2 border-primary/20">
-                                    <TableCell className="px-6 py-5">
+                                    <TableCell className="px-6 py-5 border-r border-neutral-100 dark:border-slate-700/50">
                                         <div className="flex items-center gap-4">
                                             <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20">
                                                 <span className="text-xs font-black">ALL</span>
@@ -287,28 +293,29 @@ const ManagerPerformanceTable = ({ jobs }: ManagerPerformanceTableProps) => {
                                             </div>
                                         </div>
                                     </TableCell>
-                                    <TableCell className="px-4 py-5 text-center">
+                                    <TableCell className="px-4 py-5 text-center border-r border-neutral-100 dark:border-slate-700/50">
                                         <span className="inline-flex items-center justify-center min-w-[32px] h-8 rounded-lg bg-primary text-white font-black text-sm shadow-md shadow-primary/20">
                                             {totals.newReq}
                                         </span>
                                     </TableCell>
-                                    <TableCell className="px-4 py-5 text-center">
+                                    <TableCell className="px-4 py-5 text-center border-r border-neutral-100 dark:border-slate-700/50">
                                         <span className="inline-flex items-center justify-center min-w-[32px] h-8 rounded-lg bg-purple-600 text-white font-black text-sm shadow-md shadow-purple-500/20">
                                             {totals.cfr}
                                         </span>
                                     </TableCell>
-                                    <TableCell className="px-4 py-5 text-center text-lg text-primary">{totals.totalJobs}</TableCell>
-                                    <TableCell className="px-4 py-5 text-center">
+                                    <TableCell className="px-4 py-5 text-center text-lg text-primary border-r border-neutral-100 dark:border-slate-700/50">{totals.totalJobs}</TableCell>
+                                    <TableCell className="px-4 py-5 text-center text-lg text-primary border-r border-neutral-100 dark:border-slate-700/50">{totals.totalPositions}</TableCell>
+                                    <TableCell className="px-4 py-5 text-center border-r border-neutral-100 dark:border-slate-700/50">
                                         <span className="inline-flex items-center justify-center min-w-[32px] h-8 rounded-lg bg-emerald-600 text-white font-black text-sm shadow-md shadow-emerald-500/20">
                                             {totals.totalSubmissions}
                                         </span>
                                     </TableCell>
-                                    <TableCell className="px-4 py-5 text-center">
+                                    <TableCell className="px-4 py-5 text-center border-r border-neutral-100 dark:border-slate-700/50">
                                         <span className="inline-flex items-center justify-center min-w-[32px] h-8 rounded-lg bg-amber-600 text-white font-black text-sm shadow-md shadow-amber-500/20">
                                             {totals.submissionRequired}
                                         </span>
                                     </TableCell>
-                                    <TableCell className="px-4 py-5 text-center">
+                                    <TableCell className="px-4 py-5 text-center border-r border-neutral-100 dark:border-slate-700/50">
                                         <div className="flex flex-col items-center gap-2">
                                             <span className="text-sm font-black text-primary">
                                                 {totalSubmissionRate}%
