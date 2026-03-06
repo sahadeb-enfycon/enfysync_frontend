@@ -51,8 +51,6 @@ const ProfileDropdown = () => {
   const hasRecruiter = selectedRolesBase.includes("RECRUITER");
   const hasDeliveryHead = selectedRolesBase.includes("DELIVERY_HEAD");
   const hasAccountManager = selectedRolesBase.includes("ACCOUNT_MANAGER");
-  const canSwitchDashboard = hasDeliveryHead && hasAccountManager;
-
   let urlRole = "";
   if (pathname?.startsWith("/account-manager") || pathname?.startsWith("/account_manager")) {
     urlRole = "ACCOUNT_MANAGER";
@@ -71,6 +69,9 @@ const ProfileDropdown = () => {
   // If on the /recruiter/* path but the user also has POD_LEAD, show Pod Lead instead
   const effectiveActiveRole = (activeRole === "RECRUITER" && hasPodLead) ? "POD_LEAD" : activeRole;
 
+  const switchableRoles = uniqueDisplayRoles.filter(role => role !== effectiveActiveRole);
+  const canSwitchDashboard = switchableRoles.length > 0;
+
   const selectedRoles = effectiveActiveRole
     ? [effectiveActiveRole]
     : (hasPodLead && hasRecruiter
@@ -84,33 +85,45 @@ const ProfileDropdown = () => {
       .replace(/\b\w/g, (char: string) => char.toUpperCase())
   );
 
-  const roleColorMap: Record<string, { chip: string; banner: string }> = {
+  const roleConfig: Record<string, { chip: string; banner: string; label: string; path: string; icon: any }> = {
     ADMIN: {
       chip: "text-fuchsia-700 dark:text-fuchsia-200 bg-fuchsia-50/80 dark:bg-fuchsia-950/30 border-fuchsia-100/60 dark:border-fuchsia-900/35",
       banner: "bg-fuchsia-50/90 dark:bg-fuchsia-950/35",
+      label: "Admin",
+      path: "/admin/dashboard",
+      icon: House,
     },
     POD_LEAD: {
-      chip: "text-indigo-700 dark:text-indigo-200 bg-indigo-50/80 dark:bg-indigo-950/30 border-indigo-100/60 dark:border-indigo-900/35",
+      chip: "text-indigo-700 dark:text-indigo-200 bg-indigo-50/80 dark:indigo-950/30 border-indigo-100/60 dark:border-indigo-900/35",
       banner: "bg-indigo-50/90 dark:bg-indigo-950/35",
+      label: "Pod Lead",
+      path: "/pod-lead/dashboard",
+      icon: House,
     },
     ACCOUNT_MANAGER: {
       chip: "text-cyan-700 dark:text-cyan-200 bg-cyan-50/80 dark:bg-cyan-950/30 border-cyan-100/60 dark:border-cyan-900/35",
       banner: "bg-cyan-50/90 dark:bg-cyan-950/35",
+      label: "Account Manager",
+      path: "/account-manager/dashboard",
+      icon: BriefcaseBusiness,
     },
     RECRUITER: {
       chip: "text-emerald-700 dark:text-emerald-200 bg-emerald-50/80 dark:bg-emerald-950/30 border-emerald-100/60 dark:border-emerald-900/35",
       banner: "bg-emerald-50/90 dark:bg-emerald-950/35",
+      label: "Recruiter",
+      path: "/recruiter/dashboard",
+      icon: House,
     },
     DELIVERY_HEAD: {
       chip: "text-amber-700 dark:text-amber-200 bg-amber-50/80 dark:bg-amber-950/30 border-amber-100/60 dark:border-amber-900/35",
       banner: "bg-amber-50/90 dark:bg-amber-950/35",
+      label: "Delivery Head",
+      path: "/delivery-head/dashboard",
+      icon: House,
     },
   };
-  const neutralRoleColors = {
-    chip: "text-slate-700 dark:text-slate-200 bg-slate-50/80 dark:bg-slate-900/30 border-slate-200/60 dark:border-slate-700/35",
-    banner: "bg-slate-50/90 dark:bg-slate-900/35",
-  };
-  const getRoleColors = (role?: string) => (role ? roleColorMap[role] || neutralRoleColors : neutralRoleColors);
+
+  const getRoleColors = (role?: string) => (role ? { chip: roleConfig[role]?.chip || neutralRoleColors.chip, banner: roleConfig[role]?.banner || neutralRoleColors.banner } : neutralRoleColors);
 
   const displayName = session?.user?.name?.trim() || "User";
   const sessionPodName =
@@ -322,22 +335,21 @@ const ProfileDropdown = () => {
                 <li className="pt-1 mt-1 -mb-1">
                   <span className="text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-300">Switch Dashboard</span>
                 </li>
-                <li>
-                  <Link
-                    href="/delivery-head/dashboard"
-                    className="text-black dark:text-white hover:text-primary dark:hover:text-primary flex items-center gap-3 w-full"
-                  >
-                    <House className="w-5 h-5" /> Delivery Head
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/account-manager/dashboard"
-                    className="text-black dark:text-white hover:text-primary dark:hover:text-primary flex items-center gap-3 w-full"
-                  >
-                    <BriefcaseBusiness className="w-5 h-5" /> Account Manager
-                  </Link>
-                </li>
+                {switchableRoles.map((role) => {
+                  const config = roleConfig[role];
+                  if (!config) return null;
+                  const Icon = config.icon;
+                  return (
+                    <li key={role}>
+                      <Link
+                        href={config.path}
+                        className="text-black dark:text-white hover:text-primary dark:hover:text-primary flex items-center gap-3 w-full"
+                      >
+                        <Icon className="w-5 h-5" /> {config.label}
+                      </Link>
+                    </li>
+                  );
+                })}
                 <li className="mb-1 border-b border-neutral-200 dark:border-slate-700"></li>
               </>
             ) : null}

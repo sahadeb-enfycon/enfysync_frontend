@@ -15,6 +15,7 @@ export const dynamic = "force-dynamic";
 interface JobRow {
   id: string;
   status?: string;
+  urgency?: string;
   createdAt?: string;
   pod?: { id: string; name: string } | null;
   pods?: Array<{ id: string; name: string }>;
@@ -119,12 +120,14 @@ export default async function AdminPodsDashboardPage() {
     0
   );
 
-  const blockedJobs = jobs.filter((job) => {
+  const hotRequisitions = jobs.filter((job) => {
     const hasPodLink =
       !!job.pod?.id ||
       (job.pods && job.pods.length > 0) ||
       (job.podIds && job.podIds.length > 0);
-    return hasPodLink && (norm(job.status) === "ON_HOLD" || norm(job.status) === "HOLD_BY_CLIENT");
+    const s = norm(job.status);
+    const u = norm(job.urgency);
+    return hasPodLink && (s === "ACTIVE" || s === "OPEN") && (u === "HOT" || u === "CRITICAL");
   }).length;
   const activeJobs = jobs.filter((job) => {
     const hasPodLink =
@@ -159,15 +162,15 @@ export default async function AdminPodsDashboardPage() {
       description: "Currently active jobs",
     },
     {
-      title: "Blocked Pod Jobs",
-      value: String(blockedJobs),
+      title: "Hot Requisitions",
+      value: String(hotRequisitions),
       icon: "Timer",
-      iconBg: "bg-red-600",
-      gradientFrom: "from-red-600/10",
-      growth: `${blockedJobs}`,
+      iconBg: "bg-orange-600",
+      gradientFrom: "from-orange-600/10",
+      growth: `${hotRequisitions}`,
       growthIcon: "ArrowUp",
-      growthColor: blockedJobs > 0 ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400",
-      description: "On hold by pod/client",
+      growthColor: hotRequisitions > 0 ? "text-orange-600 dark:text-orange-400" : "text-green-600 dark:text-green-400",
+      description: "Hot or Critical requisitions",
     },
     {
       title: "Average Jobs Per Pod",
@@ -249,13 +252,13 @@ export default async function AdminPodsDashboardPage() {
         <Card className="border border-gray-200 dark:border-neutral-700 bg-white dark:bg-slate-800 rounded-md shadow-none">
           <CardContent className="p-6">
             <h6 className="font-semibold text-lg text-neutral-900 dark:text-white mb-4">All Pods</h6>
-           <PodsTable
+            <PodsTable
               pods={podsForTable}
               showActions={false}
               basePath="/admin/dashboard/pods"
               showSorting={true}
             />
-              </CardContent>
+          </CardContent>
         </Card>
 
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
