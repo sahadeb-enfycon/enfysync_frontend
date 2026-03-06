@@ -50,6 +50,7 @@ import { Save, X as XIcon } from "lucide-react";
 import { apiClient } from "@/lib/apiClient";
 import { LocationSelect } from "@/components/shared/location-select";
 import CfrExtendButton from "./CfrExtendButton";
+import { MultiSelect, Option } from "@/components/shared/multi-select";
 
 interface Job {
     id: string;
@@ -112,6 +113,28 @@ const statusMap: Record<string, { label: string; variant: "default" | "secondary
     HOLD_BY_CLIENT: { label: "Hold By Client", variant: "secondary" },
     FILLED: { label: "Filled", variant: "info" },
 };
+
+const visaOptions: Option[] = [
+    { label: "All Visa", value: "ALL_VISA" },
+    { label: "All Visa except H1B", value: "ALL_VISA_EXCEPT_H1B" },
+    { label: "H1B", value: "H1B" },
+    { label: "Green Card (GC)", value: "GC" },
+    { label: "US Citizen", value: "US_CITIZEN" },
+    { label: "OPT/CPT", value: "OPT" },
+    { label: "EAD", value: "EAD" },
+    { label: "TN Visa", value: "TN" },
+];
+
+const parseVisaTypes = (visaType?: string) =>
+    (visaType || "")
+        .split(",")
+        .map((value) => value.trim())
+        .filter(Boolean);
+
+const formatVisaType = (visaType?: string) =>
+    parseVisaTypes(visaType)
+        .map((value) => visaOptions.find((option) => option.value === value)?.label || value.replace(/_/g, " "))
+        .join(", ");
 
 function JobStatusSelect({ job, onRefresh }: { job: Job; onRefresh?: () => void }) {
     const [status, setStatus] = useState(job.status);
@@ -689,14 +712,14 @@ export default function JobsTable({
                                         {/* Visa */}
                                         <TableCell className="py-2 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
                                             {isEditing ? (
-                                                <Select value={editForm.visaType ?? ""} onValueChange={efSel("visaType")}>
-                                                    <SelectTrigger className={selCls}><SelectValue /></SelectTrigger>
-                                                    <SelectContent>
-                                                        {["H1B", "GC", "US_CITIZEN", "OPT", "EAD", "TN"].map(v => <SelectItem key={v} value={v} className="text-xs">{v}</SelectItem>)}
-                                                    </SelectContent>
-                                                </Select>
+                                                <MultiSelect
+                                                    options={visaOptions}
+                                                    selected={parseVisaTypes(editForm.visaType)}
+                                                    onChange={(selected) => setEditForm((prev) => ({ ...prev, visaType: selected.join(",") }))}
+                                                    placeholder="Select visa type(s)"
+                                                />
                                             ) : (
-                                                <Badge variant="outline" className="text-[10px] px-1.5 py-0">{job.visaType}</Badge>
+                                                <Badge variant="outline" className="text-[10px] px-1.5 py-0">{formatVisaType(job.visaType)}</Badge>
                                             )}
                                         </TableCell>
                                         {/* Client */}

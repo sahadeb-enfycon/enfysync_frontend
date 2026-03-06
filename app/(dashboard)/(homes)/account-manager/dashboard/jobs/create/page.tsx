@@ -6,13 +6,7 @@ import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LocationSelect } from "@/components/shared/location-select";
 import { ClientAutocomplete } from "@/components/shared/client-autocomplete";
 import { useSession } from "next-auth/react";
@@ -21,6 +15,18 @@ import { toast } from "react-hot-toast";
 import { apiClient } from "@/lib/apiClient";
 import RichTextEditor from "@/components/shared/rich-text-editor";
 import { sanitizeJobDescriptionHtml } from "@/lib/jd-html";
+import { MultiSelect, Option } from "@/components/shared/multi-select";
+
+const visaOptions: Option[] = [
+    { label: "All Visa", value: "ALL_VISA" },
+    { label: "All Visa except H1B", value: "ALL_VISA_EXCEPT_H1B" },
+    { label: "H1B", value: "H1B" },
+    { label: "Green Card (GC)", value: "GC" },
+    { label: "US Citizen", value: "US_CITIZEN" },
+    { label: "OPT/CPT", value: "OPT" },
+    { label: "EAD", value: "EAD" },
+    { label: "TN Visa", value: "TN" },
+];
 
 export default function AccountManagerCreateJobPage() {
     const { data: session } = useSession();
@@ -28,6 +34,7 @@ export default function AccountManagerCreateJobPage() {
     const [location, setLocation] = useState("remote"); // Default to Remote as per user request example
     const [clientName, setClientName] = useState("");
     const [endClientName, setEndClientName] = useState("");
+    const [selectedVisaTypes, setSelectedVisaTypes] = useState<string[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [descriptionHtml, setDescriptionHtml] = useState("");
 
@@ -57,7 +64,7 @@ export default function AccountManagerCreateJobPage() {
             jobType: data.jobType,
             jobDescription: cleanedDescription,
             jobLocation: data.jobLocation,
-            visaType: data.visaType,
+            visaType: selectedVisaTypes.join(","),
             clientBillRate: data.clientBillRate,
             payRate: data.payRate,
             clientName: data.clientName,
@@ -128,19 +135,13 @@ export default function AccountManagerCreateJobPage() {
 
                             <div>
                                 <Label htmlFor="visaType" className="text-[#4b5563] dark:text-white mb-2">Visa Type *</Label>
-                                <Select name="visaType" required>
-                                    <SelectTrigger className="border border-neutral-300 px-5 dark:border-slate-500 focus:border-primary dark:focus:border-primary focus-visible:border-primary !h-12 rounded-lg !shadow-none !ring-0 w-full bg-transparent text-left">
-                                        <SelectValue placeholder="Select Visa Type" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="H1B">H1B</SelectItem>
-                                        <SelectItem value="GC">Green Card (GC)</SelectItem>
-                                        <SelectItem value="US_CITIZEN">US Citizen</SelectItem>
-                                        <SelectItem value="OPT">OPT/CPT</SelectItem>
-                                        <SelectItem value="EAD">EAD</SelectItem>
-                                        <SelectItem value="TN">TN Visa</SelectItem>
-                                    </SelectContent>
-                                </Select>
+                                <MultiSelect
+                                    options={visaOptions}
+                                    selected={selectedVisaTypes}
+                                    onChange={setSelectedVisaTypes}
+                                    placeholder="Select visa type(s)"
+                                />
+                                <input type="hidden" name="visaType" value={selectedVisaTypes.join(",")} required />
                             </div>
 
                             <div>

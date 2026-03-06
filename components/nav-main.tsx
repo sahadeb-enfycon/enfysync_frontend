@@ -30,10 +30,10 @@ interface SidebarItem {
   items?: {
     title: string;
     url: string;
-    circleColor: string;
+    icon?: LucideIcon;
   }[];
   label?: string;
-};
+}
 
 export function NavMain({ items }: { items: SidebarItem[] }) {
   const pathname = usePathname();
@@ -132,9 +132,11 @@ export function NavMain({ items }: { items: SidebarItem[] }) {
                                 href={subItem.url}
                                 className="flex items-center gap-3.5"
                               >
-                                <span
-                                  className={`w-2 h-2 rounded-[50%] ${subItem.circleColor}`}
-                                ></span>
+                                {subItem.icon ? (
+                                  <subItem.icon className="!w-4 !h-4" />
+                                ) : (
+                                  <span className="w-2 h-2 rounded-[50%] bg-primary"></span>
+                                )}
                                 <span>{subItem.title}</span>
                               </Link>
                             </SidebarMenuSubButton>

@@ -1,18 +1,13 @@
 import {
+  BriefcaseBusiness,
   Boxes,
-  CalendarDays,
   ChartPie,
+  ClipboardList,
   Component,
   House,
-  Mail,
   MessageCircleMore,
-  Server,
-  Settings,
-  ShieldCheck,
   StickyNote,
   UsersRound,
-  BriefcaseBusiness,
-  ClipboardList,
 } from "lucide-react";
 
 export const getSidebarData = (role: string) => {
@@ -26,32 +21,30 @@ export const getSidebarData = (role: string) => {
         {
           title: "All Jobs",
           url: "/admin/dashboard/jobs",
-          circleColor: "bg-primary",
+          icon: BriefcaseBusiness,
         },
-         {
+        {
           title: "Pods",
           url: "/admin/dashboard/pods",
-          circleColor: "bg-emerald-500",
+          icon: Boxes,
         },
-         {
+        {
           title: "Account Manager",
           url: "/admin/dashboard/account-manager",
-          circleColor: "bg-yellow-500",
+          icon: UsersRound,
         },
         {
           title: "Recruiter",
           url: "/admin/dashboard/recruiter",
-          circleColor: "bg-cyan-500",
+          icon: UsersRound,
         },
-       
         {
           title: "Login Media",
           url: "/admin/login-media",
-          circleColor: "bg-blue-500",
+          icon: MessageCircleMore,
         },
       ],
     },
-
   ];
 
   const accountManagerNav = [
@@ -64,27 +57,25 @@ export const getSidebarData = (role: string) => {
         {
           title: "Dashboard Overview",
           url: "/account-manager/dashboard",
-          circleColor: "bg-primary",
+          icon: ChartPie,
         },
         {
           title: "Post a New Job",
           url: "/account-manager/dashboard/jobs/create",
-          circleColor: "bg-primary",
+          icon: StickyNote,
         },
         {
           title: "My Posted Jobs",
           url: "/account-manager/dashboard/jobs",
-          circleColor: "bg-cyan-500",
+          icon: BriefcaseBusiness,
         },
         {
           title: "Submitted Jobs",
           url: "/account-manager/dashboard/jobs-submitted",
-          circleColor: "bg-purple-500",
+          icon: ClipboardList,
         },
       ],
     },
-
-
   ];
 
   const deliveryHeadNav = [
@@ -97,25 +88,26 @@ export const getSidebarData = (role: string) => {
         {
           title: "Home",
           url: "/delivery-head/dashboard",
-          circleColor: "bg-primary",
+          icon: House,
         },
         {
           title: "Jobs",
           url: "/delivery-head/dashboard/jobs",
-          circleColor: "bg-primary",
+          icon: BriefcaseBusiness,
         },
         {
           title: "Recruiters",
           url: "/delivery-head/dashboard/recruiters",
-          circleColor: "bg-primary",
+          icon: UsersRound,
         },
         {
           title: "Pods",
           url: "/delivery-head/dashboard/pods",
-          circleColor: "bg-primary",
+          icon: Boxes,
         },
       ],
-    }, {
+    },
+    {
       label: "Job Management",
     },
     {
@@ -127,12 +119,12 @@ export const getSidebarData = (role: string) => {
         {
           title: "All Jobs",
           url: "/delivery-head/dashboard/jobs",
-          circleColor: "bg-cyan-500",
+          icon: BriefcaseBusiness,
         },
         {
           title: "Submitted Jobs",
           url: "/delivery-head/dashboard/jobs-submitted",
-          circleColor: "bg-purple-500",
+          icon: ClipboardList,
         },
       ],
     },
@@ -148,16 +140,15 @@ export const getSidebarData = (role: string) => {
         {
           title: "All Pods",
           url: "/delivery-head/dashboard/pods",
-          circleColor: "bg-purple-500",
+          icon: Boxes,
         },
         {
           title: "Create Pod",
           url: "/delivery-head/dashboard/pods/create",
-          circleColor: "bg-green-500",
+          icon: Component,
         },
       ],
     },
-
   ];
 
   const recruiterNav = [
@@ -170,24 +161,23 @@ export const getSidebarData = (role: string) => {
         {
           title: "Home",
           url: "/recruiter/dashboard",
-          circleColor: "bg-primary",
+          icon: House,
         },
         {
           title: "Assigned Jobs",
           url: "/recruiter/dashboard/jobs-assigned",
-          circleColor: "bg-primary",
+          icon: BriefcaseBusiness,
         },
         {
           title: "Submitted Jobs",
           url: "/recruiter/dashboard/jobs-submitted",
-          circleColor: "bg-primary",
+          icon: ClipboardList,
         },
         {
           title: "Jobs in my Pods",
           url: "/recruiter/dashboard/jobs",
-          circleColor: "bg-primary",
+          icon: Boxes,
         },
-
       ],
     },
     // {
@@ -206,7 +196,6 @@ export const getSidebarData = (role: string) => {
     //     },
     //   ],
     // },
-
   ];
 
   const podLeadNav = [
@@ -219,22 +208,22 @@ export const getSidebarData = (role: string) => {
         {
           title: "Home",
           url: "/recruiter/dashboard",
-          circleColor: "bg-primary",
+          icon: House,
         },
         {
           title: "Assigned Jobs",
           url: "/recruiter/dashboard/jobs-assigned",
-          circleColor: "bg-cyan-500",
+          icon: BriefcaseBusiness,
         },
         {
           title: "Submitted Jobs",
           url: "/recruiter/dashboard/jobs-submitted",
-          circleColor: "bg-purple-500",
+          icon: ClipboardList,
         },
         {
           title: "Jobs in my Pods",
           url: "/recruiter/dashboard/jobs",
-          circleColor: "bg-blue-500",
+          icon: Boxes,
         },
       ],
     },
@@ -250,14 +239,13 @@ export const getSidebarData = (role: string) => {
         {
           title: "Assigned Jobs",
           url: "/pod-lead/dashboard/pod-jobs",
-          circleColor: "bg-amber-500",
+          icon: BriefcaseBusiness,
         },
         {
           title: "Submitted Jobs",
           url: "/pod-lead/dashboard/pod-submissions",
-          circleColor: "bg-emerald-500",
+          icon: ClipboardList,
         },
-        
       ],
     },
   ];
