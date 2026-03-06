@@ -659,66 +659,64 @@ export default function JobsTable({
                 <Table className="jobs-table-grid table-auto border-spacing-0 border-separate">
                     <TableHeader>
                         <TableRow className="border-0">
-                            <TableHead className="sticky left-0 z-20 min-w-[170px] w-[170px] whitespace-nowrap bg-slate-100/95 dark:bg-slate-700/95 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-start shadow-[1px_0_0_0_rgba(226,232,240,1)] dark:shadow-[1px_0_0_0_rgba(71,85,105,1)]">
+                            <TableHead className="sticky left-0 z-20 min-w-[170px] w-[170px] whitespace-nowrap bg-slate-100/95 dark:bg-slate-700/95 text-base px-4 h-12 border-b border-r border-neutral-200 dark:border-slate-600 text-start shadow-[1px_0_0_0_rgba(226,232,240,1)] dark:shadow-[1px_0_0_0_rgba(71,85,105,1)]">
                                 Job Code
                             </TableHead>
-                            <TableHead className="bg-slate-100/80 dark:bg-slate-700/90 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-start min-w-[220px]">
+                            <TableHead className="bg-slate-100/80 dark:bg-slate-700/90 text-base px-4 h-12 border-b border-r border-neutral-200 dark:border-slate-600 text-start min-w-[220px]">
                                 Job Title
                             </TableHead>
                             {showPod && (
                                 <>
-                                    <TableHead className="bg-slate-100/80 dark:bg-slate-700/90 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-start">
+                                    <TableHead className="bg-slate-100/80 dark:bg-slate-700/90 text-base px-4 h-12 border-b border-r border-neutral-200 dark:border-slate-600 text-start">
                                         Assigned Pods
                                     </TableHead>
-                                    <TableHead className="bg-slate-100/80 dark:bg-slate-700/90 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-start">
-                                        Assigned Recruiters
-                                    </TableHead>
+
                                 </>
                             )}
                             {showAccountManager && (
-                                <TableHead className="bg-slate-100/80 dark:bg-slate-700/90 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-start">
+                                <TableHead className="bg-slate-100/80 dark:bg-slate-700/90 text-base px-4 h-12 border-b border-r border-neutral-200 dark:border-slate-600 text-start">
                                     Account Manager
                                 </TableHead>
                             )}
-                            <TableHead className="bg-slate-100/80 dark:bg-slate-700/90 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-start">
+                            <TableHead className="bg-slate-100/80 dark:bg-slate-700/90 text-base px-4 h-12 border-b border-r border-neutral-200 dark:border-slate-600 text-start">
                                 Type / Location
                             </TableHead>
-                            <TableHead className="bg-slate-100/80 dark:bg-slate-700/90 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-start">
+                            <TableHead className="bg-slate-100/80 dark:bg-slate-700/90 text-base px-4 h-12 border-b border-r border-neutral-200 dark:border-slate-600 text-start">
                                 Visa
                             </TableHead>
-                            <TableHead className="bg-slate-100/80 dark:bg-slate-700/90 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-start">
+                            <TableHead className="bg-slate-100/80 dark:bg-slate-700/90 text-base px-4 h-12 border-b border-r border-neutral-200 dark:border-slate-600 text-start">
                                 Client
                             </TableHead>
-                            <TableHead className="bg-slate-100/80 dark:bg-slate-700/90 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-start">
+                            <TableHead className="bg-slate-100/80 dark:bg-slate-700/90 text-base px-4 h-12 border-b border-r border-neutral-200 dark:border-slate-600 text-start">
                                 End Client
                             </TableHead>
-                            <TableHead className="bg-slate-100/80 dark:bg-slate-700/90 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-center">
+                            <TableHead className="bg-slate-100/80 dark:bg-slate-700/90 text-base px-4 h-12 border-b border-r border-neutral-200 dark:border-slate-600 text-center">
                                 Positions
                             </TableHead>
-                            <TableHead className="bg-slate-100/80 dark:bg-slate-700/90 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-center">
+                            <TableHead className="bg-slate-100/80 dark:bg-slate-700/90 text-base px-4 h-12 border-b border-r border-neutral-200 dark:border-slate-600 text-center">
                                 Submissions
                             </TableHead>
 
-                            <TableHead className="bg-slate-100/80 dark:bg-slate-700/90 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-start">
+                            <TableHead className="bg-slate-100/80 dark:bg-slate-700/90 text-base px-4 h-12 border-b border-r border-neutral-200 dark:border-slate-600 text-start">
                                 Req Type
                             </TableHead>
-                            <TableHead className="bg-slate-100/80 dark:bg-slate-700/90 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-center">
+                            <TableHead className="bg-slate-100/80 dark:bg-slate-700/90 text-base px-4 h-12 border-b border-r border-neutral-200 dark:border-slate-600 text-center">
                                 CFR Age
                             </TableHead>
-                            <TableHead className="bg-slate-100/80 dark:bg-slate-700/90 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-start">
+                            <TableHead className="bg-slate-100/80 dark:bg-slate-700/90 text-base px-4 h-12 border-b border-r border-neutral-200 dark:border-slate-600 text-start">
                                 Rates
                             </TableHead>
-                            <TableHead className="bg-slate-100/80 dark:bg-slate-700/90 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-start">
+                            <TableHead className="bg-slate-100/80 dark:bg-slate-700/90 text-base px-4 h-12 border-b border-r border-neutral-200 dark:border-slate-600 text-start">
                                 Created Date
                             </TableHead>
-                            <TableHead className="bg-slate-100/80 dark:bg-slate-700/90 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-start">
+                            <TableHead className="bg-slate-100/80 dark:bg-slate-700/90 text-base px-4 h-12 border-b border-r border-neutral-200 dark:border-slate-600 text-start">
                                 Last Updated
                             </TableHead>
-                            <TableHead className="bg-slate-100/80 dark:bg-slate-700/90 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-center">
+                            <TableHead className="bg-slate-100/80 dark:bg-slate-700/90 text-base px-4 h-12 border-b border-r border-neutral-200 dark:border-slate-600 text-center">
                                 Status
                             </TableHead>
                             {showActions && (
-                                <TableHead className="bg-slate-100/80 dark:bg-slate-700/90 text-base px-4 h-12 border-b border-neutral-200 dark:border-slate-600 text-end">
+                                <TableHead className="bg-slate-100/80 dark:bg-slate-700/90 text-base px-4 h-12 border-b border-r border-neutral-200 dark:border-slate-600 text-end">
                                     Actions
                                 </TableHead>
                             )}
@@ -782,8 +780,8 @@ export default function JobsTable({
                                         <React.Fragment key={job.id}>
                                             {showTodayHeader && (
                                                 <TableRow className="bg-emerald-50/50 dark:bg-emerald-950/20 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20">
-                                                    <TableCell colSpan={14 + (showAccountManager ? 1 : 0) + (showPod ? 1 : 0) + (showActions ? 1 : 0)} className="py-2 px-4">
-                                                        <div className="flex items-center gap-2">
+                                                    <TableCell colSpan={14 + (showAccountManager ? 1 : 0) + (showPod ? 1 : 0) + (showActions ? 1 : 0)} className="py-2 px-0">
+                                                        <div className="sticky left-0 px-4 flex items-center gap-2 w-max">
                                                             <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                                                             <span className="text-sm font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-widest">Today's Jobs</span>
                                                         </div>
@@ -792,22 +790,28 @@ export default function JobsTable({
                                             )}
                                             {showNewSubHeader && (
                                                 <TableRow className="bg-emerald-100/10 dark:bg-emerald-900/5 hover:bg-emerald-100/10 dark:hover:bg-emerald-900/5 border-0">
-                                                    <TableCell colSpan={14 + (showAccountManager ? 1 : 0) + (showPod ? 1 : 0) + (showActions ? 1 : 0)} className="py-1 px-6 border-b border-emerald-50 dark:border-emerald-900/20">
-                                                        <span className="text-[10px] font-bold text-emerald-600/80 dark:text-emerald-500/80 uppercase tracking-widest italic">New Requirements</span>
+                                                    <TableCell colSpan={14 + (showAccountManager ? 1 : 0) + (showPod ? 1 : 0) + (showActions ? 1 : 0)} className="py-1 px-0 border-b border-emerald-50 dark:border-emerald-900/20 text-start">
+                                                        <div className="sticky left-0 px-6 w-max">
+                                                            <span className="text-[10px] font-bold text-emerald-600/80 dark:text-emerald-500/80 uppercase tracking-widest italic">New Requirements</span>
+                                                        </div>
                                                     </TableCell>
                                                 </TableRow>
                                             )}
                                             {showCfrExtSubHeader && (
                                                 <TableRow className="bg-amber-100/10 dark:bg-amber-900/5 hover:bg-amber-100/10 dark:hover:bg-amber-900/5 border-0">
-                                                    <TableCell colSpan={14 + (showAccountManager ? 1 : 0) + (showPod ? 1 : 0) + (showActions ? 1 : 0)} className="py-1 px-6 border-b border-amber-50 dark:border-amber-900/20">
-                                                        <span className="text-[10px] font-bold text-amber-600/80 dark:text-amber-500/80 uppercase tracking-widest italic">Requirement Extensions (CFR)</span>
+                                                    <TableCell colSpan={14 + (showAccountManager ? 1 : 0) + (showPod ? 1 : 0) + (showActions ? 1 : 0)} className="py-1 px-0 border-b border-amber-50 dark:border-amber-900/20 text-start">
+                                                        <div className="sticky left-0 px-6 w-max">
+                                                            <span className="text-[10px] font-bold text-amber-600/80 dark:text-amber-500/80 uppercase tracking-widest italic">Requirement Extensions (CFR)</span>
+                                                        </div>
                                                     </TableCell>
                                                 </TableRow>
                                             )}
                                             {showPastHeader && (
                                                 <TableRow className="bg-neutral-100/50 dark:bg-slate-800/50 hover:bg-neutral-100/50 dark:hover:bg-slate-800/50">
-                                                    <TableCell colSpan={14 + (showAccountManager ? 1 : 0) + (showPod ? 1 : 0) + (showActions ? 1 : 0)} className="py-2 px-4">
-                                                        <span className="text-sm font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-widest">Past Jobs</span>
+                                                    <TableCell colSpan={14 + (showAccountManager ? 1 : 0) + (showPod ? 1 : 0) + (showActions ? 1 : 0)} className="py-2 px-0">
+                                                        <div className="sticky left-0 px-4 w-max">
+                                                            <span className="text-sm font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-widest">Past Jobs</span>
+                                                        </div>
                                                     </TableCell>
                                                 </TableRow>
                                             )}
@@ -827,29 +831,29 @@ export default function JobsTable({
                                                 }}
                                             >
                                                 {/* Job Code - never editable */}
-                                                <TableCell className={cn("sticky left-0 z-30 min-w-[170px] w-[170px] whitespace-nowrap overflow-hidden py-2 px-4 border-b border-neutral-200 dark:border-slate-600 text-start shadow-[1px_0_0_0_rgba(226,232,240,1)] dark:shadow-[1px_0_0_0_rgba(71,85,105,1)]", stickyBgClass)}>
+                                                <TableCell className={cn("sticky left-0 z-30 min-w-[170px] w-[170px] whitespace-nowrap overflow-hidden py-2 px-4 border-b border-r border-neutral-200 dark:border-slate-600 text-start shadow-[1px_0_0_0_rgba(226,232,240,1)] dark:shadow-[1px_0_0_0_rgba(71,85,105,1)]", stickyBgClass)}>
                                                     <code className="inline-block bg-neutral-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-xs font-mono whitespace-nowrap">{job.jobCode}</code>
                                                 </TableCell>
                                                 {/* Job Title */}
-                                                <TableCell className="py-2 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
+                                                <TableCell className="py-2 px-4 border-b border-r border-neutral-200 dark:border-slate-600 text-start">
                                                     {isEditing
                                                         ? <Input className={inputCls} value={editForm.jobTitle ?? ""} onChange={ef("jobTitle")} />
                                                         : (
-                                                            <div className="flex items-center gap-1.5 flex-wrap">
+                                                            <div className="flex items-center gap-1 flex-wrap">
                                                                 <span className="font-medium capitalize">{job.jobTitle.toLowerCase()}</span>
                                                                 {job.requirementType === "NEW" && (
-                                                                    <span className="text-[7px] font-bold uppercase tracking-widest px-1 py-0.5 rounded border bg-emerald-50 text-emerald-600 border-emerald-200">New</span>
+                                                                    <span className="text-[6px] font-bold uppercase tracking-widest px-1 py-0.5 rounded border bg-emerald-50 text-emerald-600 border-emerald-200">New</span>
                                                                 )}
                                                                 {job.requirementType === "CFR" && (
-                                                                    <span className="text-[7px] font-bold uppercase tracking-widest px-1 py-0.5 rounded border bg-rose-50 text-rose-600 border-rose-200">CFR</span>
+                                                                    <span className="text-[6px] font-bold uppercase tracking-widest px-1 py-0.5 rounded border bg-rose-50 text-rose-600 border-rose-200">CFR</span>
                                                                 )}
                                                                 {job.requirementType === "CFR_EXTENDED" && (
-                                                                    <span className="text-[7px] font-bold uppercase tracking-widest px-1 py-0.5 rounded border bg-amber-50 text-amber-600 border-amber-200">
+                                                                    <span className="text-[6px] font-bold uppercase tracking-widest px-1 py-0.5 rounded border bg-amber-50 text-amber-600 border-amber-200">
                                                                         CFR Ext {job.cfrDaysRemaining !== undefined ? `· ${job.cfrDaysRemaining}d left` : ""}
                                                                     </span>
                                                                 )}
                                                                 {job.urgency && (
-                                                                    <span className={`text-[7px] font-bold uppercase tracking-widest px-1 py-0.5 rounded border ${job.urgency === "HOT" ? "bg-red-50 text-red-600 border-red-200" :
+                                                                    <span className={`text-[6px] font-bold uppercase tracking-widest px-1 py-0.5 rounded border ${job.urgency === "HOT" ? "bg-red-50 text-red-600 border-red-200" :
                                                                         job.urgency === "WARM" ? "bg-amber-50 text-amber-600 border-amber-200" :
                                                                             "bg-blue-50 text-blue-600 border-blue-200"
                                                                         }`}>{job.urgency}</span>
@@ -860,7 +864,7 @@ export default function JobsTable({
                                                 {/* Pod & Recruiters */}
                                                 {showPod && (
                                                     <>
-                                                        <TableCell className="py-2 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
+                                                        <TableCell className="py-2 px-4 border-b border-r border-neutral-200 dark:border-slate-600 text-start">
                                                             {(() => {
                                                                 const resolvedAssignedPods =
                                                                     job.pods && job.pods.length > 0
@@ -886,28 +890,12 @@ export default function JobsTable({
                                                                 );
                                                             })()}
                                                         </TableCell>
-                                                        <TableCell className="py-2 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
-                                                            <div className="flex flex-wrap gap-1">
-                                                                {job.assignedRecruiters && job.assignedRecruiters.length > 0 ? (
-                                                                    job.assignedRecruiters.map((recruiter: any) => (
-                                                                        <Badge
-                                                                            key={recruiter.id}
-                                                                            variant="outline"
-                                                                            className="text-[10px] px-1.5 py-0 font-normal bg-neutral-100 dark:bg-slate-800 text-neutral-600 dark:text-slate-300 border-none"
-                                                                        >
-                                                                            {recruiter.fullName || recruiter.email.split('@')[0]}
-                                                                        </Badge>
-                                                                    ))
-                                                                ) : (
-                                                                    <span className="text-[10px] text-muted-foreground italic">Unassigned</span>
-                                                                )}
-                                                            </div>
-                                                        </TableCell>
+
                                                     </>
                                                 )}
                                                 {/* Account Manager */}
                                                 {showAccountManager && (
-                                                    <TableCell className="py-2 px-4 border-b border-neutral-200 dark:border-slate-600 text-start whitespace-nowrap">
+                                                    <TableCell className="py-2 px-4 border-b border-r border-neutral-200 dark:border-slate-600 text-start whitespace-nowrap">
                                                         <div className="flex flex-col">
                                                             <span className="font-medium text-sm">{job.accountManager?.fullName || "N/A"}</span>
                                                             <span className="text-[10px] text-muted-foreground">{job.accountManager?.email}</span>
@@ -915,7 +903,7 @@ export default function JobsTable({
                                                     </TableCell>
                                                 )}
                                                 {/* Type / Location */}
-                                                <TableCell className="py-2 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
+                                                <TableCell className="py-2 px-4 border-b border-r border-neutral-200 dark:border-slate-600 text-start">
                                                     {isEditing ? (
                                                         <div className="flex flex-col gap-1">
                                                             <Select value={editForm.jobType ?? ""} onValueChange={efSel("jobType")}>
@@ -938,7 +926,7 @@ export default function JobsTable({
                                                     )}
                                                 </TableCell>
                                                 {/* Visa */}
-                                                <TableCell className="py-2 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
+                                                <TableCell className="py-2 px-4 border-b border-r border-neutral-200 dark:border-slate-600 text-start">
                                                     {isEditing ? (
                                                         <MultiSelect
                                                             options={visaOptions}
@@ -947,67 +935,67 @@ export default function JobsTable({
                                                             placeholder="Select visa type(s)"
                                                         />
                                                     ) : (
-                                                        <Badge variant="outline" className="text-[10px] px-1.5 py-0">{formatVisaType(job.visaType)}</Badge>
+                                                        <Badge variant="outline" className="text-[7px] px-1.5 py-0">{formatVisaType(job.visaType)}</Badge>
                                                     )}
                                                 </TableCell>
                                                 {/* Client */}
-                                                <TableCell className="py-2 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
+                                                <TableCell className="py-2 px-4 border-b border-r border-neutral-200 dark:border-slate-600 text-start">
                                                     {isEditing
                                                         ? <Input className={inputCls} value={editForm.clientName ?? ""} onChange={ef("clientName")} />
                                                         : job.clientName}
                                                 </TableCell>
                                                 {/* End Client */}
-                                                <TableCell className="py-2 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
+                                                <TableCell className="py-2 px-4 border-b border-r border-neutral-200 dark:border-slate-600 text-start">
                                                     {isEditing
                                                         ? <Input className={inputCls} value={editForm.endClientName ?? ""} onChange={ef("endClientName")} />
                                                         : job.endClientName}
                                                 </TableCell>
                                                 {/* Positions */}
-                                                <TableCell className="py-2 px-4 border-b border-neutral-200 dark:border-slate-600 text-center">
+                                                <TableCell className="py-2 px-4 border-b border-r border-neutral-200 dark:border-slate-600 text-center">
                                                     {isEditing
                                                         ? <Input type="number" min={1} className={inputCls} value={editForm.noOfPositions ?? ""} onChange={(e) => setEditForm(p => ({ ...p, noOfPositions: parseInt(e.target.value) }))} />
                                                         : <span className="font-semibold text-sm">{job.noOfPositions ?? "-"}</span>}
                                                 </TableCell>
                                                 {/* Submissions */}
-                                                <TableCell className="py-2 px-4 border-b border-neutral-200 dark:border-slate-600 text-center">
+                                                <TableCell className="py-2 px-4 border-b border-r border-neutral-200 dark:border-slate-600 text-center">
                                                     {isEditing ? (
                                                         <Input type="number" min={0} className={inputCls} value={editForm.submissionRequired ?? ""} onChange={(e) => setEditForm(p => ({ ...p, submissionRequired: parseInt(e.target.value) }))} />
                                                     ) : (
                                                         <div className="flex flex-col items-center gap-0.5">
                                                             <span className="font-medium text-sm">{job.submissionDone ?? 0} / {job.submissionRequired ?? 0}</span>
-                                                            <span className="text-[10px] text-muted-foreground">done / req</span>
+                                                            <span className="text-[8px] text-muted-foreground">done / req</span>
                                                         </div>
                                                     )}
                                                 </TableCell>
 
                                                 {/* Req Type */}
-                                                <TableCell className="py-2 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
+                                                <TableCell className="py-2 px-4 border-b border-r border-neutral-200 dark:border-slate-600 text-start">
                                                     <div className="flex flex-col gap-1">
                                                         {job.requirementType === "NEW" && (
-                                                            <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border w-fit bg-emerald-50 text-emerald-700 border-emerald-200">New</span>
+                                                            <span className="text-[6px] font-bold uppercase tracking-widest px-1 py-0.5 rounded border w-fit bg-emerald-50 text-emerald-700 border-emerald-200">New</span>
                                                         )}
                                                         {job.requirementType === "CFR" && (
                                                             <div className="flex flex-col gap-1">
-                                                                <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border w-fit bg-red-50 text-red-700 border-red-200">Carry Forward</span>
+                                                                <span className="text-[6px] font-bold uppercase tracking-widest px-1 py-0.5 rounded border w-fit bg-red-50 text-red-700 border-red-200">Carry Forward</span>
                                                                 {showCfrExtend && <CfrExtendButton jobId={job.id} onSuccess={onRefresh} />}
                                                             </div>
                                                         )}
                                                         {job.requirementType === "CFR_EXTENDED" && (
-                                                            <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border w-fit bg-amber-50 text-amber-700 border-amber-200 whitespace-nowrap">
+                                                            <span className="text-[6px] font-bold uppercase tracking-widest px-1 py-0.5 rounded border w-fit bg-amber-50 text-amber-700 border-amber-200 whitespace-nowrap">
                                                                 CFR Ext · {job.cfrDaysRemaining ?? 0}d left
                                                             </span>
                                                         )}
                                                         {!["NEW", "CFR", "CFR_EXTENDED"].includes(job.requirementType) && (
-                                                            <span className="text-xs capitalize text-neutral-500">{(job.requirementType || "").replace(/_/g, " ").toLowerCase()}</span>
+                                                            <span className="text-[8px] capitalize text-neutral-500">{(job.requirementType || "").replace(/_/g, " ").toLowerCase()}</span>
                                                         )}
                                                     </div>
                                                 </TableCell>
                                                 {/* CFR Age */}
-                                                <TableCell className="py-2 px-4 border-b border-neutral-200 dark:border-slate-600 text-center">
+                                                <TableCell className="py-2 px-4 border-b border-r border-neutral-200 dark:border-slate-600 text-center">
                                                     <span className="text-sm font-medium">{job.carryForwardAge ?? 0}</span>
                                                 </TableCell>
                                                 {/* Rates */}
-                                                <TableCell className="py-2 px-4 border-b border-neutral-200 dark:border-slate-600 text-start">
+                                                <TableCell className="py-2 px-4 border-b border-r border-neutral-200 dark:border-slate-600 text-start">
                                                     {isEditing ? (
                                                         <div className="flex flex-col gap-1">
                                                             <Input className={inputCls} value={editForm.clientBillRate ?? ""} onChange={ef("clientBillRate")} placeholder="Bill rate" />
@@ -1021,7 +1009,7 @@ export default function JobsTable({
                                                     )}
                                                 </TableCell>
                                                 {/* Created Date */}
-                                                <TableCell className="py-2 px-4 border-b border-neutral-200 dark:border-slate-600 text-start whitespace-nowrap">
+                                                <TableCell className="py-2 px-4 border-b border-r border-neutral-200 dark:border-slate-600 text-start whitespace-nowrap">
                                                     {showEstCreatedDateTime ? (
                                                         <div className="flex flex-col">
                                                             <span className="text-sm">{estDateFormatter.format(new Date(job.createdAt))}</span>
@@ -1030,21 +1018,21 @@ export default function JobsTable({
                                                     ) : new Date(job.createdAt).toLocaleDateString()}
                                                 </TableCell>
                                                 {/* Last Updated */}
-                                                <TableCell className="py-2 px-4 border-b border-neutral-200 dark:border-slate-600 text-start whitespace-nowrap">
+                                                <TableCell className="py-2 px-4 border-b border-r border-neutral-200 dark:border-slate-600 text-start whitespace-nowrap">
                                                     <div className="flex flex-col">
                                                         <span className="text-sm">{estDateFormatter.format(new Date(job.updatedAt))}</span>
                                                         <span className="text-[10px] text-muted-foreground">{estTimeFormatter.format(new Date(job.updatedAt))}</span>
                                                     </div>
                                                 </TableCell>
                                                 {/* Status */}
-                                                <TableCell className="py-2 px-4 border-b border-neutral-200 dark:border-slate-600 text-center">
+                                                <TableCell className="py-2 px-4 border-b border-r border-neutral-200 dark:border-slate-600 text-center">
                                                     <div className="flex justify-center">
                                                         <JobStatusSelect job={job} onRefresh={onRefresh} />
                                                     </div>
                                                 </TableCell>
                                                 {/* Actions */}
                                                 {showActions && (
-                                                    <TableCell className="py-2 px-4 border-b border-neutral-200 dark:border-slate-600 text-end">
+                                                    <TableCell className="py-2 px-4 border-b border-r border-neutral-200 dark:border-slate-600 text-end">
                                                         <div className="flex justify-end gap-1">
                                                             {isEditing ? (
                                                                 <>
