@@ -17,6 +17,7 @@ import { serverApiClient } from "@/lib/serverApiClient";
 import ManagerPerformanceTable from "./components/manager-performance-table";
 import PodPerformanceTable from "./components/pod-performance-table";
 import RecruiterPerformanceTable from "./components/recruiter-performance-table";
+import DatewiseSubmissionTable from "./components/datewise-submission-table";
 
 export const metadata: Metadata = {
   title: "Admin Dashboard | enfySync",
@@ -189,6 +190,12 @@ export default async function DashboardPage() {
 
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 mt-6">
         {/* Performance Tables - Added as per USER_REQUEST */}
+        <div className="xl:col-span-12">
+          <Suspense fallback={<LoadingSkeleton />}>
+            <DatewiseSubmissionTable jobs={jobs} />
+          </Suspense>
+        </div>
+
         <div className="xl:col-span-12">
           <Suspense fallback={<LoadingSkeleton />}>
             <ManagerPerformanceTable jobs={jobs} />
