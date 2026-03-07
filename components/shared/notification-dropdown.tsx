@@ -8,10 +8,10 @@ import { cn } from "@/lib/utils";
 import { Bell, CircleCheck, Info, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { useNotifications } from "@/contexts/NotificationContext";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, isValid } from "date-fns";
 
 const NotificationDropdown = () => {
-  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
+  const { notifications, unreadCount, markAsRead, markAllAsRead, getJobPath } = useNotifications();
 
   const getIcon = (type: string) => {
     switch (type) {
@@ -87,11 +87,11 @@ const NotificationDropdown = () => {
                 notifications.map((n) => (
                   <Link
                     key={n.id}
-                    href={n.data?.jobId ? `/jobs/${n.data.jobId}` : "#"}
+                    href={n.data?.jobId ? getJobPath(n.data.jobId) : "#"}
                     onClick={() => markAsRead(n.id)}
                     className={cn(
                       "flex px-4 py-3 hover:bg-gray-50 dark:hover:bg-slate-700/50 justify-between gap-3 border-b border-gray-100 dark:border-slate-700/50 last:border-0 transition-colors",
-                      !n.read && "bg-blue-50/30 dark:bg-primary/5"
+                      !n.isRead && "bg-blue-50/30 dark:bg-primary/5"
                     )}
                   >
                     <div className="flex items-start gap-3">
@@ -100,14 +100,14 @@ const NotificationDropdown = () => {
                         getIconBg(n.type)
                       )}>
                         {getIcon(n.type)}
-                        {!n.read && (
+                        {!n.isRead && (
                           <span className="absolute top-0 right-0 h-2.5 w-2.5 bg-blue-500 rounded-full border-2 border-white dark:border-slate-800" />
                         )}
                       </div>
                       <div>
                         <h6 className={cn(
                           "text-sm mb-0.5",
-                          !n.read ? "font-bold text-neutral-900 dark:text-white" : "font-medium text-neutral-600 dark:text-neutral-300"
+                          !n.isRead ? "font-bold text-neutral-900 dark:text-white" : "font-medium text-neutral-600 dark:text-neutral-300"
                         )}>
                           {n.title}
                         </h6>
@@ -118,7 +118,12 @@ const NotificationDropdown = () => {
                     </div>
                     <div className="shrink-0 pt-1">
                       <span className="text-[10px] font-medium text-neutral-400 dark:text-neutral-500 whitespace-nowrap">
-                        {formatDistanceToNow(new Date(n.timestamp), { addSuffix: true })}
+                        {(() => {
+                          const date = new Date(n.timestamp);
+                          return isValid(date)
+                            ? formatDistanceToNow(date, { addSuffix: true })
+                            : "Recently";
+                        })()}
                       </span>
                     </div>
                   </Link>

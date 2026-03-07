@@ -1,4 +1,3 @@
-import MessageDropdown from '../shared/message-dropdown';
 import { ModeToggle } from '../shared/mode-toggle';
 import ProfileDropdown from '../shared/profile-dropdown';
 import { SidebarTrigger } from '../ui/sidebar';
@@ -16,7 +15,6 @@ const Header = () => {
                 <EstOfficeClock />
                 <ModeToggle />
                 <ChatDrawer />
-                <MessageDropdown />
                 <NotificationDropdown />
 
                 <ProfileDropdown />

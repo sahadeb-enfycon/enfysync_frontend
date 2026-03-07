@@ -248,7 +248,6 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 content,
                 senderDbId: session.user.id
             });
-            playSendSound();
         }
     }, [socket, session?.user?.id]);
 

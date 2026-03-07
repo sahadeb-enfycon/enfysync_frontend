@@ -17,7 +17,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { parseISO, format, startOfDay } from "date-fns";
+import { parseISO, format, startOfDay, isValid } from "date-fns";
 import { Calendar } from "lucide-react";
 
 interface DatewiseSubmissionTableProps {
@@ -32,6 +32,8 @@ const DatewiseSubmissionTable = ({ jobs }: DatewiseSubmissionTableProps) => {
 
         // EST Timezone Helpers
         const getESTPart = (date: Date, part: 'year' | 'month' | 'day' | 'week' | 'fullDate') => {
+            if (!date || !isValid(date)) return "N/A";
+
             const options: Intl.DateTimeFormatOptions = { timeZone: 'America/New_York' };
             if (part === 'fullDate') {
                 options.year = 'numeric';
@@ -63,7 +65,11 @@ const DatewiseSubmissionTable = ({ jobs }: DatewiseSubmissionTableProps) => {
         const currentWeek = getESTPart(now, 'week');
 
         jobs.forEach((job) => {
+            if (!job || !job.createdAt) return;
+
             const createdAt = parseISO(job.createdAt);
+            if (!isValid(createdAt)) return;
+
             const jobYear = getESTPart(createdAt, 'year');
             const jobMonth = getESTPart(createdAt, 'month');
             const jobDay = getESTPart(createdAt, 'day');
@@ -187,7 +193,7 @@ const DatewiseSubmissionTable = ({ jobs }: DatewiseSubmissionTableProps) => {
                                                 <Calendar className="h-4 w-4" />
                                             </div>
                                             <span className="font-bold text-neutral-800 dark:text-neutral-100 text-sm">
-                                                {format(parseISO(group.date), "dd MMM yyyy")}
+                                                {group.date !== "N/A" ? format(parseISO(group.date), "dd MMM yyyy") : "Invalid Date"}
                                             </span>
                                         </div>
                                     </TableCell>

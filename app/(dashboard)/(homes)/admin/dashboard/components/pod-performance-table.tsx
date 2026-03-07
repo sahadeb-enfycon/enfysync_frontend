@@ -17,7 +17,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { parseISO } from "date-fns";
+import { parseISO, isValid } from "date-fns";
 import { Users } from "lucide-react";
 
 interface PodPerformanceTableProps {
@@ -32,6 +32,8 @@ const PodPerformanceTable = ({ jobs }: PodPerformanceTableProps) => {
 
         // EST Timezone Helpers
         const getESTPart = (date: Date, part: 'year' | 'month' | 'day' | 'week') => {
+            if (!date || !isValid(date)) return "N/A";
+
             if (part === 'week') {
                 const d = new Date(date.toLocaleString('en-US', { timeZone: 'America/New_York' }));
                 d.setHours(0, 0, 0, 0);
@@ -53,6 +55,40 @@ const PodPerformanceTable = ({ jobs }: PodPerformanceTableProps) => {
         const currentWeek = getESTPart(now, 'week');
 
         jobs.forEach((job) => {
+            if (!job || !job.createdAt) return;
+
+            const createdAt = parseISO(job.createdAt);
+            const updatedAt = job.updatedAt ? parseISO(job.updatedAt) : null;
+
+            if (!isValid(createdAt)) return;
+
+            const jobYear = getESTPart(createdAt, 'year');
+            const jobMonth = getESTPart(createdAt, 'month');
+            const jobDay = getESTPart(createdAt, 'day');
+            const jobWeek = getESTPart(createdAt, 'week');
+
+            let isInRange = false;
+            if (filter === "all") isInRange = true;
+            else if (filter === "today") isInRange = jobYear === currentYear && jobMonth === currentMonth && jobDay === currentDay;
+            else if (filter === "week") isInRange = jobYear === currentYear && jobWeek === currentWeek;
+            else if (filter === "month") isInRange = jobYear === currentYear && jobMonth === currentMonth;
+            else if (filter === "year") isInRange = jobYear === currentYear;
+
+            let isClosedInRange = false;
+            const isClosedStatus = job.status === "CLOSED" || job.status === "FILLED";
+            if (isClosedStatus && updatedAt && isValid(updatedAt)) {
+                const updatedYear = getESTPart(updatedAt, 'year');
+                const updatedMonth = getESTPart(updatedAt, 'month');
+                const updatedDay = getESTPart(updatedAt, 'day');
+                const updatedWeek = getESTPart(updatedAt, 'week');
+
+                if (filter === "all") isClosedInRange = true;
+                else if (filter === "today") isClosedInRange = updatedYear === currentYear && updatedMonth === currentMonth && updatedDay === currentDay;
+                else if (filter === "week") isClosedInRange = updatedYear === currentYear && updatedWeek === currentWeek;
+                else if (filter === "month") isClosedInRange = updatedYear === currentYear && updatedMonth === currentMonth;
+                else if (filter === "year") isClosedInRange = updatedYear === currentYear;
+            }
+
             // Attribute job to all linked pods
             const linkedPods = new Map<string, string>();
             if (job.pod?.id) linkedPods.set(job.pod.id, job.pod.name);
@@ -70,36 +106,6 @@ const PodPerformanceTable = ({ jobs }: PodPerformanceTableProps) => {
             }
 
             if (linkedPods.size === 0) return;
-
-            const createdAt = parseISO(job.createdAt);
-            const updatedAt = parseISO(job.updatedAt);
-
-            const jobYear = getESTPart(createdAt, 'year');
-            const jobMonth = getESTPart(createdAt, 'month');
-            const jobDay = getESTPart(createdAt, 'day');
-            const jobWeek = getESTPart(createdAt, 'week');
-
-            let isInRange = false;
-            if (filter === "all") isInRange = true;
-            else if (filter === "today") isInRange = jobYear === currentYear && jobMonth === currentMonth && jobDay === currentDay;
-            else if (filter === "week") isInRange = jobYear === currentYear && jobWeek === currentWeek;
-            else if (filter === "month") isInRange = jobYear === currentYear && jobMonth === currentMonth;
-            else if (filter === "year") isInRange = jobYear === currentYear;
-
-            let isClosedInRange = false;
-            const isClosedStatus = job.status === "CLOSED" || job.status === "FILLED";
-            if (isClosedStatus) {
-                const updatedYear = getESTPart(updatedAt, 'year');
-                const updatedMonth = getESTPart(updatedAt, 'month');
-                const updatedDay = getESTPart(updatedAt, 'day');
-                const updatedWeek = getESTPart(updatedAt, 'week');
-
-                if (filter === "all") isClosedInRange = true;
-                else if (filter === "today") isClosedInRange = updatedYear === currentYear && updatedMonth === currentMonth && updatedDay === currentDay;
-                else if (filter === "week") isClosedInRange = updatedYear === currentYear && updatedWeek === currentWeek;
-                else if (filter === "month") isClosedInRange = updatedYear === currentYear && updatedMonth === currentMonth;
-                else if (filter === "year") isClosedInRange = updatedYear === currentYear;
-            }
 
             linkedPods.forEach((podName, podId) => {
                 if (!pods[podId]) {

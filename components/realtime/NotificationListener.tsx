@@ -1,14 +1,16 @@
 "use client";
 
 import { useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { useSocket } from "@/contexts/SocketContext";
 import { useNotifications } from "@/contexts/NotificationContext";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 
 const NotificationListener = () => {
+    const { data: session } = useSession();
     const { socket } = useSocket();
-    const { addNotification } = useNotifications();
+    const { addNotification, getJobPath } = useNotifications();
     const router = useRouter();
 
     const playNotificationSound = async () => {
@@ -42,19 +44,26 @@ const NotificationListener = () => {
         if (!socket) return;
 
         socket.on("notification", (payload: any) => {
-            console.log("[Notification Listener] Received:", payload);
+            // Mute sound and toast if I am the initiator
+            const isInitiator = payload.initiatorId && payload.initiatorId === session?.user?.keycloakId;
 
-            // 1. Add to history
+            console.log("[Notification Listener] Received:", payload, "isInitiator:", isInitiator);
+
+            // 1. Add to context (backend now sends full object including id)
             addNotification({
+                id: payload.id,
                 type: payload.type,
                 title: payload.title,
                 message: payload.message,
                 data: payload.data,
-                timestamp: payload.timestamp || new Date().toISOString(),
+                isRead: payload.isRead || false,
+                timestamp: payload.createdAt || payload.timestamp || new Date().toISOString(),
             });
 
-            // 2. Play sound
-            playNotificationSound();
+            // 2. Play sound if NOT initiator
+            if (!isInitiator) {
+                playNotificationSound();
+            }
 
             // 3. Trigger refresh for new jobs
             if (payload.type === "NEW_JOB") {
@@ -66,27 +75,32 @@ const NotificationListener = () => {
                     console.error("[Notification Listener] router.refresh() failed:", err);
                 }
 
-                toast.success(
-                    (t) => (
-                        <div className="flex flex-col gap-1">
-                            <span className="font-bold text-sm">{payload.title}</span>
-                            <span className="text-xs">{payload.message}</span>
-                            <button
-                                onClick={() => {
-                                    toast.dismiss(t.id);
-                                }}
-                                className="text-xs text-primary font-semibold text-left underline mt-1"
-                            >
-                                View Details
-                            </button>
-                        </div>
-                    ),
-                    {
-                        duration: 6000,
-                        position: "top-right",
-                    }
-                );
-            } else {
+                if (!isInitiator) {
+                    toast.success(
+                        (t) => (
+                            <div className="flex flex-col gap-1">
+                                <span className="font-bold text-sm">{payload.title}</span>
+                                <span className="text-xs">{payload.message}</span>
+                                <button
+                                    onClick={() => {
+                                        toast.dismiss(t.id);
+                                        if (payload.data?.jobId) {
+                                            router.push(getJobPath(payload.data.jobId));
+                                        }
+                                    }}
+                                    className="text-xs text-primary font-semibold text-left underline mt-1"
+                                >
+                                    View Details
+                                </button>
+                            </div>
+                        ),
+                        {
+                            duration: 6000,
+                            position: "top-right",
+                        }
+                    );
+                }
+            } else if (!isInitiator) {
                 // Generic toast for other types
                 toast(payload.message || "New notification received", {
                     icon: "🔔",

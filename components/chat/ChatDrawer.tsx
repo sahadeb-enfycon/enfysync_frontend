@@ -10,11 +10,12 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MessageSquare, Search, Circle, Clock } from "lucide-react";
+import { Mail, Search, Circle, Clock } from "lucide-react";
 import { useChat } from "@/contexts/ChatContext";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import ChatWindow from "./ChatWindow";
 import { formatDistanceToNow } from "date-fns";
+import { cn } from "@/lib/utils";
 
 export default function ChatDrawer() {
     const { chatUsers, onlineUsers, activeChatId, setActiveChatId, typingUsers } = useChat();
@@ -44,9 +45,13 @@ export default function ChatDrawer() {
     return (
         <Sheet>
             <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative group">
-                    <MessageSquare className="w-5 h-5 text-neutral-600 dark:text-neutral-300 group-hover:text-primary transition-colors" />
-                    {/* Optional: Unread count badge could go here */}
+                <Button
+                    size="icon"
+                    className={cn(
+                        'rounded-[50%] text-neutral-900 sm:w-10 sm:h-10 w-8 h-8 bg-gray-200/75 hover:bg-slate-200 focus-visible:ring-0 dark:bg-slate-700 dark:hover:bg-slate-600 border-0 cursor-pointer data-[state=open]:bg-gray-300 dark:data-[state=open]:bg-slate-600'
+                    )}
+                >
+                    <Mail className="w-5 h-5" />
                 </Button>
             </SheetTrigger>
             <SheetContent side="right" className="p-0 sm:max-w-md w-full flex flex-col h-full bg-white dark:bg-slate-900 border-l border-neutral-200 dark:border-slate-800">

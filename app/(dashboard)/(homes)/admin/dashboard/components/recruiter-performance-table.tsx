@@ -18,7 +18,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { parseISO } from "date-fns";
+import { parseISO, isValid } from "date-fns";
 import { UserCheck } from "lucide-react";
 
 interface RecruiterPerformanceTableProps {
@@ -33,6 +33,8 @@ const RecruiterPerformanceTable = ({ jobs }: RecruiterPerformanceTableProps) => 
 
         // EST Timezone Helpers
         const getESTPart = (date: Date, part: 'year' | 'month' | 'day' | 'week') => {
+            if (!date || !isValid(date)) return "N/A";
+
             if (part === 'week') {
                 const d = new Date(date.toLocaleString('en-US', { timeZone: 'America/New_York' }));
                 d.setHours(0, 0, 0, 0);
@@ -54,11 +56,12 @@ const RecruiterPerformanceTable = ({ jobs }: RecruiterPerformanceTableProps) => 
         const currentWeek = getESTPart(now, 'week');
 
         jobs.forEach((job) => {
-            const assignedRecruiters = job.assignedRecruiters || [];
-            if (assignedRecruiters.length === 0) return;
+            if (!job || !job.createdAt) return;
 
             const createdAt = parseISO(job.createdAt);
-            const updatedAt = parseISO(job.updatedAt);
+            const updatedAt = job.updatedAt ? parseISO(job.updatedAt) : null;
+
+            if (!isValid(createdAt)) return;
 
             const jobYear = getESTPart(createdAt, 'year');
             const jobMonth = getESTPart(createdAt, 'month');
@@ -74,7 +77,7 @@ const RecruiterPerformanceTable = ({ jobs }: RecruiterPerformanceTableProps) => 
 
             let isClosedInRange = false;
             const isClosedStatus = job.status === "CLOSED" || job.status === "FILLED";
-            if (isClosedStatus) {
+            if (isClosedStatus && updatedAt && isValid(updatedAt)) {
                 const updatedYear = getESTPart(updatedAt, 'year');
                 const updatedMonth = getESTPart(updatedAt, 'month');
                 const updatedDay = getESTPart(updatedAt, 'day');
@@ -86,6 +89,9 @@ const RecruiterPerformanceTable = ({ jobs }: RecruiterPerformanceTableProps) => 
                 else if (filter === "month") isClosedInRange = updatedYear === currentYear && updatedMonth === currentMonth;
                 else if (filter === "year") isClosedInRange = updatedYear === currentYear;
             }
+
+            const assignedRecruiters = job.assignedRecruiters || [];
+            if (assignedRecruiters.length === 0) return;
 
             assignedRecruiters.forEach((recruiter: any) => {
                 if (!recruiter || !recruiter.id) return;

@@ -24,6 +24,7 @@ import {
     isThisMonth,
     isThisYear,
     parseISO,
+    isValid,
 } from "date-fns";
 
 interface ManagerPerformanceTableProps {
@@ -38,6 +39,8 @@ const ManagerPerformanceTable = ({ jobs }: ManagerPerformanceTableProps) => {
 
         // EST Timezone Helpers
         const getESTPart = (date: Date, part: 'year' | 'month' | 'day' | 'week') => {
+            if (!date || !isValid(date)) return "N/A";
+
             if (part === 'week') {
                 // Approximate week of year in EST
                 const d = new Date(date.toLocaleString('en-US', { timeZone: 'America/New_York' }));
@@ -60,11 +63,12 @@ const ManagerPerformanceTable = ({ jobs }: ManagerPerformanceTableProps) => {
         const currentWeek = getESTPart(now, 'week');
 
         jobs.forEach((job) => {
-            const manager = job.accountManager;
-            if (!manager) return;
+            if (!job || !job.createdAt) return;
 
             const createdAt = parseISO(job.createdAt);
-            const updatedAt = parseISO(job.updatedAt);
+            const updatedAt = job.updatedAt ? parseISO(job.updatedAt) : null;
+
+            if (!isValid(createdAt)) return;
 
             const jobYear = getESTPart(createdAt, 'year');
             const jobMonth = getESTPart(createdAt, 'month');
@@ -80,7 +84,7 @@ const ManagerPerformanceTable = ({ jobs }: ManagerPerformanceTableProps) => {
 
             let isClosedInRange = false;
             const isClosedStatus = job.status === "CLOSED" || job.status === "FILLED";
-            if (isClosedStatus) {
+            if (isClosedStatus && updatedAt && isValid(updatedAt)) {
                 const updatedYear = getESTPart(updatedAt, 'year');
                 const updatedMonth = getESTPart(updatedAt, 'month');
                 const updatedDay = getESTPart(updatedAt, 'day');
@@ -92,6 +96,9 @@ const ManagerPerformanceTable = ({ jobs }: ManagerPerformanceTableProps) => {
                 else if (filter === "month") isClosedInRange = updatedYear === currentYear && updatedMonth === currentMonth;
                 else if (filter === "year") isClosedInRange = updatedYear === currentYear;
             }
+
+            const manager = job.accountManager;
+            if (!manager) return;
 
             if (!managers[manager.id]) {
                 managers[manager.id] = {
